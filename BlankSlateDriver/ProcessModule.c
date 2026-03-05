@@ -287,7 +287,7 @@ NTSTATUS PsUnloadProcessModule(PVOID InputBuffer, ULONG InputBufferLength, PVOID
 			{
 				PSYSTEM_SERVICE_DESCRIPTOR_TABLE SystemServiceDescriptorTable = NULL;
 				ULONG32 ServiceIndex = 0;
-				SystemServiceDescriptorTable = GetKeServiceDescriptorTable();
+				SystemServiceDescriptorTable = GetKeServiceDescriptorTable2();
 				if (!GetNtXXXServiceIndex("NtUnmapViewOfSection", &ServiceIndex))
 				{
 					return;

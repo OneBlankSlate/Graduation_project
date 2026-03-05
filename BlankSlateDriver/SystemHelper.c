@@ -75,7 +75,8 @@ PVOID GetNtoskrnlInfo(OUT PUNICODE_STRING NtoskrnlPath, OUT PULONG ImageSize)
 	}
 	return __Ntoskrnl;
 }
-PSYSTEM_SERVICE_DESCRIPTOR_TABLE GetKeServiceDescriptorTable()
+//通过遍历节区找ssdt
+PSYSTEM_SERVICE_DESCRIPTOR_TABLE GetKeServiceDescriptorTable1()
 {
 #ifdef _WIN64
 	ULONG ImageSize = 0;
@@ -127,6 +128,68 @@ PSYSTEM_SERVICE_DESCRIPTOR_TABLE GetKeServiceDescriptorTable()
 #endif   //_WIN64
 
 	return NULL;
+}
+//不用节区，直接rdmsr 0xC0000082来获取KiSystemCall64入口来找ssdt
+PSYSTEM_SERVICE_DESCRIPTOR_TABLE GetKeServiceDescriptorTable2()
+{
+	PSYSTEM_SERVICE_DESCRIPTOR_TABLE SystemServiceDescriptorTable = NULL;
+#ifdef  _WIN64
+	PUCHAR v10 = (PUCHAR)__readmsr(0xC0000082);
+	PUCHAR KiSystemCall64 = v10;
+	PUCHAR KiSystemCall64Shadow = v10;
+	PUCHAR StartAddress = 0, EndAddress = 0;
+	PUCHAR i = NULL;
+
+	UCHAR v1, v2, v3, v4, v5;
+	ULONG OffsetSsdt = 0;
+	INT OffsetUser = 0;
+	DbgPrint(("[zsh]Msr C0000082:%x\n"), v10);
+	if (*(v10 + 0x9) == 0x00) //走这里说明Msr C0000082得到的是KiSystemCall64    win7与部分win10（如22H2）
+	{
+		StartAddress = KiSystemCall64;
+		EndAddress = StartAddress + PAGE_SIZE;
+	}
+	else if (*(v10 + 0x9) == 0x70) //走这里说明Msr C0000082得到的是KiSystemCall64Shadow  win10-20H2
+	{
+		PUCHAR EndSearchUser = KiSystemCall64Shadow + PAGE_SIZE;
+
+		for (i = KiSystemCall64Shadow; i < EndSearchUser; i++)
+		{
+			if (MmIsAddressValid(i) && MmIsAddressValid(i + 5))
+			{
+				v4 = *i;
+				v5 = *(i + 5);
+				if (v4 == 0xe9 && v5 == 0xc3)
+				{
+					memcpy(&OffsetUser, i + 1, 4);
+					StartAddress = OffsetUser + (i + 5);
+					KdPrint(("KiSystemServiceUser:%x\n", StartAddress));
+					EndAddress = StartAddress + PAGE_SIZE;
+				}
+			}
+		}
+	}
+	//硬编码搜索4c 8d 15
+	for (i = StartAddress; i < EndAddress; i++)
+	{
+		if (MmIsAddressValid(i) && MmIsAddressValid(i + 1) && MmIsAddressValid(i + 2))
+		{
+			v1 = *i;
+			v2 = *(i + 1);
+			v3 = *(i + 2);
+			if (v1 == 0x4c && v2 == 0x8d && v3 == 0x15)
+			{
+				memcpy(&OffsetSsdt, i + 3, 4);
+				SystemServiceDescriptorTable = (PSYSTEM_SERVICE_DESCRIPTOR_TABLE)((ULONG_PTR)OffsetSsdt + (ULONG_PTR)i + 7);
+				return SystemServiceDescriptorTable;
+			}
+		}
+	}
+	return SystemServiceDescriptorTable;
+#else	
+	extern  PSYSTEM_SERVICE_DESCRIPTOR_TABLE KeServiceDescriptorTable;    //扩展声明
+	return KeServiceDescriptorTable;
+#endif //  _WIN64
 }
 BOOLEAN GetNtXXXServiceIndex(CHAR* FunctionName, ULONG32* ServiceIndex)
 {
@@ -200,7 +263,7 @@ NTSTATUS GetNtXXXServiceAddress(ULONG_PTR ServiceIndex, PVOID* ServiceAddress)
 	PVOID* ServiceTableBase = NULL;
 	if (__SystemServiceDescriptorTable == NULL)
 	{
-		SystemServiceDescriptorTable = GetKeServiceDescriptorTable();
+		SystemServiceDescriptorTable = GetKeServiceDescriptorTable2();
 	}
 
 	else

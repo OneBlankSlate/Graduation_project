@@ -138,7 +138,7 @@ NTSTATUS CreateThreadEx(OUT PHANDLE ThreadHandle, IN ACCESS_MASK DesiredAccess, 
 {
 	NTSTATUS Status = STATUS_SUCCESS;
 	LPFN_NTCREATETHREADEX NtCreateThreadEx = NULL;
-	PSYSTEM_SERVICE_DESCRIPTOR_TABLE SystemServiceDescriptorTable = GetKeServiceDescriptorTable();
+	PSYSTEM_SERVICE_DESCRIPTOR_TABLE SystemServiceDescriptorTable = GetKeServiceDescriptorTable2();
 	ULONG_PTR ServiceIndex = 0;
 	if (SystemServiceDescriptorTable)
 	{
@@ -177,9 +177,9 @@ NTSTATUS CreateThreadEx(OUT PHANDLE ThreadHandle, IN ACCESS_MASK DesiredAccess, 
 CHAR ChangePreviousMode(PETHREAD EThread)
 {
 #ifdef _WIN64
-	ULONG Offset = 0x1F6;
+	ULONG Offset = 0x232;
 #else
-	ULONG Offset = 0x13a;
+
 #endif
 	CHAR PreviousMode = *(PCHAR)((ULONG_PTR)EThread + Offset);
 	*(PCHAR)((ULONG_PTR)EThread + Offset) = KernelMode;
@@ -188,9 +188,9 @@ CHAR ChangePreviousMode(PETHREAD EThread)
 VOID RecoverPreviousMode(PETHREAD EThread, CHAR PreviousMode)
 {
 #ifdef _WIN64
-	ULONG Offset = 0x1F6;
+	ULONG Offset = 0x232;
 #else
-	ULONG Offset = 0x13a;
+
 #endif
 	*(PCHAR)((ULONG_PTR)EThread + Offset) = PreviousMode;
 }

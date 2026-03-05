@@ -59,7 +59,7 @@ NTSTATUS EnumProcessMemorys(PEPROCESS EProcess, PMEMORYS_INFORMATION MemoryInfo,
 		{
 			PSYSTEM_SERVICE_DESCRIPTOR_TABLE SystemServiceDescriptorTable = NULL;
 			ULONG32 ServiceIndex = 0;
-			SystemServiceDescriptorTable = GetKeServiceDescriptorTable();
+			SystemServiceDescriptorTable = GetKeServiceDescriptorTable2();
 			if (!GetNtXXXServiceIndex("NtQueryVirtualMemory", &ServiceIndex))
 			{
 				return STATUS_UNSUCCESSFUL;
@@ -73,7 +73,7 @@ NTSTATUS EnumProcessMemorys(PEPROCESS EProcess, PMEMORYS_INFORMATION MemoryInfo,
 		{
 			PSYSTEM_SERVICE_DESCRIPTOR_TABLE SystemServiceDescriptorTable = NULL;
 			ULONG32 ServiceIndex = 0;
-			SystemServiceDescriptorTable = GetKeServiceDescriptorTable();
+			SystemServiceDescriptorTable = GetKeServiceDescriptorTable2();
 			if (!GetNtXXXServiceIndex("NtClose", &ServiceIndex))
 			{
 				return STATUS_UNSUCCESSFUL;
@@ -264,7 +264,7 @@ NTSTATUS PsWriteProcessMem(PVOID InputBuffer, ULONG InputBufferLength, PVOID Out
 						{
 							PSYSTEM_SERVICE_DESCRIPTOR_TABLE SystemServiceDescriptorTable = NULL;
 							ULONG32 ServiceIndex = 0;
-							SystemServiceDescriptorTable = GetKeServiceDescriptorTable();
+							SystemServiceDescriptorTable = GetKeServiceDescriptorTable2();
 							if (!GetNtXXXServiceIndex("NtProtectVirtualMemory", &ServiceIndex))
 							{
 								Status1 = STATUS_UNSUCCESSFUL;
@@ -391,7 +391,7 @@ NTSTATUS PsModifyProcessMem(PVOID InputBuffer, ULONG InputBufferLength, PVOID Ou
 			{
 				PSYSTEM_SERVICE_DESCRIPTOR_TABLE SystemServiceDescriptorTable = NULL;
 				ULONG32 ServiceIndex = 0;
-				SystemServiceDescriptorTable = GetKeServiceDescriptorTable();
+				SystemServiceDescriptorTable = GetKeServiceDescriptorTable2();
 				if (!GetNtXXXServiceIndex("NtProtectVirtualMemory", &ServiceIndex))
 				{
 					Status1 = STATUS_UNSUCCESSFUL;

@@ -76,7 +76,6 @@ void ProcessWindow::ListProcessInfo()
 {
     vector<PROCESS_INFORMATION_ENTRY> ProcessInfo;
     ProcessInfo.reserve(100);
-    __debugbreak();
     EnumProcess(ProcessInfo);
     // Ìí¼ÓÊý¾Ý
     vector<PROCESS_INFORMATION_ENTRY>::iterator v1;

@@ -157,6 +157,7 @@ typedef struct _SYSTEM_SERVICE_DESCRIPTOR_TABLE_SHADOW
 
 BOOLEAN GetNtXXXServiceIndex(CHAR* FunctionName, ULONG32* ServiceIndex);
 PSYSTEM_SERVICE_DESCRIPTOR_TABLE GetKeServiceDescriptorTable();
+PSYSTEM_SERVICE_DESCRIPTOR_TABLE GetKeServiceDescriptorTable2();
 PVOID GetNtoskrnlInfo(OUT PUNICODE_STRING NtoskrnlPath, OUT PULONG ImageSize);
 NTSTATUS GetNtXXXServiceAddress(ULONG_PTR ServiceIndex, PVOID* ServiceAddress);
 VOID FreeNtoskrnlInfo();
