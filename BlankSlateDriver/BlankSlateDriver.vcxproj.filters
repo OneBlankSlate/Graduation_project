@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Driver Files">
+      <UniqueIdentifier>{8E41214B-6785-4CFE-B992-037D68949A14}</UniqueIdentifier>
+      <Extensions>inf;inv;inx;mof;mc;</Extensions>
+    </Filter>
+    <Filter Include="进程帮助">
+      <UniqueIdentifier>{7f164b04-54d3-474b-bf1e-55f00277f723}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="内存帮助">
+      <UniqueIdentifier>{a88e9593-7730-47ad-9166-c4533233d3ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="对象帮助">
+      <UniqueIdentifier>{34c0ab81-1dde-44a5-acfb-4edbb2d2fdb5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="系统帮助">
+      <UniqueIdentifier>{81841d1e-11b5-4547-a2d3-8931a8335f62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="进程帮助\进程路径">
+      <UniqueIdentifier>{cf65f64c-e486-4081-a23b-24a4901e904a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="字符串帮助">
+      <UniqueIdentifier>{f55bf24a-fcd7-4042-93e6-681519ec6131}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="进程帮助\进程模块">
+      <UniqueIdentifier>{e806c57c-76ea-439f-b298-d7e5fa973c06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="进程帮助\进程线程">
+      <UniqueIdentifier>{9aea0e55-a1c9-4042-b723-20e2240f4e3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="进程帮助\进程句柄">
+      <UniqueIdentifier>{4c90aa45-0ce6-4941-bc1d-46992acdcd39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="进程帮助\进程内存">
+      <UniqueIdentifier>{663ec26e-b598-4831-b0c2-8d1da4bc5022}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="回调帮助">
+      <UniqueIdentifier>{4216ae25-2161-43e3-bc7a-a6bfacb973d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="系统帮助\系统模块">
+      <UniqueIdentifier>{7bfd4fac-dcb0-4e6c-a9ff-5efdcf916354}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="DriverEntry.c">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IoControlHelper.c">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessHelper.c">
+      <Filter>进程帮助</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryHelper.c">
+      <Filter>内存帮助</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectHelper.c">
+      <Filter>对象帮助</Filter>
+    </ClCompile>
+    <ClCompile Include="SystemHelper.c">
+      <Filter>系统帮助</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessPath.c">
+      <Filter>进程帮助\进程路径</Filter>
+    </ClCompile>
+    <ClCompile Include="StringHelper.c">
+      <Filter>字符串帮助</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessModule.c">
+      <Filter>进程帮助\进程模块</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessThread.c">
+      <Filter>进程帮助\进程线程</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessHandle.c">
+      <Filter>进程帮助\进程句柄</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessMemory.c">
+      <Filter>进程帮助\进程内存</Filter>
+    </ClCompile>
+    <ClCompile Include="CallbackHelper.c">
+      <Filter>回调帮助</Filter>
+    </ClCompile>
+    <ClCompile Include="SystemModule.c">
+      <Filter>系统帮助\系统模块</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DriverEntry.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IoControlHelper.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessHelper.h">
+      <Filter>进程帮助</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryHelper.h">
+      <Filter>内存帮助</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectHelper.h">
+      <Filter>对象帮助</Filter>
+    </ClInclude>
+    <ClInclude Include="SystemHelper.h">
+      <Filter>系统帮助</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessPath.h">
+      <Filter>进程帮助\进程路径</Filter>
+    </ClInclude>
+    <ClInclude Include="StringHelper.h">
+      <Filter>字符串帮助</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessModule.h">
+      <Filter>进程帮助\进程模块</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessThread.h">
+      <Filter>进程帮助\进程线程</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessHandle.h">
+      <Filter>进程帮助\进程句柄</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessMemory.h">
+      <Filter>进程帮助\进程内存</Filter>
+    </ClInclude>
+    <ClInclude Include="CallbackHelper.h">
+      <Filter>回调帮助</Filter>
+    </ClInclude>
+    <ClInclude Include="SystemModule.h">
+      <Filter>系统帮助\系统模块</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

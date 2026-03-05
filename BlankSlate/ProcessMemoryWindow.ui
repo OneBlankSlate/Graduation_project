@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ProcessMemoryWindowClass</class>
+ <widget class="QWidget" name="ProcessMemoryWindowClass">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>603</width>
+    <height>402</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>进程内存</string>
+  </property>
+  <widget class="QTableView" name="ProcessMemory_TableView">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>601</width>
+     <height>401</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="ReadMemory_Button">
+   <property name="geometry">
+    <rect>
+     <x>540</x>
+     <y>100</y>
+     <width>41</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>读</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="WriteMemory_Button">
+   <property name="geometry">
+    <rect>
+     <x>540</x>
+     <y>220</y>
+     <width>41</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>写</string>
+   </property>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,218 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>qml;cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+    </Filter>
+    <Filter Include="窗口">
+      <UniqueIdentifier>{0a3b0d84-1489-4c8f-b946-4c6a48dbb3d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助">
+      <UniqueIdentifier>{01439582-ac6c-4a52-aff7-4d57cf10ca9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\进程帮助">
+      <UniqueIdentifier>{bc9a4274-8a94-45c1-9eef-2c67dfd603e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\进程帮助\进程路径">
+      <UniqueIdentifier>{7a93a230-5179-4d01-b412-0819cb2537fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\通信帮助">
+      <UniqueIdentifier>{7ded158a-8103-4940-aba1-cf4856c90129}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="窗口\进程窗口">
+      <UniqueIdentifier>{63463b62-2c82-4a74-91f9-15f4b7f9e091}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="窗口\驱动模块窗口">
+      <UniqueIdentifier>{5220302d-9a37-41f0-8fb2-1bc6f1674df3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\进程帮助\进程模块">
+      <UniqueIdentifier>{62bf3317-f86b-4245-99bf-9a86e8f8c5f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="窗口\进程模块窗口">
+      <UniqueIdentifier>{714b6b90-ef1e-4fa7-aa11-ee2d82d3f296}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="窗口\进程句柄窗口">
+      <UniqueIdentifier>{779a2bc2-fe42-49eb-9096-0b126e713725}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\进程帮助\进程句柄">
+      <UniqueIdentifier>{5363e656-6193-430b-827c-0fc809c0566d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="窗口\进程内存窗口">
+      <UniqueIdentifier>{208db704-51e0-4f5a-a6a7-855d6e34fc3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\进程帮助\进程内存">
+      <UniqueIdentifier>{65823600-15eb-4fcb-ae03-d4d8d2100ed4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="窗口\进程内存窗口\读内存窗口">
+      <UniqueIdentifier>{7adac85e-cefe-4754-8701-0cc87d9f8ff8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="窗口\进程内存窗口\写内存窗口">
+      <UniqueIdentifier>{7bc4712e-4542-4a37-82ea-58f10a7e5230}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\字符串帮助">
+      <UniqueIdentifier>{130ec59c-f600-4fc6-b601-17701e83bc3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\系统帮助">
+      <UniqueIdentifier>{4416a2f6-173e-4f2f-907e-e01bc7b8f5ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\系统帮助\系统模块">
+      <UniqueIdentifier>{b5b2282c-1aea-4ec1-9b25-5a18ea57c55d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="BlankSlate.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <ClCompile Include="BlankSlate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <QtUic Include="ProcessWindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="DriverModuleWindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="ProcessModuleWindow.ui">
+      <Filter>窗口\进程模块窗口</Filter>
+    </QtUic>
+    <QtUic Include="ProcessModuleWindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="ProcessHandleWindow.ui">
+      <Filter>窗口\进程句柄窗口</Filter>
+    </QtUic>
+    <QtUic Include="ProcessHandleWindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="ProcessMemoryWindow.ui">
+      <Filter>窗口\进程内存窗口</Filter>
+    </QtUic>
+    <QtUic Include="ProcessMemoryWindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="ReadMemoryWindow.ui">
+      <Filter>窗口\进程内存窗口\读内存窗口</Filter>
+    </QtUic>
+    <QtUic Include="ReadMemoryWindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="WriteMemoryWindow.ui">
+      <Filter>窗口\进程内存窗口\写内存窗口</Filter>
+    </QtUic>
+    <QtUic Include="WriteMemoryWindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessWindow.cpp">
+      <Filter>窗口\进程窗口</Filter>
+    </ClCompile>
+    <ClCompile Include="DriverModuleWindow.cpp">
+      <Filter>窗口\驱动模块窗口</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessHelper.cpp">
+      <Filter>帮助\进程帮助</Filter>
+    </ClCompile>
+    <ClCompile Include="IoControlHelper.cpp">
+      <Filter>帮助\通信帮助</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessPath.cpp">
+      <Filter>帮助\进程帮助\进程路径</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessModule.cpp">
+      <Filter>帮助\进程帮助\进程模块</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessModuleWindow.cpp">
+      <Filter>窗口\进程模块窗口</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessHandleWindow.cpp">
+      <Filter>窗口\进程句柄窗口</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessHandle.cpp">
+      <Filter>帮助\进程帮助\进程句柄</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessMemoryWindow.cpp">
+      <Filter>窗口\进程内存窗口</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcessMemory.cpp">
+      <Filter>帮助\进程帮助\进程内存</Filter>
+    </ClCompile>
+    <ClCompile Include="ReadMemoryWindow.cpp">
+      <Filter>窗口\进程内存窗口\读内存窗口</Filter>
+    </ClCompile>
+    <ClCompile Include="WriteMemoryWindow.cpp">
+      <Filter>窗口\进程内存窗口\写内存窗口</Filter>
+    </ClCompile>
+    <ClCompile Include="StringHelper.cpp">
+      <Filter>帮助\字符串帮助</Filter>
+    </ClCompile>
+    <ClCompile Include="SystemModule.cpp">
+      <Filter>帮助\系统帮助\系统模块</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="BlankSlate.h">
+      <Filter>Source Files</Filter>
+    </QtMoc>
+    <QtMoc Include="DriverModuleWindow.h">
+      <Filter>窗口\驱动模块窗口</Filter>
+    </QtMoc>
+    <QtMoc Include="ProcessModuleWindow.h">
+      <Filter>窗口\进程模块窗口</Filter>
+    </QtMoc>
+    <QtMoc Include="ProcessHandleWindow.h">
+      <Filter>窗口\进程句柄窗口</Filter>
+    </QtMoc>
+    <QtMoc Include="ProcessMemoryWindow.h">
+      <Filter>窗口\进程内存窗口</Filter>
+    </QtMoc>
+    <QtMoc Include="ReadMemoryWindow.h">
+      <Filter>窗口\进程内存窗口\读内存窗口</Filter>
+    </QtMoc>
+    <QtMoc Include="ProcessWindow.h">
+      <Filter>窗口\进程窗口</Filter>
+    </QtMoc>
+    <QtMoc Include="WriteMemoryWindow.h">
+      <Filter>窗口\进程内存窗口\写内存窗口</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="BlankSlate.qrc">
+      <Filter>Form Files</Filter>
+    </QtRcc>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ProcessHelper.h">
+      <Filter>帮助\进程帮助</Filter>
+    </ClInclude>
+    <ClInclude Include="IoControlHelper.h">
+      <Filter>帮助\通信帮助</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessPath.h">
+      <Filter>帮助\进程帮助\进程路径</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessModule.h">
+      <Filter>帮助\进程帮助\进程模块</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessHandle.h">
+      <Filter>帮助\进程帮助\进程句柄</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessMemory.h">
+      <Filter>帮助\进程帮助\进程内存</Filter>
+    </ClInclude>
+    <ClInclude Include="StringHelper.h">
+      <Filter>帮助\字符串帮助</Filter>
+    </ClInclude>
+    <ClInclude Include="SystemModule.h">
+      <Filter>帮助\系统帮助\系统模块</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

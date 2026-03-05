@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/BlankSlate">
+        <file>resource/blue.png</file>
+    </qresource>
+</RCC>
