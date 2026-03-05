@@ -161,8 +161,10 @@ VOID SetProcessInfoToList(PPROCESS_INFORMATIONS ProcessInfos, ULONG NumberOfProc
     if (NumberOfProcess > v1)
     { 
 #ifdef _WIN64
-        ULONG_PTR ProcessIdentity = *(PULONG_PTR)((ULONG_PTR)EProcess + 0x180);
-        strcpy_s(ProcessInfos->ProcessInfo[v1].ImageName, 15, (char*)((ULONG_PTR)EProcess + 0x2e0));
+        ULONG_PTR ProcessIdentity = *(PULONG_PTR)((ULONG_PTR)EProcess + 0x440);
+        strcpy_s(ProcessInfos->ProcessInfo[v1].ImageName, 15, (char*)((ULONG_PTR)EProcess + 0x5a8));
+        /*ULONG_PTR ProcessIdentity = *(PULONG_PTR)((ULONG_PTR)EProcess + 0x180);
+        strcpy_s(ProcessInfos->ProcessInfo[v1].ImageName, 15, (char*)((ULONG_PTR)EProcess + 0x2e0));*/
 #else
         ULONG_PTR ProcessIdentity = *(PULONG_PTR)((ULONG_PTR)EProcess + 0xb4);
 

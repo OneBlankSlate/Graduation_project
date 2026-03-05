@@ -10,7 +10,7 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
 	ui.setupUi(this);
     //列表属性
     ui.Process_TableView->setSelectionBehavior(QAbstractItemView::SelectRows);  // 设置选择行为为整行选中
-    //ui.Process_TableView->horizontalHeader()->setStretchLastSection(true); //最后一列填满表
+    ui.Process_TableView->horizontalHeader()->setStretchLastSection(true); //最后一列填满表
     ui.Process_TableView->setContextMenuPolicy(Qt::CustomContextMenu); //可弹出右键菜单  必须设置
     ui.Process_TableView->setEditTriggers(QAbstractItemView::NoEditTriggers);//不可编辑
     //m_model = new QStandardItemModel();  //指针类型
@@ -28,9 +28,9 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     //获取进程信息并打印
     ListProcessInfo();
     // 设置每一列的宽度  宽度的设置必须在信息插入完成后进行，否则会被覆盖！
-    ui.Process_TableView->horizontalHeader()->resizeSection(0, 150); // 第一列宽度为100
+    ui.Process_TableView->horizontalHeader()->resizeSection(0, 100); // 第一列宽度为100
     ui.Process_TableView->horizontalHeader()->resizeSection(1, 50); // 第二列宽度为50
-    ui.Process_TableView->horizontalHeader()->resizeSection(2, 50); // 第三列宽度为60
+    ui.Process_TableView->horizontalHeader()->resizeSection(2, 60); // 第三列宽度为60
     ui.Process_TableView->horizontalHeader()->resizeSection(3, 400); // 第三列宽度为200
     ui.Process_TableView->horizontalHeader()->resizeSection(4, 150); // 第三列宽度为80
     //添加菜单项
@@ -76,6 +76,7 @@ void ProcessWindow::ListProcessInfo()
 {
     vector<PROCESS_INFORMATION_ENTRY> ProcessInfo;
     ProcessInfo.reserve(100);
+    __debugbreak();
     EnumProcess(ProcessInfo);
     // 添加数据
     vector<PROCESS_INFORMATION_ENTRY>::iterator v1;
