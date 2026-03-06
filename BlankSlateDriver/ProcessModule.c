@@ -107,9 +107,9 @@ NTSTATUS EnumProcessModulesByPeb(PEPROCESS EProcess, PMODULES_INFORMATION Module
 		return Status;
 	}
 #ifdef _WIN64
-	ULONG_PTR Offset = 0x338;
+	ULONG_PTR Offset = 0x550;
 #else
-	ULONG_PTR Offset = 0x1a8;
+
 #endif
 	if (!MmIsAddressValid((PVOID)((ULONG_PTR)EProcess + Offset)))
 	{

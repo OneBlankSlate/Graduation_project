@@ -324,7 +324,7 @@ NTSTATUS PsTerminateProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID Ou
     NTSTATUS Status = STATUS_UNSUCCESSFUL;
     PEPROCESS EProcess;
     HANDLE ProcessHandle;
-    PCOMMUNICATE_HIDE_PROCESS v5 = (PCOMMUNICATE_HIDE_PROCESS)InputBuffer;
+    PCOMMUNICATE_HIDE_PROCESS v5 = (PCOMMUNICATE_HIDE_PROCESS)InputBuffer;  
     //²ÎÊý¼ì²é
     if (!InputBuffer || InputBufferLength != sizeof(COMMUNICATE_HIDE_PROCESS))
     {
