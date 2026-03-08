@@ -3,7 +3,7 @@
 #include"IoControlHelper.h"
 
 #ifdef _WIN64
-#define _HANDLE_TABLE_ 0x200
+#define _HANDLE_TABLE_ 0x570
 #define _OFFSET_ 0x10
 #define _OBJECT_BODY_ 0x30
 #else
@@ -34,45 +34,98 @@ typedef struct _COMMUNICATE_PROCESS_HANDLE_
     HANDLE ProcessIdentity;
 }COMMUNICATE_PROCESS_HANDLE, * PCOMMUNICATE_PROCESS_HANDLE;
 
+// 句柄表空闲列表结构
+typedef struct _HANDLE_TABLE_FREE_LIST
+{
+    SINGLE_LIST_ENTRY FreeListHead;       // +0x000: 空闲列表头
+    ULONG_PTR Reserved;                   // +0x008: 保留字段（用于对齐）
+} HANDLE_TABLE_FREE_LIST, * PHANDLE_TABLE_FREE_LIST;
+
 typedef struct _HANDLE_TABLE
 {
-    ULONG_PTR TableCode;                  //指向句柄表的存储结构
-    PVOID QuotaProcess;               //句柄表的内存资源记录在此进程中
-    PVOID UniqueProcessId;                //创建进程的ID，用于回调函数
-    ULONG_PTR HandleLock;      //HANDLE_TABLE_LOCKS=4，句柄表锁，仅在句柄表扩展时使用
-    LIST_ENTRY HandleTableList;           //所有的句柄表形成一个链表，链表头为全局变量HandleTableListHead
-    ULONG_PTR HandleContentionEvent;   //若在访问句柄时发生竞争，则在此推锁上等待
-    PVOID DebugInfo;   //调试信息，仅在调试句柄时有意义
-    LONG ExtraInfoPages;                  //审计信息所占用的页面数量
+    // 句柄表基本信息
+    ULONG NextHandleNeedingPool;          // +0x000: 下一个需要分配池的句柄索引
+    LONG ExtraInfoPages;                  // +0x004: 额外信息页数
+    ULONG_PTR TableCode;                  // +0x008: 句柄表代码（包含层级信息）
+
+    // 进程关联信息
+    PEPROCESS QuotaProcess;               // +0x010: 配额进程（拥有此句柄表的进程）
+    LIST_ENTRY HandleTableList;           // +0x018: 句柄表链表（连接其他进程句柄表）
+
+    // 进程标识
+    ULONG UniqueProcessId;                // +0x028: 进程ID
     union
     {
-        ULONG Flags;                      //标志域
-        UCHAR StrictFIFO : 1;               //是否使用FIFO风格的重用，即先释放先重用
+        ULONG Flags;                      // +0x02c: 标志位
+        struct
+        {
+            ULONG StrictFIFO : 1;         // 位0: 严格FIFO顺序
+            ULONG EnableHandleExceptions : 1; // 位1: 启用句柄异常
+            ULONG Rundown : 1;            // 位2: 运行保护（防止访问已释放句柄表）
+            ULONG Duplicated : 1;         // 位3: 是否重复
+            ULONG RaiseUMExceptionOnInvalidHandleClose : 1; // 位4: 无效句柄关闭时引发用户模式异常
+            ULONG Reserved : 27;          // 位5-31: 保留位
+        };
     };
-    ULONG FirstFreeHandle;                      //空闲链表表头的句柄索引
-    struct _HANDLE_TABLE_ENTRY* LastFreeHandleEntry;
-    ULONG HandleCount;
-    ULONG NextHandleNeedingPool;          //下一次句柄表扩展的起始句柄索引
-    ULONG HandleCountHighWatermark;                     //正在使用的句柄表项的数量
-}HANDLE_TABLE, * PHANDLE_TABLE;
+
+    // 同步对象
+    EX_PUSH_LOCK HandleContentionEvent;   // +0x030: 句柄争用事件
+    EX_PUSH_LOCK HandleTableLock;         // +0x038: 句柄表锁
+
+    // 空闲列表管理
+    union
+    {
+        HANDLE_TABLE_FREE_LIST FreeLists[1]; // +0x040: 空闲句柄列表
+        UCHAR ActualEntry[32];            // +0x040: 实际条目（32字节）
+    };
+
+    // 调试信息
+    PVOID DebugInfo;   // +0x060: 调试信息指针
+
+} HANDLE_TABLE, * PHANDLE_TABLE;
 typedef struct _HANDLE_TABLE_ENTRY
 {
     union
     {
-        PVOID Object;                         //指向句柄所代表的对象，二进制的后三位清零可以dt到_OBJECT_HEADER
-        ULONG_PTR ObAttributes;               //最低三位有特别含义，参加OBJ_HANDLE_ATTRIBUTES宏定义
-        PVOID InfoTable;   //PHANDLE_TABLE_ENTRY_INFO 各个句柄表页面的第一个表项，使用此成员指向一张表
-        ULONG_PTR Value;
+        volatile LONG64 VolatileLowValue;
+        LONG64 LowValue;
+        struct
+        {
+            // 第一个8字节的各种位域组合
+            ULONG_PTR Unlocked : 1;        // 位0: 是否未锁定
+            ULONG_PTR RefCnt : 16;         // 位1-16: 引用计数
+            ULONG_PTR Attributes : 3;      // 位17-19: 属性标志
+            ULONG_PTR ObjectPointerBits : 44; // 位20-63: 对象指针位
+        };
+        struct
+        {
+            VOID* Object;
+            union
+            {
+                ULONG ObAttributes;
+                ULONG_PTR InfoTable;
+                ULONG_PTR Value;
+            };
+        };
     };
+
     union
     {
-        ULONG GrantedAccess;                  //访问掩码
+        LONG64 HighValue;
         struct
-        {                                     //当NtGlobalFlag中包含FLG_KERNEL_STACK_DB标记时使用
+        {
+            // 第二个8字节的各种位域组合
+            ULONG GrantedAccessBits : 25;  // 位0-24: 访问权限位
+            ULONG NoRightsUpgrade : 1;     // 位25: 是否禁止权限升级
+            ULONG Spare1 : 6;              // 位26-31: 保留位1
+            ULONG Spare2;                  // 位32-63: 保留位2(实际是4字节)
+        };
+        struct
+        {
             USHORT GrantedAccessIndex;
             USHORT CreatorBackTraceIndex;
+            LONG NextFreeTableEntry;
         };
-        ULONG NextFreeTableEntry;              //空闲时表示下一个空闲句柄索引
     };
 } HANDLE_TABLE_ENTRY, * PHANDLE_TABLE_ENTRY;
 

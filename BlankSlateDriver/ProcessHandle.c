@@ -46,7 +46,7 @@ NTSTATUS EnumProcessHandlesByHandleTable(HANDLE ProcessIdentity, PEPROCESS EProc
         HandleTable = (PHANDLE_TABLE)(*((ULONG_PTR*)((ULONG_PTR)EProcess + _HANDLE_TABLE_)));
         if (MmIsAddressValid(HandleTable))
         {
-            TableCode = (ULONG_PTR)(HandleTable->TableCode) & 0xFFFFFFFFFFFFFFFC;
+            TableCode = (ULONG_PTR)(HandleTable->TableCode) & 0xFFFFFFFFFFFFFFFC;  //低两位是句柄表层数信息
             Flag = (ULONG)(HandleTable->TableCode) & 0x03;
             switch (Flag)
             {
@@ -95,19 +95,12 @@ NTSTATUS HandleTable0(ULONG_PTR TableCode, PEPROCESS EProcess, PHANDLES_INFORMAT
     {
         if (MmIsAddressValid((PVOID)HandleTableEntry))
         {
-            PVOID ObjectHeader = (PVOID)(*(ULONG_PTR*)HandleTableEntry & 0xFFFFFFFFFFFFFFF8);
-            if (MmIsAddressValid(ObjectHeader))
+            PVOID ObjectHeader = (HandleTableEntry->LowValue >> 0x10) & 0xfffffffffffffff0;  
+            PVOID ObjectBody = (PVOID)((ULONG_PTR)ObjectHeader + _OBJECT_BODY_);
+            if (MmIsAddressValid(ObjectBody)&&MmIsAddressValid(ObjectBody)&& NumberOfHandle > HandlesInfo->NumberOfHandle)
             {
-                PVOID ObjectBody = (PVOID)((ULONG_PTR)ObjectHeader + _OBJECT_BODY_);
-                if (MmIsAddressValid(ObjectBody))
-                {
-                    DbgPrint("ObjectBody:%p\r\n", ObjectBody);
-                    if (NumberOfHandle > HandlesInfo->NumberOfHandle)
-                    {
-                        InsertHandleToList((PEPROCESS)EProcess, (HANDLE)((HandlesInfo->NumberOfHandle+1) * sizeof(int)), (ULONG_PTR)ObjectHeader, HandlesInfo);
-                        HandlesInfo->NumberOfHandle++;
-                    }
-                }
+                InsertHandleToList((PEPROCESS)EProcess, (HANDLE)((HandlesInfo->NumberOfHandle + 1) * sizeof(int)), (ULONG_PTR)ObjectHeader, HandlesInfo);
+                HandlesInfo->NumberOfHandle++;
             }
         }
         HandleTableEntry++;

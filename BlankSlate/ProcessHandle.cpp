@@ -35,11 +35,11 @@ BOOL EnumProcessHandles(HANDLE ProcessIdentity, vector<HANDLE_INFORMATION_ENTRY>
 			Entry.Count = v5->HandleInfo[i].Count;
 			if (v5->HandleInfo[i].HandleName)
 			{
-				wcsncpy_s(Entry.HandleName, (wcslen(v5->HandleInfo[i].HandleName) + 1) * 2, v5->HandleInfo[i].HandleName, 0x1000);
+				wcsncpy_s(Entry.HandleName,_countof(Entry.HandleName),v5->HandleInfo[i].HandleName,_countof(Entry.HandleName) - 1);
 			}
 			if (v5->HandleInfo[i].HandleType)
 			{
-				wcsncpy_s(Entry.HandleType, (wcslen(v5->HandleInfo[i].HandleType) + 1) * 2, v5->HandleInfo[i].HandleType, 0x1000);
+				wcsncpy_s(Entry.HandleType, _countof(Entry.HandleType), v5->HandleInfo[i].HandleType, _countof(Entry.HandleType) - 1);
 			}
 
 			HandleInfo.push_back(Entry);
