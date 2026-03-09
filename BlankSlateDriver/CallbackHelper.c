@@ -1,205 +1,194 @@
 #include"CallbackHelper.h"
 #include"ProcessHelper.h"
 #include"ObjectHelper.h"
-PVOID __FileCallbackHandle = NULL;
 PVOID __ProcessCallbackHandle = NULL;
+PEPROCESS __ProtectedProcess = NULL;
+OB_OPERATION_REGISTRATION __OperationRegistrations = { 0 };
+UNICODE_STRING __Altitude = { 0 };
+OB_CALLBACK_REGISTRATION  __ObRegistration = { 0 };
+TD_CALLBACK_REGISTRATION __CallbackRegistration = { 0 };
 void InitializeCallbackSource(PDRIVER_OBJECT DriverObject)
 {
-	PLDR_DATA_TABLE_ENTRY LdrDataTableEntry;
-	LdrDataTableEntry = (PLDR_DATA_TABLE_ENTRY)DriverObject->DriverSection;
-	LdrDataTableEntry->Flags |= 0x20;
-	FileObjectCallback();
-	ProcessObjectCallback();
-
+	// 以下代码放在DriverEntry中  用来绕过 调用ObRegisterCallback时 进行的签名校验
+	ULONG_PTR pDrvSection = (ULONG_PTR)DriverObject->DriverSection;
+	*(PULONG)(pDrvSection + 0x68) |= 0x20;
 }
-NTSTATUS FileObjectCallback()
+NTSTATUS PsProtectProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)
 {
-	NTSTATUS Status;
-	OB_CALLBACK_REGISTRATION ObCallbackRegistration;
-	OB_OPERATION_REGISTRATION ObOperationRegistration;
-	//通过文件对象类型进行回调设置
-	POBJECT_TYPE_1 v1 = (POBJECT_TYPE_1)(*IoFileObjectType);
-	v1->TypeInfo.SupportsObjectCallbacks = 1;
-	RtlZeroMemory(&ObCallbackRegistration, sizeof(OB_CALLBACK_REGISTRATION));
-	ObCallbackRegistration.Version = ObGetFilterVersion();
-	ObCallbackRegistration.OperationRegistrationCount = 1;
-	ObCallbackRegistration.RegistrationContext = NULL;
-	RtlInitUnicodeString(&ObCallbackRegistration.Altitude, L"File");
-	RtlZeroMemory(&ObOperationRegistration,sizeof(OB_OPERATION_REGISTRATION));
-	ObOperationRegistration.ObjectType = IoFileObjectType;
-	ObOperationRegistration.Operations = OB_OPERATION_HANDLE_CREATE | OB_OPERATION_HANDLE_DUPLICATE;
-	ObOperationRegistration.PreOperation = (POB_PRE_OPERATION_CALLBACK)&FileObjectPrevious;    //在这里注册一个回调函数指针
-	ObOperationRegistration.PostOperation = NULL;
-	//关联两个结构体
-	ObCallbackRegistration.OperationRegistration = &ObOperationRegistration;  //注意
-	Status = ObRegisterCallbacks(&ObCallbackRegistration, &__FileCallbackHandle);
+	NTSTATUS Status = STATUS_SUCCESS;
+	PCOMMUNICATE_PROTECT_PROCESS v1 = (PCOMMUNICATE_PROTECT_PROCESS)InputBuffer;
+	HANDLE ProcessIdentity = v1->ProcessIdentitys;
+	PsLookupProcessByProcessId(ProcessIdentity, &__ProtectedProcess);
+	//KeAcquireGuardedMutex(&__CallbacksMutex);
+
+	// Setup the Ob Registration calls
+
+	__OperationRegistrations.ObjectType = PsProcessType;
+	__OperationRegistrations.Operations |= OB_OPERATION_HANDLE_CREATE;
+	__OperationRegistrations.Operations |= OB_OPERATION_HANDLE_DUPLICATE;
+	__OperationRegistrations.PreOperation = PreOperationCallback;
+	__OperationRegistrations.PostOperation = NULL;
+
+
+
+	RtlInitUnicodeString(&__Altitude, L"1000");
+
+	__ObRegistration.Version = OB_FLT_REGISTRATION_VERSION;
+	__ObRegistration.OperationRegistrationCount = 1;
+	__ObRegistration.Altitude = __Altitude;
+	__ObRegistration.RegistrationContext = &__CallbackRegistration;
+	__ObRegistration.OperationRegistration = &__OperationRegistrations;
+
+	// save the registration handle to remove callbacks later
+	Status = ObRegisterCallbacks(&__ObRegistration, &__ProcessCallbackHandle);
+
 	if (!NT_SUCCESS(Status))
 	{
-		Status = STATUS_UNSUCCESSFUL;
+		DbgPrint("Fail:%d", Status);
+		//KeReleaseGuardedMutex(&__CallbacksMutex); // Release the lock before exit
+		return STATUS_UNSUCCESSFUL;
 	}
-	else
-	{
-		Status = STATUS_SUCCESS;
-	}
+	DbgPrint("Success:%d", Status);
+	//KeReleaseGuardedMutex(&__CallbacksMutex);
 	return Status;
 }
-NTSTATUS ProcessObjectCallback()
+OB_PREOP_CALLBACK_STATUS PreOperationCallback(_In_ PVOID RegistrationContext, _Inout_ POB_PRE_OPERATION_INFORMATION PreInfo)
 {
-	NTSTATUS Status;
-	OB_CALLBACK_REGISTRATION ObCallbackRegistration;   //回调注册结构
-	OB_OPERATION_REGISTRATION ObOperationRegistration; //操作注册结构
-	//通过文件对象类型进行回调设置
-	POBJECT_TYPE_1 v1 = (POBJECT_TYPE_1)(*PsProcessType);   //进程对象类型
-	v1->TypeInfo.SupportsObjectCallbacks = 1;   //将SupportsObjectCallbacks设置为1，这样允许对该类型的对象设置回调
-	RtlZeroMemory(&ObCallbackRegistration,sizeof(OB_CALLBACK_REGISTRATION));
-	ObCallbackRegistration.Version = ObGetFilterVersion();
-	ObCallbackRegistration.OperationRegistrationCount = 1;
-	ObCallbackRegistration.RegistrationContext = NULL;
-	RtlInitUnicodeString(&ObCallbackRegistration.Altitude, L"Process");
-	RtlZeroMemory(&ObOperationRegistration,sizeof(OB_OPERATION_REGISTRATION));
-	ObOperationRegistration.ObjectType = PsProcessType;  //进程对象类型
-	ObOperationRegistration.Operations = OB_OPERATION_HANDLE_CREATE | OB_OPERATION_HANDLE_DUPLICATE;
-	ObOperationRegistration.PreOperation = (POB_PRE_OPERATION_CALLBACK)&ProcessObjectPrevious;    //在这里注册一个回调函数指针  前置操作
-	ObOperationRegistration.PostOperation = NULL;
-	//关联这两个结构体
-	ObCallbackRegistration.OperationRegistration = &ObOperationRegistration;  //注意
-	/*
-	ObRegisterCallbacks用于注册全局回调，这里针对进程对象的句柄创建和复制操作，
-	当有进程句柄被创建或复制时，回调函数会被调用，从而可以修改访问权限，特别是禁止终止进程的权限。
-	*/
-	Status = ObRegisterCallbacks(&ObCallbackRegistration, &__ProcessCallbackHandle);//需要注意的是，ObRegisterCallbacks返回的句柄需要保存，并在驱动卸载时调用ObUnRegisterCallbacks来注销回调，否则可能导致系统不稳定。
-	if (!NT_SUCCESS(Status))
-	{
-		Status = STATUS_UNSUCCESSFUL;
-	}
-	else
-	{
-		Status = STATUS_SUCCESS;
-	}
-	return Status;
+	PTD_CALLBACK_REGISTRATION CallbackRegistration;
+	ACCESS_MASK AccessBitsToClear = 0;
+	ACCESS_MASK AccessBitsToSet = 0;
+	ACCESS_MASK InitialDesiredAccess = 0;
+	ACCESS_MASK OriginalDesiredAccess = 0;
+	PACCESS_MASK DesiredAccess = NULL;
+	LPCWSTR ObjectTypeName = NULL;
+	LPCWSTR OperationName = NULL;
 
-}
+	// Not using driver specific values at this time
+	CallbackRegistration = (PTD_CALLBACK_REGISTRATION)RegistrationContext;
 
-OB_PREOP_CALLBACK_STATUS FileObjectPrevious(PVOID RegistrationContext, POB_PRE_OPERATION_INFORMATION ObPreviousOperationInfo)
-{
-	UNICODE_STRING v1;
-	POBJECT_NAME_INFORMATION ObjectNameInfo;
-	PFILE_OBJECT FileObject = (PFILE_OBJECT)ObPreviousOperationInfo->Object;
-	HANDLE ProcessIdentity = PsGetCurrentProcessId();
-	if (ObPreviousOperationInfo->ObjectType != *IoFileObjectType)
-	{
-		return OB_PREOP_SUCCESS;
-	}
-	//过滤无效指针
-	if (FileObject->FileName.Buffer == NULL || !MmIsAddressValid(FileObject->FileName.Buffer) || FileObject->DeviceObject == NULL || !MmIsAddressValid(FileObject->DeviceObject))
-	{
-		return OB_PREOP_SUCCESS;
-	}
-	if (!NT_SUCCESS(IoQueryFileDosDeviceName((PFILE_OBJECT)FileObject, &ObjectNameInfo)))
-	{
-		return OB_PREOP_SUCCESS;
-	}
-	if (ObjectNameInfo->Name.Buffer == NULL || ObjectNameInfo->Name.Length == 0)
-	{
-		ExFreePool(ObjectNameInfo);
-		return OB_PREOP_SUCCESS;
-	}
-	if (wcsstr(ObjectNameInfo->Name.Buffer, L"D:\\Shine.txt") || wcsstr(ObjectNameInfo->Name.Buffer, L"C:\\Shine.txt"))
-	{
-		if (FileObject->DeleteAccess == TRUE || FileObject->WriteAccess == TRUE)
+
+
+	// Only want to filter attempts to access protected process
+	// all other processes are left untouched
+
+	if (PreInfo->ObjectType == *PsProcessType) {
+		//
+		// Ignore requests for processes other than our target process.
+		//
+
+		// if (TdProtectedTargetProcess != NULL &&
+		//    TdProtectedTargetProcess != PreInfo->Object)
+		if (__ProtectedProcess != PreInfo->Object)   // 检查是否为非保护进程操作
 		{
-			if (ObPreviousOperationInfo->Operation == OB_OPERATION_HANDLE_CREATE)
-			{
-				ObPreviousOperationInfo->Parameters->CreateHandleInformation.DesiredAccess = 0;
-			}
-			if (ObPreviousOperationInfo->Operation == OB_OPERATION_HANDLE_DUPLICATE)
-			{
-				ObPreviousOperationInfo->Parameters->DuplicateHandleInformation.DesiredAccess = 0;
-			}
+			goto Exit;
 		}
+
+		//
+		// Also ignore requests that are trying to open/duplicate the current
+		// process.
+		//
+
+		if (PreInfo->Object == PsGetCurrentProcess()) {   //检查是否为进程自身的操作，禁止当前进程通过自身操作绕过保护。
+			DbgPrintEx(
+				DPFLTR_IHVDRIVER_ID, DPFLTR_TRACE_LEVEL,
+				"ObCallbackTest: CBTdPreOperationCallback: ignore process open/duplicate from the protected process itself\n");
+			goto Exit;
+		}
+
+		ObjectTypeName = L"PsProcessType";
+		AccessBitsToClear = CB_PROCESS_TERMINATE;  //清除进程的终止权限
+		AccessBitsToSet = 0;
 	}
-	RtlVolumeDeviceToDosName(FileObject->DeviceObject, &v1);
-	DbgPrint("ProcessIdentity:%d  File:%wZ  %wZ\r\n", ProcessIdentity, &v1, &ObjectNameInfo->Name);
-	ExFreePool(ObjectNameInfo);
+	else {
+		DbgPrintEx(
+			DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL,
+			"ObCallbackTest: CBTdPreOperationCallback: unexpected object type\n");
+		goto Exit;
+	}
+
+	switch (PreInfo->Operation) {
+	case OB_OPERATION_HANDLE_CREATE:
+		DesiredAccess = &PreInfo->Parameters->CreateHandleInformation.DesiredAccess;
+		OriginalDesiredAccess = PreInfo->Parameters->CreateHandleInformation.OriginalDesiredAccess;
+
+		OperationName = L"OB_OPERATION_HANDLE_CREATE";
+		break;
+
+	case OB_OPERATION_HANDLE_DUPLICATE:
+		DesiredAccess = &PreInfo->Parameters->DuplicateHandleInformation.DesiredAccess;
+		OriginalDesiredAccess = PreInfo->Parameters->DuplicateHandleInformation.OriginalDesiredAccess;
+
+		OperationName = L"OB_OPERATION_HANDLE_DUPLICATE";
+		break;
+
+	default:
+		TD_ASSERT(FALSE);
+		break;
+	}
+
+	InitialDesiredAccess = *DesiredAccess;
+
+	// Filter only if request made outside of the kernel
+	if (PreInfo->KernelHandle != 1) {     // 仅处理非内核句柄操作
+		*DesiredAccess &= ~AccessBitsToClear;   // 清除危险权限位（如终止权限）
+		//*DesiredAccess &= ~0x20;                //清除内存写的权限
+		//*DesiredAccess &= ~0x10;                //清除内促读权限
+		//*DesiredAccess &= ~0x80;                //清除进程创建权限
+		*DesiredAccess |= AccessBitsToSet;     // 可选的权限添加（此处未使用）
+	}
+	//可以通过此方法去除下方任意进程句柄权限！
+	//#define PROCESS_TERMINATE                  (0x0001)  终止权限
+	//#define PROCESS_CREATE_THREAD              (0x0002)  创建线程权限
+	//#define PROCESS_SET_SESSIONID              (0x0004)  
+	//#define PROCESS_VM_OPERATION               (0x0008)  虚拟内存操作权限
+	//#define PROCESS_VM_READ                    (0x0010)  虚拟内存读权限
+	//#define PROCESS_VM_WRITE                   (0x0020)  虚拟内存写权限
+	//#define PROCESS_DUP_HANDLE                 (0x0040)  复制句柄权限
+	//#define PROCESS_CREATE_PROCESS             (0x0080)  创建进程权限
+	//#define PROCESS_SET_QUOTA                  (0x0100)  
+	//#define PROCESS_SET_INFORMATION            (0x0200)  
+	//#define PROCESS_QUERY_INFORMATION          (0x0400)  QueryInformation权限
+	//#define PROCESS_SUSPEND_RESUME             (0x0800)  
+	//#define PROCESS_QUERY_LIMITED_INFORMATION  (0x1000)  
+	//#define PROCESS_SET_LIMITED_INFORMATION    (0x2000) 
+
+	//
+	// Set call context.
+	//
+	TdSetCallContext(PreInfo, CallbackRegistration);
+
+
+Exit:
+
 	return OB_PREOP_SUCCESS;
-
 }
-
-OB_PREOP_CALLBACK_STATUS ProcessObjectPrevious(PVOID RegistrationContext, POB_PRE_OPERATION_INFORMATION ObPreviousOperationInfo)
+NTSTATUS PsUnprotectProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)
 {
-	if (ObPreviousOperationInfo->KernelHandle)  //如果是内核句柄，则直接返回成功
-	{
-		return OB_PREOP_SUCCESS;
-	}
-	PEPROCESS EProcess = (PEPROCESS)ObPreviousOperationInfo->Object;
-	HANDLE ProcessIdentity = PsGetProcessId(EProcess);
-	if (IsProcessIdentityExist(ProcessIdentity))
-	{
-		//found in list,remove terminate access
-		ObPreviousOperationInfo->Parameters->CreateHandleInformation.DesiredAccess &= ~PROCESS_TERMINATE;  //移除PROCESS_TERMINATE的访问权限，这样该进程将无法被终止
-
-	}
-	return OB_PREOP_SUCCESS;
+	NTSTATUS status = STATUS_UNSUCCESSFUL;
+	return status;
 }
+void TdSetCallContext(_Inout_ POB_PRE_OPERATION_INFORMATION PreInfo, _In_ PTD_CALLBACK_REGISTRATION CallbackRegistration)
+{
+	PTD_CALL_CONTEXT CallContext;
 
+	CallContext = (PTD_CALL_CONTEXT)ExAllocatePool2(POOL_FLAG_PAGED, sizeof(TD_CALL_CONTEXT), TD_CALL_CONTEXT_TAG);
+
+	if (CallContext == NULL)
+	{
+		return;
+	}
+
+	CallContext->CallbackRegistration = CallbackRegistration;
+	CallContext->Operation = PreInfo->Operation;
+	CallContext->Object = PreInfo->Object;
+	CallContext->ObjectType = PreInfo->ObjectType;
+
+	PreInfo->CallContext = CallContext;
+}
 void UninitializeCallbackSource()
 {
-	if (__FileCallbackHandle != NULL)
-	{
-		ObUnRegisterCallbacks(__FileCallbackHandle);
-	}
 	if (__ProcessCallbackHandle != NULL)
 	{
 		ObUnRegisterCallbacks(__ProcessCallbackHandle);
 	}
-}
-
-//CmRegisterCallback回调通信
-NTSTATUS RegistryCallback(__in PVOID  CallbackContext, __in_opt PVOID  Argument1, __in_opt PVOID  Argument2)
-{
-
-	NTSTATUS status = STATUS_SUCCESS;
-	UNICODE_STRING uStrRegPath = { 0 };    //保存注册表完整路径
-	// 保存操作码的类型 
-	long uOpCode = (long)Argument1;
-	PREG_SET_VALUE_KEY_INFORMATION SetKeyInfo = (PREG_SET_VALUE_KEY_INFORMATION)Argument2;
-	switch (uOpCode)
-	{
-		// 打开注册表之前
-	case RegNtSetValueKey:
-	{
-		if (SetKeyInfo->Type == 31101 && SetKeyInfo->DataSize == sizeof(My_Data))
-		{
-			PMy_Data data = (PMy_Data)SetKeyInfo->Data;
-			DbgPrint("[wdk]回调通信成功");
-			DbgPrint("[wdk]%d", data->key);
-			return STATUS_SUCCESS;
-		}
-		break;
-	}
-
-	default:
-	{
-		break;
-	}
-	}
-
-	return status;
-}
-void RegistryCallbackUnload()
-{
-	NTSTATUS Status = STATUS_SUCCESS;
-	if (g_liRegCookie.QuadPart > 0)
-	{
-		Status = CmUnRegisterCallback(g_liRegCookie);
-		if (!NT_SUCCESS(Status))
-		{
-			DbgPrint("删除回调函数失败0x%X\r\n", Status);
-		}
-	}
-	else
-	{
-		DbgPrint("删除回调函数成功\r\n");
-	}
-	DbgPrint("驱动卸载完成\r\n");
 }

@@ -277,8 +277,7 @@ typedef struct _PROCESS_INFORMATIONS_
 typedef struct _COMMUNICATE_PROTECT_PROCESS_
 {
 	OPERATE_TYPE OperateType;
-	int NumberOfProcess = 0;
-	HANDLE ProcessIdentity[MAX_PATH];
+	HANDLE ProcessIdentity;
 }COMMUNICATE_PROTECT_PROCESS,*PCOMMUNICATE_PROTECT_PROCESS;
 
 //НјГЬвўВи

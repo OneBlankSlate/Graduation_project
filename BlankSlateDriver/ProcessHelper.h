@@ -181,15 +181,8 @@ typedef struct _PROCESS_INFORMATIONS_
 typedef struct _COMMUNICATE_PROTECT_PROCESS_
 {
     OPERATE_TYPE OperateType;
-    int NumberOfProcess;
-    HANDLE ProcessIdentitys[MAX_PATH];
+    HANDLE ProcessIdentitys;
 }COMMUNICATE_PROTECT_PROCESS, * PCOMMUNICATE_PROTECT_PROCESS;
-typedef struct _PROTECT_PROCESS_INFORMATION
-{
-    int NumberOfProcess;
-    HANDLE ProcessIdentitys[MAX_PATH];
-    FAST_MUTEX FastMutex;
-}PROTECT_PROCESS_INFORMATION,*PPROTECT_PROCESS_INFORMATION;
 
 //НјГЬвўВи
 typedef struct _COMMUNICATE_HIDE_PROCESS_
@@ -225,12 +218,6 @@ VOID EnumProcessByService(PPROCESS_INFORMATIONS ProcessInfos, ULONG NumberOfProc
 VOID SetProcessInfoToList(PPROCESS_INFORMATIONS ProcessInfos, ULONG NumberOfProcess, PEPROCESS EProcess);
 NTSTATUS SafeCopyProcessModule(PEPROCESS EProcess, ULONG_PTR ModuleBase, ULONG SizeOfImage, PVOID OutputBuffer);
 BOOLEAN PsIsProcessTermination(PEPROCESS EProcess);
-NTSTATUS PsProtectProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue);
-BOOLEAN IsProcessIdentityExist(HANDLE ProcessIdentity);
-void InitializeProcessSource();
-NTSTATUS PsClearProtectProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue);
-NTSTATUS PsUnprotectProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue);
-BOOLEAN RemoveProcessIdentity(HANDLE ProcessIdentity);
-BOOLEAN InsertProcessIdentity(HANDLE ProcessIdentity);
+
 NTSTATUS PsTerminateProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue);
 NTSTATUS PsHideProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue);

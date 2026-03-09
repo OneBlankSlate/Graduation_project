@@ -5,6 +5,7 @@
 #include"ProcessHandle.h"
 #include"ProcessMemory.h"
 #include"SystemModule.h"
+#include"CallbackHelper.h"
 LPFN_SERVICEADDRESS __ServiceArray[] = {
 	NULL,
 	PsEnumProcess,  //Ã¶¾Ù½ø³Ì

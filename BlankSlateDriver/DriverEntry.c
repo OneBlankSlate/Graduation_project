@@ -52,7 +52,6 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 	DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = IoControlRoutine;
 	//必要的初始化行为
 	InitializeSystemSource();
-	InitializeProcessSource();
 	InitializeCallbackSource(DriverObject);
 	GetDriverObject(DriverObject);
 	DbgPrint("[wdk]DriverEntry");
@@ -61,6 +60,7 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 }
 VOID DriverUnload(IN PDRIVER_OBJECT DriverObject)
 {
+	__debugbreak();
 	PDEVICE_OBJECT DeviceObject = NULL;
 	PDEVICE_EXTENSION DeviceExtension = NULL;
 	DeviceObject = DriverObject->DeviceObject;

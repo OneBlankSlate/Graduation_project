@@ -149,7 +149,7 @@ void ProcessWindow::ProtectProcess()
         COMMUNICATE_PROTECT_PROCESS v1;
         RtlZeroMemory(&v1, sizeof(COMMUNICATE_PROTECT_PROCESS));
         v1.OperateType = PROTECT_PROCESS;
-        v1.ProcessIdentity[v1.NumberOfProcess++] = (HANDLE)value.toULongLong();
+        v1.ProcessIdentity = (HANDLE)value.toULongLong();
         do
         {
             IsOk = CommunicateDevice(&v1, sizeof(COMMUNICATE_PROTECT_PROCESS), NULL, 0, NULL);
@@ -169,7 +169,7 @@ void ProcessWindow::UnprotectProcess()
         COMMUNICATE_PROTECT_PROCESS v1;
         RtlZeroMemory(&v1, sizeof(COMMUNICATE_PROTECT_PROCESS));
         v1.OperateType = UNPROTECT_PROCESS;
-        v1.ProcessIdentity[v1.NumberOfProcess++] = (HANDLE)value.toULongLong();
+        v1.ProcessIdentity = (HANDLE)value.toULongLong();
         do
         {
             IsOk = CommunicateDevice(&v1, sizeof(COMMUNICATE_PROTECT_PROCESS), NULL, 0, NULL);
