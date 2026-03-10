@@ -56,7 +56,6 @@ typedef struct _TD_CALL_CONTEXT
 
 void InitializeCallbackSource(PDRIVER_OBJECT DriverObject);
 void UninitializeCallbackSource();
-NTSTATUS PsProtectProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue);
+NTSTATUS ProcessObjectCallback();
 OB_PREOP_CALLBACK_STATUS PreOperationCallback(_In_ PVOID RegistrationContext, _Inout_ POB_PRE_OPERATION_INFORMATION PreInfo);
 void TdSetCallContext(_Inout_ POB_PRE_OPERATION_INFORMATION PreInfo, _In_ PTD_CALLBACK_REGISTRATION CallbackRegistration);
-NTSTATUS PsUnprotectProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue);

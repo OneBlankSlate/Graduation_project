@@ -2,7 +2,6 @@
 #include"ProcessHelper.h"
 #include"ObjectHelper.h"
 PVOID __ProcessCallbackHandle = NULL;
-PEPROCESS __ProtectedProcess = NULL;
 OB_OPERATION_REGISTRATION __OperationRegistrations = { 0 };
 UNICODE_STRING __Altitude = { 0 };
 OB_CALLBACK_REGISTRATION  __ObRegistration = { 0 };
@@ -12,13 +11,12 @@ void InitializeCallbackSource(PDRIVER_OBJECT DriverObject)
 	// 以下代码放在DriverEntry中  用来绕过 调用ObRegisterCallback时 进行的签名校验
 	ULONG_PTR pDrvSection = (ULONG_PTR)DriverObject->DriverSection;
 	*(PULONG)(pDrvSection + 0x68) |= 0x20;
+	InitializeProcessSource();
+	ProcessObjectCallback();
 }
-NTSTATUS PsProtectProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)
+NTSTATUS ProcessObjectCallback()
 {
 	NTSTATUS Status = STATUS_SUCCESS;
-	PCOMMUNICATE_PROTECT_PROCESS v1 = (PCOMMUNICATE_PROTECT_PROCESS)InputBuffer;
-	HANDLE ProcessIdentity = v1->ProcessIdentitys;
-	PsLookupProcessByProcessId(ProcessIdentity, &__ProtectedProcess);
 	//KeAcquireGuardedMutex(&__CallbacksMutex);
 
 	// Setup the Ob Registration calls
@@ -78,7 +76,7 @@ OB_PREOP_CALLBACK_STATUS PreOperationCallback(_In_ PVOID RegistrationContext, _I
 
 		// if (TdProtectedTargetProcess != NULL &&
 		//    TdProtectedTargetProcess != PreInfo->Object)
-		if (__ProtectedProcess != PreInfo->Object)   // 检查是否为非保护进程操作
+		if (!IsProcessIdentityExist(PsGetProcessId(PreInfo->Object)))   // 检查是否为非保护进程操作
 		{
 			goto Exit;
 		}
@@ -162,11 +160,7 @@ Exit:
 
 	return OB_PREOP_SUCCESS;
 }
-NTSTATUS PsUnprotectProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)
-{
-	NTSTATUS status = STATUS_UNSUCCESSFUL;
-	return status;
-}
+
 void TdSetCallContext(_Inout_ POB_PRE_OPERATION_INFORMATION PreInfo, _In_ PTD_CALLBACK_REGISTRATION CallbackRegistration)
 {
 	PTD_CALL_CONTEXT CallContext;

@@ -7,6 +7,7 @@
 #include"ProcessThread.h"
 #include"CallbackHelper.h"
 #ifdef _WIN64
+PROTECT_PROCESS_INFORMATION __ProtectProcessInfo = { 0 };
 
 BOOLEAN CheckNtdll32(ULONG VirtualAddress, PULONG DllBase)
 {
@@ -298,4 +299,135 @@ NTSTATUS PsHideProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputB
         }
     }
     return Status;
+}
+
+NTSTATUS PsProtectProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)
+{
+    NTSTATUS Status = STATUS_SUCCESS;
+    PCOMMUNICATE_PROTECT_PROCESS v1 = (PCOMMUNICATE_PROTECT_PROCESS)InputBuffer;
+    if (!InputBuffer || InputBufferLength != sizeof(COMMUNICATE_PROTECT_PROCESS))
+    {
+        return STATUS_INVALID_PARAMETER;
+    }
+    //for (int i = 0; i < InputBufferLength / sizeof(HANDLE); i++)
+    for (int i = 0; i < v1->NumberOfProcess; i++)
+    {
+        HANDLE ProcessIdentity = v1->ProcessIdentitys[i];
+        if (ProcessIdentity == 0)
+        {
+            Status = STATUS_INVALID_PARAMETER;
+            break;
+        }
+        if (IsProcessIdentityExist(ProcessIdentity))
+        {
+            continue;
+        }
+        if (__ProtectProcessInfo.NumberOfProcess == MAX_PATH)
+        {
+            Status = STATUS_TOO_MANY_CONTEXT_IDS;
+            break;
+        }
+        if (!InsertProcessIdentity(ProcessIdentity))
+        {
+            Status = STATUS_UNSUCCESSFUL;
+            break;
+        }
+
+    }
+    return Status;
+}
+NTSTATUS PsUnprotectProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)
+{
+    NTSTATUS Status = STATUS_SUCCESS;
+    PCOMMUNICATE_PROTECT_PROCESS v1 = (PCOMMUNICATE_PROTECT_PROCESS)InputBuffer;
+    if (!InputBuffer || InputBufferLength != sizeof(COMMUNICATE_PROTECT_PROCESS))
+    {
+        return STATUS_INVALID_PARAMETER;
+    }
+    //for (int i = 0; i < InputBufferLength / sizeof(HANDLE); i++)
+    for (int i = 0; i < v1->NumberOfProcess; i++)
+    {
+        HANDLE ProcessIdentity = v1->ProcessIdentitys[i];
+        if (ProcessIdentity == 0)
+        {
+            Status = STATUS_INVALID_PARAMETER;
+            break;
+        }
+        if (!RemoveProcessIdentity(ProcessIdentity))
+            continue;
+        if (__ProtectProcessInfo.NumberOfProcess == 0)
+            break;
+    }
+    return Status;
+}
+BOOLEAN RemoveProcessIdentity(HANDLE ProcessIdentity)
+{
+    BOOLEAN IsOk = FALSE;
+    ExAcquireFastMutex(&__ProtectProcessInfo.FastMutex);
+    for (int i = 0; i < MAX_PATH; i++)
+    {
+        if (__ProtectProcessInfo.ProcessIdentitys[i] == ProcessIdentity)
+        {
+            __ProtectProcessInfo.ProcessIdentitys[i] = 0;
+            __ProtectProcessInfo.NumberOfProcess--;
+            IsOk = TRUE;
+        }
+    }
+    ExReleaseFastMutex(&__ProtectProcessInfo.FastMutex);
+    return IsOk;
+}
+BOOLEAN IsProcessIdentityExist(HANDLE ProcessIdentity)
+{
+    BOOLEAN IsOk = FALSE;
+    ExAcquireFastMutex(&__ProtectProcessInfo.FastMutex);
+    for (int i = 0; i < __ProtectProcessInfo.NumberOfProcess; i++)
+    {
+        if (__ProtectProcessInfo.ProcessIdentitys[i] == ProcessIdentity)
+        {
+            IsOk = TRUE;
+            break;
+        }
+    }
+    ExReleaseFastMutex(&__ProtectProcessInfo.FastMutex);
+    return IsOk;
+}
+BOOLEAN InsertProcessIdentity(HANDLE ProcessIdentity)
+{
+    BOOLEAN IsOk = FALSE;
+    ExAcquireFastMutex(&__ProtectProcessInfo.FastMutex);
+    for (int i = 0; i < MAX_PATH; i++)
+    {
+        if (__ProtectProcessInfo.ProcessIdentitys[i] == 0)
+        {
+            //empty slot
+            __ProtectProcessInfo.ProcessIdentitys[i] = ProcessIdentity;
+            __ProtectProcessInfo.NumberOfProcess++;
+            IsOk = TRUE;
+            break;
+        }
+    }
+    ExReleaseFastMutex(&__ProtectProcessInfo.FastMutex);
+    return IsOk;
+}
+void InitializeProcessSource()
+{
+    ExInitializeFastMutex(&__ProtectProcessInfo.FastMutex);
+}
+VOID ClearProcessIdentity()
+{
+    ExAcquireFastMutex(&__ProtectProcessInfo.FastMutex);
+    memset(&__ProtectProcessInfo.ProcessIdentitys, 0, sizeof(__ProtectProcessInfo.ProcessIdentitys));
+    __ProtectProcessInfo.NumberOfProcess = 0;
+    ExReleaseFastMutex(&__ProtectProcessInfo.FastMutex);
+}
+NTSTATUS PsClearProtectProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)
+{
+    NTSTATUS Status = STATUS_SUCCESS;
+    PCOMMUNICATE_PROTECT_PROCESS v1 = (PCOMMUNICATE_PROTECT_PROCESS)InputBuffer;
+    if (!InputBuffer || InputBufferLength != sizeof(COMMUNICATE_PROTECT_PROCESS))
+    {
+        return STATUS_INVALID_PARAMETER;
+    }
+    ClearProcessIdentity();
+
 }
