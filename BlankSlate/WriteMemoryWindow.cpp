@@ -12,7 +12,6 @@ WriteMemoryWindow::~WriteMemoryWindow()
 {}
 BOOL WriteMemoryWindow::WriteVirtualMemory()
 {
-	__debugbreak();
 	BOOL IsOk = FALSE;
 	int AddressLength = ui.WriteAddr_LineEdit->text().length();
 	if (!AddressLength || AddressLength > 16)

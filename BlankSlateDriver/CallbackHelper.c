@@ -129,8 +129,8 @@ OB_PREOP_CALLBACK_STATUS PreOperationCallback(_In_ PVOID RegistrationContext, _I
 	// Filter only if request made outside of the kernel
 	if (PreInfo->KernelHandle != 1) {     // 仅处理非内核句柄操作
 		*DesiredAccess &= ~AccessBitsToClear;   // 清除危险权限位（如终止权限）
-		//*DesiredAccess &= ~0x20;                //清除内存写的权限
-		//*DesiredAccess &= ~0x10;                //清除内促读权限
+		*DesiredAccess &= ~0x20;                //清除内存写的权限
+		*DesiredAccess &= ~0x10;                //清除内促读权限
 		//*DesiredAccess &= ~0x80;                //清除进程创建权限
 		*DesiredAccess |= AccessBitsToSet;     // 可选的权限添加（此处未使用）
 	}
