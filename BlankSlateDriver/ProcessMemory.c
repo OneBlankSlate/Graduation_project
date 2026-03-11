@@ -190,6 +190,7 @@ NTSTATUS PsReadProcessMem(PVOID InputBuffer, ULONG InputBufferLength, PVOID Outp
 
 NTSTATUS PsWriteProcessMem(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)
 {
+	__debugbreak();
 	NTSTATUS Status1 = STATUS_UNSUCCESSFUL;
 	NTSTATUS Status2 = STATUS_UNSUCCESSFUL;
 	PEPROCESS EProcess = NULL;

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>WriteMemoryWindow</string>
+   <string>写入内存</string>
   </property>
   <widget class="QLabel" name="label_2">
    <property name="geometry">

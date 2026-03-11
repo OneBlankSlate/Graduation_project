@@ -46,6 +46,7 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     m_TableViewMenu->addAction(RefreshAct);
     m_TableViewMenu->addAction(ModuleAct);
     m_TableViewMenu->addAction(HandleAct);
+    m_TableViewMenu->addAction(MemoryAct);
     m_TableViewMenu->addAction(TerminateProcessAct);
     m_TableViewMenu->addAction(HideProcessAct);
     m_TableViewMenu->addAction(ProtectProcessAct);

@@ -60,7 +60,6 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 }
 VOID DriverUnload(IN PDRIVER_OBJECT DriverObject)
 {
-	__debugbreak();
 	PDEVICE_OBJECT DeviceObject = NULL;
 	PDEVICE_EXTENSION DeviceExtension = NULL;
 	DeviceObject = DriverObject->DeviceObject;

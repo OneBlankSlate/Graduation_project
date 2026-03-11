@@ -12,6 +12,7 @@ WriteMemoryWindow::~WriteMemoryWindow()
 {}
 BOOL WriteMemoryWindow::WriteVirtualMemory()
 {
+	__debugbreak();
 	BOOL IsOk = FALSE;
 	int AddressLength = ui.WriteAddr_LineEdit->text().length();
 	if (!AddressLength || AddressLength > 16)
@@ -25,10 +26,9 @@ BOOL WriteMemoryWindow::WriteVirtualMemory()
 	PVOID pValue = (PVOID)address;
 
 	//取数据和长度
-	QString Data = ui.NewValue_LineEdit->text();
-	QByteArray  utfData = Data.toUtf8();
-	char* BufferData = (char*)utfData.constData();
-	int BufferLength = ui.NewValue_LineEdit->text().length();
+	QByteArray data = QByteArray::fromHex(ui.NewValue_LineEdit->text().toLatin1());
+	char* BufferData = (char*)data.constData();
+	int BufferLength = data.size();
 	int ViewSize = sizeof(COMMUNICATE_PROCESS_MEMORY) + BufferLength;
 	PCOMMUNICATE_PROCESS_MEMORY v5 = (PCOMMUNICATE_PROCESS_MEMORY)malloc(ViewSize);
 	if (v5 == NULL)
