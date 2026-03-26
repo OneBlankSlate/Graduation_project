@@ -27,7 +27,7 @@ BOOL LoadDriver(const char* pDriverPath) {
     // 1. 打开服务控制管理器
     hSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (hSCManager == NULL) {
-        printf("OpenSCManager 失败! 错误代码: %lu\n", GetLastError());
+        DWORD dwError = GetLastError();
         goto cleanup;
     }
 
@@ -52,15 +52,12 @@ BOOL LoadDriver(const char* pDriverPath) {
         DWORD dwError = GetLastError();
         if (dwError == ERROR_SERVICE_EXISTS) {
             // 服务已存在，尝试打开
-            printf("服务已存在，尝试打开...\n");
             hService = OpenServiceA(hSCManager, serviceName, SERVICE_ALL_ACCESS);
             if (hService == NULL) {
-                printf("OpenService 失败! 错误代码: %lu\n", GetLastError());
                 goto cleanup;
             }
         }
         else {
-            printf("CreateService 失败! 错误代码: %lu\n", dwError);
             goto cleanup;
         }
     }
@@ -69,15 +66,12 @@ BOOL LoadDriver(const char* pDriverPath) {
     if (!StartServiceA(hService, 0, NULL)) {
         DWORD dwError = GetLastError();
         if (dwError != ERROR_SERVICE_ALREADY_RUNNING) {
-            printf("StartService 失败! 错误代码: %lu\n", dwError);
             goto cleanup;
         }
         else {
-            printf("驱动已在运行中。\n");
         }
     }
 
-    printf("驱动加载成功! 服务名: %s\n", serviceName);
     bRet = TRUE;
 
 cleanup:
@@ -105,31 +99,24 @@ BOOL UnloadDriver(const char* pServiceName) {
 
     hSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (hSCManager == NULL) {
-        printf("OpenSCManager 失败! 错误代码: %lu\n", GetLastError());
         return FALSE;
     }
 
     hService = OpenServiceA(hSCManager, pServiceName, SERVICE_ALL_ACCESS);
     if (hService == NULL) {
-        printf("OpenService 失败! 错误代码: %lu\n", GetLastError());
         goto cleanup;
     }
 
     // 停止服务
     if (!ControlService(hService, SERVICE_CONTROL_STOP, &serviceStatus)) {
         DWORD dwError = GetLastError();
-        if (dwError != ERROR_SERVICE_NOT_ACTIVE) {
-            printf("ControlService 失败! 错误代码: %lu\n", dwError);
-        }
     }
 
     // 删除服务
     if (!DeleteService(hService)) {
-        printf("DeleteService 失败! 错误代码: %lu\n", GetLastError());
+        DWORD dwError = GetLastError();
         goto cleanup;
     }
-
-    printf("驱动卸载成功! 服务名: %s\n", pServiceName);
     bRet = TRUE;
 
 cleanup:

@@ -9,7 +9,6 @@ LARGE_INTEGER g_liRegCookie;
 //   bu BlankSlateDriver!DriverEntry
 NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
 {
-	__debugbreak();
 	UNREFERENCED_PARAMETER(RegistryPath);
 	NTSTATUS Status = STATUS_SUCCESS;
 	PDEVICE_OBJECT DeviceObject;

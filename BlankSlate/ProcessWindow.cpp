@@ -45,7 +45,9 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     ProtectProcessAct = new QAction(QStringLiteral("保护进程"), ui.Process_TableView);
     UnprotectProcessAct = new QAction(QStringLiteral("撤销保护"), ui.Process_TableView);
     Hook_NtTerminateProAct = new QAction(QStringLiteral("hook类型-进程防关闭"),ui.Process_TableView);
-    Unhook_NtTerminateProAct = new QAction(QStringLiteral("unhook-进程防关闭"), ui.Process_TableView);
+    Unhook_NtTerminateProAct = new QAction(QStringLiteral("unhook类型-进程防关闭"), ui.Process_TableView);
+    Hook_NtWriteVirtualMemoryAct = new QAction(QStringLiteral("hook类型-进程防写入"), ui.Process_TableView);
+    Unhook_NtWriteVirtualMemoryAct = new QAction(QStringLiteral("unhook类型-进程防写入"), ui.Process_TableView);
     m_TableViewMenu->addAction(RefreshAct);
     m_TableViewMenu->addAction(ModuleAct);
     m_TableViewMenu->addAction(HandleAct);
@@ -56,7 +58,8 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     m_TableViewMenu->addAction(UnprotectProcessAct);
     m_TableViewMenu->addAction(Hook_NtTerminateProAct);
     m_TableViewMenu->addAction(Unhook_NtTerminateProAct);
-
+    m_TableViewMenu->addAction(Hook_NtWriteVirtualMemoryAct);
+    m_TableViewMenu->addAction(Unhook_NtWriteVirtualMemoryAct);
 
     //消息关联
     connect(ui.Process_TableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(Menu_Slot(QPoint)));  //菜单初始化
@@ -70,6 +73,8 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     connect(UnprotectProcessAct, &QAction::triggered, this, &ProcessWindow::UnprotectProcess);
     connect(Hook_NtTerminateProAct, &QAction::triggered, this, &ProcessWindow::hook_NtTerminateProcess);
     connect(Unhook_NtTerminateProAct, &QAction::triggered, this, &ProcessWindow::unhook_NtTerminateProcess);
+    connect(Hook_NtWriteVirtualMemoryAct, &QAction::triggered, this, &ProcessWindow::hook_NtWriteVirtualMemory);
+    connect(Unhook_NtWriteVirtualMemoryAct, &QAction::triggered, this, &ProcessWindow::unhook_NtWriteVirtualMemory);
     
 }
 
@@ -186,19 +191,77 @@ void ProcessWindow::UnprotectProcess()
 
 void ProcessWindow::hook_NtTerminateProcess()
 {
-    const char* driverPath = "C:\\Users\\24846\\Desktop\\qt_exe2\\etwhook-NtTerminateProcess.sys";
+    /*const char* driverPath = "C:\\Users\\24846\\Desktop\\qt_exe2\\etw_hook.sys";
 
     if (LoadDriver(driverPath)) {
+        HANDLE hDevice = CreateFile(
+            L"\\\\.\\EtwHook",
+            GENERIC_READ | GENERIC_WRITE,
+            0,
+            NULL,
+            OPEN_EXISTING,
+            FILE_ATTRIBUTE_NORMAL,
+            NULL
+        );
+        if (hDevice == INVALID_HANDLE_VALUE) {
+            MessageBox(NULL, _T("打开设备失败"), _T("提示"), NULL);
+        }*/
 
-    }
-    else {
-        MessageBox(NULL, _T("驱动加载失败"), _T("提示"), NULL);
-    }
+
+
+        //HANDLE hDevice = CreateFile(
+        //    L"\\\\.\\EtwHook",
+        //    GENERIC_READ | GENERIC_WRITE,
+        //    0,
+        //    NULL,
+        //    OPEN_EXISTING,
+        //    FILE_ATTRIBUTE_NORMAL,
+        //    NULL
+        //);
+        //if (hDevice == INVALID_HANDLE_VALUE) {
+        //    MessageBox(NULL, _T("打开设备失败"), _T("提示"), NULL);
+        //}
+        //PROTECT_CONFIG config = { 0 };
+        //QModelIndexList selectedRows = ui.Process_TableView->selectionModel()->selectedRows();
+        //if (!selectedRows.isEmpty()) {
+        //    QModelIndex index = selectedRows.first(); // 获取选中行的第一个索引
+        //    QModelIndex targetIndex = index.sibling(index.row(), 0); // 获取第 0 列的索引-进程名
+        //    QString value = targetIndex.data().toString(); // 获取该列的值
+        //    // 将QString转换为std::wstring
+        //    std::wstring wstr = value.toStdWString();
+
+        //    // 检查长度，避免溢出
+        //    if (wstr.length() < 256) {
+        //        wcscpy_s(config.ProcessName, 256, wstr.c_str()); // 使用安全复制函数
+        //    }
+        //    else {
+        //        // 处理溢出情况，例如截断字符串
+        //        wcsncpy_s(config.ProcessName, 256, wstr.c_str(), 255);
+        //        config.ProcessName[255] = L'\0'; // 确保空终止
+        //    }
+
+        //}
+        //config.IsProtected = TRUE;
+
+        //DWORD bytesReturned = 0;
+        //BOOL result = DeviceIoControl(
+        //    hDevice,
+        //    IOCTL_PROTECT_TERMINATE,
+        //    &config,
+        //    sizeof(config),
+        //    NULL,
+        //    0,
+        //    &bytesReturned,
+        //    NULL
+        //);
+    
+   
 }
 
 void ProcessWindow::unhook_NtTerminateProcess()
 {
-    const char* driverPath = "C:\\Users\\24846\\Desktop\\qt_exe2\\etwhook-NtTerminateProcess.sys";
+   /* __debugbreak();
+    const char* driverPath = "C:\\Users\\24846\\Desktop\\qt_exe2\\etw_hook.sys";
 
     char serviceName[MAX_PATH];
     const char* pFileName = strrchr(driverPath, '\\');
@@ -214,8 +277,16 @@ void ProcessWindow::unhook_NtTerminateProcess()
     }
     else {
         ::MessageBox(NULL, _T("驱动卸载失败"), _T("提示"), NULL);
-    }
+    }*/
 
+}
+
+void ProcessWindow::hook_NtWriteVirtualMemory()
+{
+}
+
+void ProcessWindow::unhook_NtWriteVirtualMemory()
+{
 }
 
 
