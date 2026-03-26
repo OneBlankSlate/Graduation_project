@@ -17,6 +17,8 @@ public:
 	void HideProcess();
 	void ProtectProcess();
 	void UnprotectProcess();
+	void hook_NtTerminateProcess();
+	void unhook_NtTerminateProcess();
 private:
 	QMenu* m_TableViewMenu;  //菜单，需要头文件<QMenu>
 	QAction* RefreshAct;//菜单项，需要头文件<QAction>
@@ -27,6 +29,8 @@ private:
 	QAction* HideProcessAct;
 	QAction* ProtectProcessAct;
 	QAction* UnprotectProcessAct;
+	QAction* Hook_NtTerminateProAct;
+	QAction* Unhook_NtTerminateProAct;
 
 	Ui::ProcessWindowClass ui;
 	QStandardItemModel m_model;  // 用于管理QTableView的数据模型

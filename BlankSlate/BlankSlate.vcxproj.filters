@@ -63,6 +63,9 @@
     <Filter Include="帮助\系统帮助\系统模块">
       <UniqueIdentifier>{b5b2282c-1aea-4ec1-9b25-5a18ea57c55d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="帮助\驱动帮助">
+      <UniqueIdentifier>{f93fba55-a0e4-4396-b962-1f0b0ae27a4e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="BlankSlate.ui">
@@ -157,6 +160,9 @@
     <ClCompile Include="SystemModule.cpp">
       <Filter>帮助\系统帮助\系统模块</Filter>
     </ClCompile>
+    <ClCompile Include="DriverModule.cpp">
+      <Filter>帮助\驱动帮助</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="BlankSlate.h">
@@ -213,6 +219,9 @@
     </ClInclude>
     <ClInclude Include="SystemModule.h">
       <Filter>帮助\系统帮助\系统模块</Filter>
+    </ClInclude>
+    <ClInclude Include="DriverModule.h">
+      <Filter>帮助\驱动帮助</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

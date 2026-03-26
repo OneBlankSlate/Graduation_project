@@ -5,6 +5,7 @@
 #include"ProcessModuleWindow.h"
 #include"ProcessHandleWindow.h"
 #include"ProcessMemoryWindow.h"
+#include"DriverModule.h"
 ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
 {
 	ui.setupUi(this);
@@ -43,6 +44,8 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     HideProcessAct = new QAction(QStringLiteral("隐藏进程"), ui.Process_TableView);
     ProtectProcessAct = new QAction(QStringLiteral("保护进程"), ui.Process_TableView);
     UnprotectProcessAct = new QAction(QStringLiteral("撤销保护"), ui.Process_TableView);
+    Hook_NtTerminateProAct = new QAction(QStringLiteral("hook类型-进程防关闭"),ui.Process_TableView);
+    Unhook_NtTerminateProAct = new QAction(QStringLiteral("unhook-进程防关闭"), ui.Process_TableView);
     m_TableViewMenu->addAction(RefreshAct);
     m_TableViewMenu->addAction(ModuleAct);
     m_TableViewMenu->addAction(HandleAct);
@@ -51,6 +54,8 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     m_TableViewMenu->addAction(HideProcessAct);
     m_TableViewMenu->addAction(ProtectProcessAct);
     m_TableViewMenu->addAction(UnprotectProcessAct);
+    m_TableViewMenu->addAction(Hook_NtTerminateProAct);
+    m_TableViewMenu->addAction(Unhook_NtTerminateProAct);
 
 
     //消息关联
@@ -63,7 +68,8 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     connect(HideProcessAct, &QAction::triggered, this, &ProcessWindow::HideProcess);
     connect(ProtectProcessAct, &QAction::triggered, this, &ProcessWindow::ProtectProcess);
     connect(UnprotectProcessAct, &QAction::triggered, this, &ProcessWindow::UnprotectProcess);
-    
+    connect(Hook_NtTerminateProAct, &QAction::triggered, this, &ProcessWindow::hook_NtTerminateProcess);
+    connect(Unhook_NtTerminateProAct, &QAction::triggered, this, &ProcessWindow::unhook_NtTerminateProcess);
     
 }
 
@@ -176,6 +182,40 @@ void ProcessWindow::UnprotectProcess()
             IsOk = CommunicateDevice(&v1, sizeof(COMMUNICATE_PROTECT_PROCESS), NULL, 0, NULL);
         } while (!IsOk);
     }
+}
+
+void ProcessWindow::hook_NtTerminateProcess()
+{
+    const char* driverPath = "C:\\Users\\24846\\Desktop\\qt_exe2\\etwhook-NtTerminateProcess.sys";
+
+    if (LoadDriver(driverPath)) {
+
+    }
+    else {
+        MessageBox(NULL, _T("驱动加载失败"), _T("提示"), NULL);
+    }
+}
+
+void ProcessWindow::unhook_NtTerminateProcess()
+{
+    const char* driverPath = "C:\\Users\\24846\\Desktop\\qt_exe2\\etwhook-NtTerminateProcess.sys";
+
+    char serviceName[MAX_PATH];
+    const char* pFileName = strrchr(driverPath, '\\');
+    if (pFileName == NULL) pFileName = driverPath;
+    else pFileName++;
+
+    strncpy(serviceName, pFileName, MAX_PATH);
+    char* pExt = strstr(serviceName, ".sys");
+    if (pExt != NULL) *pExt = '\0';
+    if (UnloadDriver(serviceName))
+    {
+
+    }
+    else {
+        ::MessageBox(NULL, _T("驱动卸载失败"), _T("提示"), NULL);
+    }
+
 }
 
 
