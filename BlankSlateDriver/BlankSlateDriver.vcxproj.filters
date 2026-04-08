@@ -53,6 +53,9 @@
     <Filter Include="进程回调帮助">
       <UniqueIdentifier>{4216ae25-2161-43e3-bc7a-a6bfacb973d4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="进程帮助\进程监控">
+      <UniqueIdentifier>{7f924e37-3cbb-4594-b451-fbd1e11fd32b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DriverEntry.c">
@@ -97,6 +100,9 @@
     <ClCompile Include="SystemModule.c">
       <Filter>系统帮助\系统模块</Filter>
     </ClCompile>
+    <ClCompile Include="ProcMonitor.c">
+      <Filter>进程帮助\进程监控</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DriverEntry.h">
@@ -140,6 +146,9 @@
     </ClInclude>
     <ClInclude Include="SystemModule.h">
       <Filter>系统帮助\系统模块</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcMonitor.h">
+      <Filter>进程帮助\进程监控</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

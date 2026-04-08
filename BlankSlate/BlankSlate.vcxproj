@@ -114,6 +114,8 @@
     <ClCompile Include="ProcessModuleWindow.cpp" />
     <ClCompile Include="ProcessPath.cpp" />
     <ClCompile Include="ProcessWindow.cpp" />
+    <ClCompile Include="ProcMonitor.cpp" />
+    <ClCompile Include="ProcMonWindow.cpp" />
     <ClCompile Include="ReadMemoryWindow.cpp" />
     <ClCompile Include="StringHelper.cpp" />
     <ClCompile Include="SystemModule.cpp" />
@@ -128,6 +130,7 @@
     <QtUic Include="ProcessMemoryWindow.ui" />
     <QtUic Include="ProcessModuleWindow.ui" />
     <QtUic Include="ProcessWindow.ui" />
+    <QtUic Include="ProcMonWindow.ui" />
     <QtUic Include="ReadMemoryWindow.ui" />
     <QtUic Include="WriteMemoryWindow.ui" />
   </ItemGroup>
@@ -140,6 +143,10 @@
   <ItemGroup>
     <ClInclude Include="DriverModule.h" />
     <ClInclude Include="IoControlHelper.h" />
+    <QtMoc Include="ProcMonWindow.h" />
+    <ClInclude Include="ProcMonCommon.h" />
+    <ClInclude Include="ProcMonitor.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="StringHelper.h" />
     <ClInclude Include="SystemModule.h" />
     <QtMoc Include="WriteMemoryWindow.h" />
@@ -152,6 +159,9 @@
     <ClInclude Include="ProcessModule.h" />
     <QtMoc Include="ProcessModuleWindow.h" />
     <ClInclude Include="ProcessPath.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="BlankSlate.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

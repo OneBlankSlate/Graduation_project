@@ -2,6 +2,7 @@
 #include"ProcessWindow.h"
 #include"DriverModuleWindow.h"
 #include"ProcessHelper.h"
+#include"ProcMonWindow.h"
 
 BlankSlate::BlankSlate(QWidget *parent)
     : QMainWindow(parent)
@@ -22,6 +23,7 @@ BlankSlate::BlankSlate(QWidget *parent)
     ui.tabWidget->clear();   //清空默认的tab标签
     ui.tabWidget->addTab(new ProcessWindow, QStringLiteral("进程"));
     ui.tabWidget->addTab(new DriverModuleWindow, QStringLiteral("驱动模块"));
+    ui.tabWidget->addTab(new ProcMonWindow, QStringLiteral("进程监控"));
 
 }
 

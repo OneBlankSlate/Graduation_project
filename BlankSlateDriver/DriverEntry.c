@@ -4,6 +4,7 @@
 #include"CallbackHelper.h"
 #include"SystemModule.h"
 #include"ProcessHelper.h"
+#include"ProcMonitor.h"
 //注册表回调使用的Cookie
 LARGE_INTEGER g_liRegCookie;
 //   bu BlankSlateDriver!DriverEntry
@@ -76,6 +77,15 @@ VOID DriverUnload(IN PDRIVER_OBJECT DriverObject)
 	UninitializeSystemSource();
 	UninitializeCallbackSource();
 
+	if (g_context) {
+		// 停止监控
+		if (g_context->IsMonitoring && g_context->NotifyHandle) {
+			PsSetCreateProcessNotifyRoutineEx(ProcessNotifyCallback, TRUE);
+		}
+		// 释放上下文
+		ExFreePoolWithTag(g_context, CONTEXT_TAG);
+		g_context = NULL;
+	}
 
 }
 NTSTATUS DispatchRoutine(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)

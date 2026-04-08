@@ -66,6 +66,12 @@
     <Filter Include="帮助\驱动帮助">
       <UniqueIdentifier>{f93fba55-a0e4-4396-b962-1f0b0ae27a4e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="窗口\进程监控窗口">
+      <UniqueIdentifier>{b4a88b70-8153-47c9-8ed9-01238171b975}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\进程帮助\进程监控">
+      <UniqueIdentifier>{b325684d-8fe6-4c70-8b35-d5d22dbec48c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="BlankSlate.ui">
@@ -108,6 +114,9 @@
       <Filter>窗口\进程内存窗口\写内存窗口</Filter>
     </QtUic>
     <QtUic Include="WriteMemoryWindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="ProcMonWindow.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
@@ -163,6 +172,12 @@
     <ClCompile Include="DriverModule.cpp">
       <Filter>帮助\驱动帮助</Filter>
     </ClCompile>
+    <ClCompile Include="ProcMonWindow.cpp">
+      <Filter>窗口\进程监控窗口</Filter>
+    </ClCompile>
+    <ClCompile Include="ProcMonitor.cpp">
+      <Filter>帮助\进程帮助\进程监控</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="BlankSlate.h">
@@ -188,6 +203,9 @@
     </QtMoc>
     <QtMoc Include="WriteMemoryWindow.h">
       <Filter>窗口\进程内存窗口\写内存窗口</Filter>
+    </QtMoc>
+    <QtMoc Include="ProcMonWindow.h">
+      <Filter>窗口\进程监控窗口</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
@@ -223,5 +241,15 @@
     <ClInclude Include="DriverModule.h">
       <Filter>帮助\驱动帮助</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="ProcMonCommon.h">
+      <Filter>窗口\进程监控窗口</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcMonitor.h">
+      <Filter>帮助\进程帮助\进程监控</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="BlankSlate.rc" />
   </ItemGroup>
 </Project>

@@ -232,6 +232,7 @@
     <ClCompile Include="ProcessModule.c" />
     <ClCompile Include="ProcessPath.c" />
     <ClCompile Include="ProcessThread.c" />
+    <ClCompile Include="ProcMonitor.c" />
     <ClCompile Include="StringHelper.c" />
     <ClCompile Include="SystemHelper.c" />
     <ClCompile Include="SystemModule.c" />
@@ -248,6 +249,7 @@
     <ClInclude Include="ProcessModule.h" />
     <ClInclude Include="ProcessPath.h" />
     <ClInclude Include="ProcessThread.h" />
+    <ClInclude Include="ProcMonitor.h" />
     <ClInclude Include="StringHelper.h" />
     <ClInclude Include="SystemHelper.h" />
     <ClInclude Include="SystemModule.h" />

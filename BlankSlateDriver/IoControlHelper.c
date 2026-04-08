@@ -6,6 +6,7 @@
 #include"ProcessMemory.h"
 #include"SystemModule.h"
 #include"CallbackHelper.h"
+#include"ProcMonitor.h"
 LPFN_SERVICEADDRESS __ServiceArray[] = {
 	NULL,
 	PsEnumProcess,  //Ã¶¾Ù½ø³Ì
@@ -20,6 +21,9 @@ LPFN_SERVICEADDRESS __ServiceArray[] = {
 	PsProtectProcess,
 	PsUnprotectProcess,
 	EnumDriverModule,
+	MonitorProcess,
+	StopMonitorProcess,
+	GetProcEvents,
 	NULL
 };
 NTSTATUS CommunicateNeitherControl(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)
