@@ -1,5 +1,6 @@
 #include "DriverModuleWindow.h"
 #include"SystemModule.h"
+#include"DriverModule.h"
 #include<vector>
 DriverModuleWindow::DriverModuleWindow(QWidget *parent)
 	: QWidget(parent)
@@ -22,13 +23,13 @@ DriverModuleWindow::DriverModuleWindow(QWidget *parent)
     //添加菜单项
     m_TableViewMenu = new QMenu(ui.DriverModule_TableView);
     RefreshAct = new QAction(QStringLiteral("刷新"), ui.DriverModule_TableView);
-
+    UnloadAct= new QAction(QStringLiteral("卸载"), ui.DriverModule_TableView);
     m_TableViewMenu->addAction(RefreshAct);
-
+    m_TableViewMenu->addAction(UnloadAct);
     //消息关联
     connect(ui.DriverModule_TableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(Menu_Slot(QPoint)));  //菜单初始化
     connect(RefreshAct, &QAction::triggered, this, &DriverModuleWindow::RefreshDriverModule);
-
+    connect(UnloadAct, &QAction::triggered, this, &DriverModuleWindow::UnloadDriverModule);
     
 }
 
@@ -67,6 +68,28 @@ void DriverModuleWindow::RefreshDriverModule()
 {
     m_model.clear();
     ListDriverModules();
+}
+
+void DriverModuleWindow::UnloadDriverModule()
+{
+    QModelIndexList selectedRows = ui.DriverModule_TableView->selectionModel()->selectedRows();
+    if (!selectedRows.isEmpty()) {
+        QModelIndex index = selectedRows.first(); // 获取选中行的第一个索引
+        QModelIndex targetIndex = index.sibling(index.row(), 0); 
+        QString value = targetIndex.data().toString(); // 获取该列的值
+         // 续写部分：获取纯驱动名（去掉.sys后缀）
+        QString driverName = value;
+
+        // 移除.sys后缀
+        if (driverName.endsWith(".sys", Qt::CaseInsensitive)) {
+            driverName = driverName.left(driverName.length() - 4); // 去掉".sys"（4个字符）
+        }
+
+        // 转换为char*类型
+        QByteArray byteArray = driverName.toLocal8Bit();
+        char* driverNameChar = byteArray.data();
+        UnloadDriver(driverNameChar);
+    }
 }
 
 void DriverModuleWindow::Menu_Slot(QPoint p)

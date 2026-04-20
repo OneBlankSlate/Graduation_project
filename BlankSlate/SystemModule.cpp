@@ -17,7 +17,7 @@ void EnumDriverModule(vector<DRIVER_MODULE_ENTRY>& DriverModuleInfo)
 		{
 			IsOk = CommunicateDevice(&OperateType, sizeof(OPERATE_TYPE), (PVOID)v5, Size, NULL);
 		}
-		NumberOfModules += 1000;
+		NumberOfModules += 100;
 	} while (!IsOk && GetLastError() == ERROR_INSUFFICIENT_BUFFER);
 	if (IsOk && v5->NumberOfModules > 0)
 	{
