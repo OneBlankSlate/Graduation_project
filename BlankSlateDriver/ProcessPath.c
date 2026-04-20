@@ -118,4 +118,72 @@ BOOLEAN GetProcessFullPathByPeb(PVOID EProcess, WCHAR* ProcessFullPath, ULONG Pr
 	KeUnstackDetachProcess(&ApcState);
 	return TRUE;
 }
+PUNICODE_STRING GetNameByPath(PUNICODE_STRING ImagePath)
+{
+	// 参数验证
+	if (!ImagePath || !ImagePath->Buffer || ImagePath->Length == 0) {
+		return NULL;
+	}
 
+	// 查找最后一个路径分隔符的位置
+	PWCHAR pFileNameStart = NULL;
+	PWCHAR pCurrent = ImagePath->Buffer;
+	PWCHAR pEnd = (PWCHAR)((PUCHAR)ImagePath->Buffer + ImagePath->Length);
+
+	// 从字符串末尾向前查找最后一个分隔符
+	for (PWCHAR p = pEnd - 1; p >= pCurrent; p--) {
+		if (*p == L'\\' || *p == L'/') {
+			pFileNameStart = p + 1;
+			break;
+		}
+	}
+
+	// 如果没有找到分隔符，整个字符串就是文件名
+	if (!pFileNameStart) {
+		pFileNameStart = pCurrent;
+	}
+
+	// 计算文件名长度（以字符计）
+	ULONG nameLengthInChars = 0;
+	PWCHAR pTemp = pFileNameStart;
+
+	while (pTemp < pEnd) {
+		nameLengthInChars++;
+		pTemp++;
+	}
+
+	if (nameLengthInChars == 0) {
+		return NULL;
+	}
+
+	// 计算文件名长度（以字节计）
+	ULONG nameLengthInBytes = nameLengthInChars * sizeof(WCHAR);
+
+	// 分配UNICODE_STRING结构及其缓冲区
+	ULONG totalAllocSize = sizeof(UNICODE_STRING) + nameLengthInBytes + sizeof(WCHAR);
+	PUNICODE_STRING pResult = (PUNICODE_STRING)ExAllocatePoolWithTag(
+		NonPagedPoolNx,
+		totalAllocSize,
+		'name');
+
+	if (!pResult) {
+		return NULL;
+	}
+
+	// 初始化UNICODE_STRING结构
+	RtlZeroMemory(pResult, totalAllocSize);
+
+	// 设置UNICODE_STRING字段
+	pResult->Buffer = (PWCHAR)((PUCHAR)pResult + sizeof(UNICODE_STRING));
+	pResult->Length = (USHORT)nameLengthInBytes;
+	pResult->MaximumLength = (USHORT)(nameLengthInBytes + sizeof(WCHAR));
+
+	// 复制文件名
+	RtlCopyMemory(pResult->Buffer, pFileNameStart, nameLengthInBytes);
+
+	// 确保以空字符结尾
+	pResult->Buffer[nameLengthInChars] = L'\0';
+
+
+	return pResult;
+}

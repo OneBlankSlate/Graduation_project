@@ -44,7 +44,7 @@ ProcMonWindow::~ProcMonWindow()
 void ProcMonWindow::setupTableView()
 {
     // 设置表头
-    QStringList headers = { QStringLiteral("事件ID"), QStringLiteral("类型"), QStringLiteral("时间"), QStringLiteral("进程ID"), QStringLiteral("父进程ID"),QStringLiteral("进程名称"),QStringLiteral("映像路径"),QStringLiteral("命令行")};
+    QStringList headers = { QStringLiteral("类型"), QStringLiteral("时间"), QStringLiteral("进程ID"), QStringLiteral("父进程ID"),QStringLiteral("进程名称"),QStringLiteral("父进程名称"),QStringLiteral("映像路径"),QStringLiteral("命令行")};
     m_model->setHorizontalHeaderLabels(headers);
 
     // 设置表格属性
@@ -55,19 +55,20 @@ void ProcMonWindow::setupTableView()
     ui->ProcMon_TableView->setSortingEnabled(true);
 
     // 设置列宽
-    ui->ProcMon_TableView->setColumnWidth(0, 80);   // 事件ID
-    ui->ProcMon_TableView->setColumnWidth(1, 80);   // 类型
-    ui->ProcMon_TableView->setColumnWidth(2, 180);  // 时间
-    ui->ProcMon_TableView->setColumnWidth(3, 80);   // 进程ID
-    ui->ProcMon_TableView->setColumnWidth(4, 80);   // 父进程ID
-    ui->ProcMon_TableView->setColumnWidth(5, 200);  // 进程名称
+  
+    ui->ProcMon_TableView->setColumnWidth(0, 80);   // 类型
+    ui->ProcMon_TableView->setColumnWidth(1, 180);  // 时间
+    ui->ProcMon_TableView->setColumnWidth(2, 80);   // 进程ID
+    ui->ProcMon_TableView->setColumnWidth(3, 80);   // 父进程ID
+    ui->ProcMon_TableView->setColumnWidth(4, 200);  // 进程名称
+    ui->ProcMon_TableView->setColumnWidth(5, 200);  // 父进程名称
     ui->ProcMon_TableView->setColumnWidth(6, 300);  // 映像路径
     ui->ProcMon_TableView->setColumnWidth(7, 300);  // 命令行
 }
 
 void ProcMonWindow::onStartClicked()
 {
-    __debugbreak();
+    //__debugbreak();
     DWORD bytesReturned = 0;
     COMMUNICATE_PROCESS_MON input = {};
     input.OperateType = START_PROC_MON;
@@ -141,9 +142,6 @@ void ProcMonWindow::addEventToTable(const PROCESS_EVENT& event)
 {
     QList<QStandardItem*> rowItems;
 
-    // 事件ID
-    rowItems << new QStandardItem(QString::number(event.EventId));
-
     // 事件类型
     QString typeStr = (event.Type == ProcessCreate) ? QStringLiteral("创建") : QStringLiteral("退出");
     rowItems << new QStandardItem(typeStr);
@@ -162,6 +160,8 @@ void ProcMonWindow::addEventToTable(const PROCESS_EVENT& event)
     // 进程名称
     rowItems << new QStandardItem(QString::fromWCharArray(event.ImageName));
 
+    // 父进程名称
+    rowItems << new QStandardItem(QString::fromWCharArray(event.ParentProcessName));
     // 映像路径
     rowItems << new QStandardItem(QString::fromWCharArray(event.ImagePath));
 

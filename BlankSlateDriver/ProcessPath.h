@@ -12,6 +12,8 @@ typedef struct _PROCESS_PATH_REQUEST_
 BOOLEAN GetProcessFullPathByPeb(PVOID EProcess, WCHAR* ProcessFullPath, ULONG ProcessFullPathLength);
 BOOLEAN GetProcessFullPathByEProcess(PVOID EProcess, WCHAR* ProcessFullPath, ULONG ProcessFullPathLength);
 NTSTATUS PsGetProcessPath(PPROCESS_PATH_REQUEST ProcessPathRequest);
+PUNICODE_STRING GetNameByPath(PUNICODE_STRING ImagePath);
+
 
 extern
 KPROCESSOR_MODE

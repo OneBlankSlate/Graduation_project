@@ -1,8 +1,9 @@
 #include"ProcMonitor.h"
+#include"ProcessPath.h"
 PMONITOR_CONTEXT g_context = NULL;
 NTSTATUS MonitorProcess()
 {
-    __debugbreak();
+    //__debugbreak();
     NTSTATUS status = STATUS_UNSUCCESSFUL;
     // 分配驱动上下文
     g_context = (PMONITOR_CONTEXT)ExAllocatePoolWithTag(NonPagedPool, sizeof(MONITOR_CONTEXT), CONTEXT_TAG);
@@ -94,7 +95,20 @@ VOID ProcessNotifyCallback(
         event.Type = ProcessCreate;
         event.ProcessId = HandleToULong(ProcessId);
         event.ParentProcessId = HandleToULong(CreateInfo->ParentProcessId);
-
+        //获取父进程名
+        PEPROCESS parentProcess=NULL;
+        PsLookupProcessByProcessId(event.ParentProcessId, &parentProcess);
+        WCHAR parentProcessPath[520] = { 0 };
+        UNICODE_STRING UniParentProcessPath = { 0 };
+        GetProcessFullPathByEProcess(parentProcess, parentProcessPath, 520);
+        RtlInitUnicodeString(&UniParentProcessPath, parentProcessPath);
+        PUNICODE_STRING parentProcessName = GetNameByPath(&UniParentProcessPath);
+        if (parentProcessName!=NULL&&parentProcessName->Buffer != NULL && parentProcessName->Length > 0)
+        {
+            RtlCopyMemory(event.ParentProcessName, parentProcessName->Buffer, parentProcessName->Length);
+            
+        }
+        if (parentProcessName) ExFreePool(parentProcessName);
         // 获取当前时间
         LARGE_INTEGER systemTime;
         KeQuerySystemTime(&systemTime);
@@ -138,33 +152,29 @@ NTSTATUS GetProcessInfo(
     _In_ BOOLEAN Create
 )
 {
+    //__debugbreak();
     NTSTATUS status = STATUS_SUCCESS;
-    PCHAR imageName = NULL;
-
+    PUNICODE_STRING UniImageName = NULL;
+    WCHAR ImagePath[520] = { 0 };
     UNREFERENCED_PARAMETER(ProcessId);
-
+    UNICODE_STRING uniPath = { 0 };
+    GetProcessFullPathByEProcess(Process, ImagePath, 520);
+    if (ImagePath) {
+        RtlInitUnicodeString(&uniPath, ImagePath);
+        RtlCopyMemory(Event->ImagePath, uniPath.Buffer, uniPath.Length);
+    }
+    else {
+        return STATUS_UNSUCCESSFUL;
+    }
     // 获取进程映像名称
-    imageName = PsGetProcessImageFileName(Process);
-    if (imageName) {
-        ANSI_STRING ansiName;
-        UNICODE_STRING uniName = { 0 };
-
-        RtlInitAnsiString(&ansiName, imageName);
-        status = RtlAnsiStringToUnicodeString(&uniName, &ansiName, TRUE);
-        if (NT_SUCCESS(status)) {
-            ULONG copyLength = min(uniName.Length, sizeof(Event->ImageName) - sizeof(WCHAR));
-            RtlCopyMemory(Event->ImageName, uniName.Buffer, copyLength);
-            Event->ImageName[copyLength / sizeof(WCHAR)] = L'\0';
-            RtlFreeUnicodeString(&uniName);
-        }
-        else {
-            // 如果转换失败，直接复制ANSI字符串
-            ULONG i;
-            for (i = 0; imageName[i] != '\0' && i < sizeof(Event->ImageName) / sizeof(WCHAR) - 1; i++) {
-                Event->ImageName[i] = (WCHAR)imageName[i];
-            }
-            Event->ImageName[i] = L'\0';
-        }
+    UniImageName = GetNameByPath(&uniPath);
+    if (UniImageName) {
+        RtlCopyMemory(Event->ImageName, UniImageName->Buffer, UniImageName->Length);
+        Event->ImageName[UniImageName->Length / sizeof(WCHAR)] = L'\0';
+        ExFreePool(UniImageName);
+    }
+    else {
+        return STATUS_UNSUCCESSFUL;
     }
 
     return STATUS_SUCCESS;

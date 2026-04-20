@@ -34,7 +34,8 @@ typedef struct _PROCESS_EVENT {
     ULONG64 CreateTime;         // 创建时间(FILETIME格式)
     ULONG64 ExitTime;           // 退出时间(FILETIME格式)
     ULONG ExitStatus;           // 退出状态
-    WCHAR ImageName[256];       // 映像名称
+    WCHAR ParentProcessName[200];//父进程名
+    WCHAR ImageName[200];       // 映像名称
     WCHAR ImagePath[520];       // 映像路径
     WCHAR CommandLine[1024];    // 命令行
     WCHAR UserName[128];        // 用户名
