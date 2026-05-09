@@ -26,7 +26,6 @@ private slots:
     void onStopClicked();
     void onRefreshClicked();
     void onClearClicked();
-
     void updateEvents();
 };
 

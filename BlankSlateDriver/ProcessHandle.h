@@ -3,7 +3,7 @@
 #include"IoControlHelper.h"
 
 #ifdef _WIN64
-#define _HANDLE_TABLE_ 0x570
+#define _HANDLE_TABLE_ 0x200
 #define _OFFSET_ 0x10
 #define _OBJECT_BODY_ 0x30
 #else
@@ -15,12 +15,12 @@
 //进程句柄
 typedef struct _HANDLE_INFORMATION_ENTRY_
 {
-	WCHAR HandleType[0x20];
-	WCHAR HandleName[MAX_PATH];
-	HANDLE Handle;
-	PVOID Object;
-	UCHAR Index;   //句柄类型的代号、索引
-	ULONG64 Count;   //句柄的引用计数	
+    WCHAR HandleType[0x20];
+    WCHAR HandleName[MAX_PATH];
+    HANDLE Handle;
+    PVOID Object;
+    UCHAR Index;   //句柄类型的代号、索引
+    ULONG64 Count;   //句柄的引用计数	
 }HANDLE_INFORMATION_ENTRY, * PHANDLE_INFORMATION_ENTRY;
 typedef struct _HANDLES_INFORMATION_
 {
@@ -34,107 +34,92 @@ typedef struct _COMMUNICATE_PROCESS_HANDLE_
     HANDLE ProcessIdentity;
 }COMMUNICATE_PROCESS_HANDLE, * PCOMMUNICATE_PROCESS_HANDLE;
 
-// 句柄表空闲列表结构
-typedef struct _HANDLE_TABLE_FREE_LIST
-{
-    SINGLE_LIST_ENTRY FreeListHead;       // +0x000: 空闲列表头
-    ULONG_PTR Reserved;                   // +0x008: 保留字段（用于对齐）
-} HANDLE_TABLE_FREE_LIST, * PHANDLE_TABLE_FREE_LIST;
-
 typedef struct _HANDLE_TABLE
 {
-    // 句柄表基本信息
-    ULONG NextHandleNeedingPool;          // +0x000: 下一个需要分配池的句柄索引
-    LONG ExtraInfoPages;                  // +0x004: 额外信息页数
-    ULONG_PTR TableCode;                  // +0x008: 句柄表代码（包含层级信息）
-
-    // 进程关联信息
-    PEPROCESS QuotaProcess;               // +0x010: 配额进程（拥有此句柄表的进程）
-    LIST_ENTRY HandleTableList;           // +0x018: 句柄表链表（连接其他进程句柄表）
-
-    // 进程标识
-    ULONG UniqueProcessId;                // +0x028: 进程ID
+    ULONG_PTR TableCode;                  //指向句柄表的存储结构
+    PVOID QuotaProcess;               //句柄表的内存资源记录在此进程中
+    PVOID UniqueProcessId;                //创建进程的ID，用于回调函数
+    ULONG_PTR HandleLock;      //HANDLE_TABLE_LOCKS=4，句柄表锁，仅在句柄表扩展时使用
+    LIST_ENTRY HandleTableList;           //所有的句柄表形成一个链表，链表头为全局变量HandleTableListHead
+    ULONG_PTR HandleContentionEvent;   //若在访问句柄时发生竞争，则在此推锁上等待
+    PVOID DebugInfo;   //调试信息，仅在调试句柄时有意义
+    LONG ExtraInfoPages;                  //审计信息所占用的页面数量
     union
     {
-        ULONG Flags;                      // +0x02c: 标志位
-        struct
-        {
-            ULONG StrictFIFO : 1;         // 位0: 严格FIFO顺序
-            ULONG EnableHandleExceptions : 1; // 位1: 启用句柄异常
-            ULONG Rundown : 1;            // 位2: 运行保护（防止访问已释放句柄表）
-            ULONG Duplicated : 1;         // 位3: 是否重复
-            ULONG RaiseUMExceptionOnInvalidHandleClose : 1; // 位4: 无效句柄关闭时引发用户模式异常
-            ULONG Reserved : 27;          // 位5-31: 保留位
-        };
+        ULONG Flags;                      //标志域
+        UCHAR StrictFIFO : 1;               //是否使用FIFO风格的重用，即先释放先重用
     };
-
-    // 同步对象
-    EX_PUSH_LOCK HandleContentionEvent;   // +0x030: 句柄争用事件
-    EX_PUSH_LOCK HandleTableLock;         // +0x038: 句柄表锁
-
-    // 空闲列表管理
-    union
-    {
-        HANDLE_TABLE_FREE_LIST FreeLists[1]; // +0x040: 空闲句柄列表
-        UCHAR ActualEntry[32];            // +0x040: 实际条目（32字节）
-    };
-
-    // 调试信息
-    PVOID DebugInfo;   // +0x060: 调试信息指针
-
-} HANDLE_TABLE, * PHANDLE_TABLE;
+    ULONG FirstFreeHandle;                      //空闲链表表头的句柄索引
+    struct _HANDLE_TABLE_ENTRY* LastFreeHandleEntry;
+    ULONG HandleCount;
+    ULONG NextHandleNeedingPool;          //下一次句柄表扩展的起始句柄索引
+    ULONG HandleCountHighWatermark;                     //正在使用的句柄表项的数量
+}HANDLE_TABLE, * PHANDLE_TABLE;
 typedef struct _HANDLE_TABLE_ENTRY
 {
     union
     {
-        volatile LONG64 VolatileLowValue;
-        LONG64 LowValue;
-        struct
-        {
-            // 第一个8字节的各种位域组合
-            ULONG_PTR Unlocked : 1;        // 位0: 是否未锁定
-            ULONG_PTR RefCnt : 16;         // 位1-16: 引用计数
-            ULONG_PTR Attributes : 3;      // 位17-19: 属性标志
-            ULONG_PTR ObjectPointerBits : 44; // 位20-63: 对象指针位
-        };
-        struct
-        {
-            VOID* Object;
-            union
-            {
-                ULONG ObAttributes;
-                ULONG_PTR InfoTable;
-                ULONG_PTR Value;
-            };
-        };
+        PVOID Object;                         //指向句柄所代表的对象，二进制的后三位清零可以dt到_OBJECT_HEADER
+        ULONG_PTR ObAttributes;               //最低三位有特别含义，参加OBJ_HANDLE_ATTRIBUTES宏定义
+        PVOID InfoTable;   //PHANDLE_TABLE_ENTRY_INFO 各个句柄表页面的第一个表项，使用此成员指向一张表
+        ULONG_PTR Value;
     };
-
     union
     {
-        LONG64 HighValue;
+        ULONG GrantedAccess;                  //访问掩码
         struct
-        {
-            // 第二个8字节的各种位域组合
-            ULONG GrantedAccessBits : 25;  // 位0-24: 访问权限位
-            ULONG NoRightsUpgrade : 1;     // 位25: 是否禁止权限升级
-            ULONG Spare1 : 6;              // 位26-31: 保留位1
-            ULONG Spare2;                  // 位32-63: 保留位2(实际是4字节)
-        };
-        struct
-        {
+        {                                     //当NtGlobalFlag中包含FLG_KERNEL_STACK_DB标记时使用
             USHORT GrantedAccessIndex;
             USHORT CreatorBackTraceIndex;
-            LONG NextFreeTableEntry;
         };
+        ULONG NextFreeTableEntry;              //空闲时表示下一个空闲句柄索引
     };
 } HANDLE_TABLE_ENTRY, * PHANDLE_TABLE_ENTRY;
+//关闭句柄
+typedef struct COMMUNICATE_CLOSE_HANDLE
+{
+    OPERATE_TYPE OperateType;
+    HANDLE ProcessId;
+    HANDLE TargetHandle;
+}COMMUNICATE_CLOSE_HANDLE, * PCOMMUNICATE_CLOSE_HANDLE;
+typedef enum _SYSTEM_INFORMATION_CLASS {
+    SystemBasicInformation = 0,
+    SystemProcessInformation = 5,
+    // ... 其他成员省略
+    SystemHandleInformation = 16,  // <--- 你要用的值
+    SystemObjectInformation = 17,
+    // ... 等等
+} SYSTEM_INFORMATION_CLASS;
+// 单个句柄条目的详细信息
+typedef struct _SYSTEM_HANDLE_TABLE_ENTRY_INFO {
+    USHORT UniqueProcessId;     // 所属进程 PID
+    USHORT CreatorBackTraceIndex; // 回溯索引 (通常无用)
+    UCHAR ObjectTypeIndex;      // 内核对象类型索引 (如文件、进程、线程等)
+    UCHAR HandleAttributes;     // 句柄属性 (如 OBJ_INHERIT)
+    USHORT HandleValue;         // <--- 重点：句柄的数值 (如你之前看到的 0xC4)
+    PVOID Object;               // 内核对象体的地址 (EPROCESS / EOBJECT 等)
+    ULONG GrantedAccess;        // 该句柄拥有的访问权限 (ACCESS_MASK)
+} SYSTEM_HANDLE_TABLE_ENTRY_INFO, * PSYSTEM_HANDLE_TABLE_ENTRY_INFO;
 
+// 存放所有系统句柄的缓冲区头部
+typedef struct _SYSTEM_HANDLE_INFORMATION {
+    ULONG NumberOfHandles;      // 当前缓冲区中实际包含的句柄总数
+    SYSTEM_HANDLE_TABLE_ENTRY_INFO Handles[1]; // 柔性数组，实际长度由 NumberOfHandles 决定
+} SYSTEM_HANDLE_INFORMATION, * PSYSTEM_HANDLE_INFORMATION;
+// 声明函数原型
+typedef NTSTATUS(*PFN_ZW_QUERY_SYSTEM_INFORMATION)(
+    SYSTEM_INFORMATION_CLASS SystemInformationClass,
+    PVOID SystemInformation,
+    ULONG SystemInformationLength,
+    PULONG ReturnLength
+    );
 
 NTSTATUS PsEnumProcessHandles(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue);
 NTSTATUS EnumProcessHandlesByHandleTable(HANDLE ProcessIdentity, PEPROCESS EProcess, PHANDLES_INFORMATION HandlesInfo, ULONG NumberOfHandle);
+NTSTATUS EnumProcessHandlesByService(HANDLE ProcessIdentity, PEPROCESS EProcess, PHANDLES_INFORMATION HandlesInfo, ULONG NumberOfHandle);
 NTSTATUS HandleTable0(ULONG_PTR TableCode, PEPROCESS EProcess, PHANDLES_INFORMATION HandlesInfo, ULONG NumberOfHandle);
 NTSTATUS HandleTable1(ULONG_PTR TableCode, PEPROCESS EProcess, PHANDLES_INFORMATION HandlesInfo, ULONG NumberOfHandle);
 NTSTATUS HandleTable2(ULONG_PTR TableCode, PEPROCESS EProcess, PHANDLES_INFORMATION HandlesInfo, ULONG NumberOfHandle);
 NTSTATUS HandleTable3(ULONG_PTR TableCode, PEPROCESS EProcess, PHANDLES_INFORMATION HandlesInfo, ULONG NumberOfHandle);
 NTSTATUS InsertHandleToList(PEPROCESS EProcess, HANDLE HandleValue, ULONG_PTR ObjectHeader, PHANDLES_INFORMATION HandlesInfo);
-
+NTSTATUS PsCloseHandle(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue);

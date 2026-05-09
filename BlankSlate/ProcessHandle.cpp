@@ -32,7 +32,6 @@ BOOL EnumProcessHandles(HANDLE ProcessIdentity, vector<HANDLE_INFORMATION_ENTRY>
 			Entry.Handle = v5->HandleInfo[i].Handle;
 			Entry.Object = v5->HandleInfo[i].Object;
 			Entry.Index = v5->HandleInfo[i].Index;
-			Entry.Count = v5->HandleInfo[i].Count;
 			if (v5->HandleInfo[i].HandleName)
 			{
 				wcsncpy_s(Entry.HandleName,_countof(Entry.HandleName),v5->HandleInfo[i].HandleName,_countof(Entry.HandleName) - 1);

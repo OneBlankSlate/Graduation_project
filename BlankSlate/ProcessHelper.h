@@ -296,4 +296,5 @@ typedef struct _COMMUNICATE_TERMINATE_PROCESS_
 
 HANDLE GetProcessIdentity(const TCHAR* ImageName);
 BOOL EnumProcess(vector<PROCESS_INFORMATION_ENTRY>& ProcessInfo);
+BOOL EnableDebugPrivilege();
 

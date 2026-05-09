@@ -1,10 +1,10 @@
-#include"ProcessHandle.h"
+ï»¿#include"ProcessHandle.h"
 #include"ProcessHelper.h"
 #include"ObjectHelper.h"
 
 NTSTATUS PsEnumProcessHandles(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)
 {
-    NTSTATUS Status1 = STATUS_UNSUCCESSFUL,Status2 = STATUS_UNSUCCESSFUL;
+    NTSTATUS Status1 = STATUS_UNSUCCESSFUL, Status2 = STATUS_UNSUCCESSFUL;
     PCOMMUNICATE_PROCESS_HANDLE v1 = (PCOMMUNICATE_PROCESS_HANDLE)InputBuffer;
     PEPROCESS EProcess = NULL;
     HANDLE ProcessIdentity = 0;
@@ -24,8 +24,8 @@ NTSTATUS PsEnumProcessHandles(PVOID InputBuffer, ULONG InputBufferLength, PVOID 
     }
     if (PsIsRealProcess(EProcess))
     {
-        //Status1 = EnumProcessHandlesByService(ProcessIdentity,EProcess,(PHANDLES_INFORMATION)OutputBuffer,NumberOfHandle);
-        Status1 = EnumProcessHandlesByHandleTable(ProcessIdentity, EProcess, (PHANDLES_INFORMATION)OutputBuffer, NumberOfHandle);
+        Status1 = EnumProcessHandlesByService(ProcessIdentity,EProcess,(PHANDLES_INFORMATION)OutputBuffer,NumberOfHandle);
+        //Status1 = EnumProcessHandlesByHandleTable(ProcessIdentity, EProcess, (PHANDLES_INFORMATION)OutputBuffer, NumberOfHandle);
     }
     if (NT_SUCCESS(Status2))
     {
@@ -46,7 +46,7 @@ NTSTATUS EnumProcessHandlesByHandleTable(HANDLE ProcessIdentity, PEPROCESS EProc
         HandleTable = (PHANDLE_TABLE)(*((ULONG_PTR*)((ULONG_PTR)EProcess + _HANDLE_TABLE_)));
         if (MmIsAddressValid(HandleTable))
         {
-            TableCode = (ULONG_PTR)(HandleTable->TableCode) & 0xFFFFFFFFFFFFFFFC;  //µÍÁ½Î»ÊÇ¾ä±ú±í²ãÊıĞÅÏ¢
+            TableCode = (ULONG_PTR)(HandleTable->TableCode) & 0xFFFFFFFFFFFFFFFC;
             Flag = (ULONG)(HandleTable->TableCode) & 0x03;
             switch (Flag)
             {
@@ -95,12 +95,19 @@ NTSTATUS HandleTable0(ULONG_PTR TableCode, PEPROCESS EProcess, PHANDLES_INFORMAT
     {
         if (MmIsAddressValid((PVOID)HandleTableEntry))
         {
-            PVOID ObjectHeader = (HandleTableEntry->LowValue >> 0x10) & 0xfffffffffffffff0;  
-            PVOID ObjectBody = (PVOID)((ULONG_PTR)ObjectHeader + _OBJECT_BODY_);
-            if (MmIsAddressValid(ObjectBody)&&MmIsAddressValid(ObjectBody)&& NumberOfHandle > HandlesInfo->NumberOfHandle)
+            PVOID ObjectHeader = (PVOID)(*(ULONG_PTR*)HandleTableEntry & 0xFFFFFFFFFFFFFFF8);
+            if (MmIsAddressValid(ObjectHeader))
             {
-                InsertHandleToList((PEPROCESS)EProcess, (HANDLE)((HandlesInfo->NumberOfHandle + 1) * sizeof(int)), (ULONG_PTR)ObjectHeader, HandlesInfo);
-                HandlesInfo->NumberOfHandle++;
+                PVOID ObjectBody = (PVOID)((ULONG_PTR)ObjectHeader + _OBJECT_BODY_);
+                if (MmIsAddressValid(ObjectBody))
+                {
+                    DbgPrint("ObjectBody:%p\r\n", ObjectBody);
+                    if (NumberOfHandle > HandlesInfo->NumberOfHandle)
+                    {
+                        InsertHandleToList((PEPROCESS)EProcess, (HANDLE)((HandlesInfo->NumberOfHandle + 1) * sizeof(int)), (ULONG_PTR)ObjectHeader, HandlesInfo);
+                        HandlesInfo->NumberOfHandle++;
+                    }
+                }
             }
         }
         HandleTableEntry++;
@@ -151,19 +158,96 @@ NTSTATUS HandleTable3(ULONG_PTR TableCode, PEPROCESS EProcess, PHANDLES_INFORMAT
     } while (*(PULONG_PTR)TableCode != 0);
     return Status;
 }
-NTSTATUS InsertHandleToList(PEPROCESS EProcess,HANDLE HandleValue,ULONG_PTR ObjectHeader, PHANDLES_INFORMATION HandlesInfo)
+NTSTATUS EnumProcessHandlesByService(HANDLE ProcessIdentity, PEPROCESS EProcess, PHANDLES_INFORMATION HandlesInfo, ULONG NumberOfHandle)
+{
+    __debugbreak();
+    PFN_ZW_QUERY_SYSTEM_INFORMATION ZwQuerySystemInformation =
+        (PFN_ZW_QUERY_SYSTEM_INFORMATION)MmGetSystemRoutineAddress(&(UNICODE_STRING)RTL_CONSTANT_STRING(L"ZwQuerySystemInformation"));
+
+    if (!ZwQuerySystemInformation) {
+        // é”™è¯¯å¤„ç†
+        return STATUS_UNSUCCESSFUL;
+    }
+
+    // 3. ç¬¬ä¸€æ¬¡è°ƒç”¨ï¼Œè·å–æ‰€éœ€çš„ç¼“å†²åŒºå¤§å°
+    ULONG bufferSize = 0x200000;  // âœ… å¿…é¡»æ˜¯ ULONG
+    /*NTSTATUS status = ZwQuerySystemInformation(SystemHandleInformation, NULL, 0, &bufferSize);
+    if (status != STATUS_INFO_LENGTH_MISMATCH) {
+        return status;
+    }*/
+
+    // åˆ†é…å†…å­˜
+    PSYSTEM_HANDLE_INFORMATION handleInfo =
+        (PSYSTEM_HANDLE_INFORMATION)ExAllocatePool2(POOL_FLAG_NON_PAGED, bufferSize, 'tag1');
+    if (!handleInfo) return STATUS_INSUFFICIENT_RESOURCES;
+
+    // ç¬¬äºŒæ¬¡è°ƒç”¨
+    NTSTATUS status = ZwQuerySystemInformation(SystemHandleInformation, handleInfo, bufferSize, NULL);
+    if (NT_SUCCESS(status)) {
+        // 6. éå†æ‰€æœ‰å¥æŸ„ï¼Œå¯»æ‰¾ç›®æ ‡è¿›ç¨‹çš„å¥æŸ„
+        for (ULONG i = 0; i < handleInfo->NumberOfHandles; i++) {
+            PSYSTEM_HANDLE_TABLE_ENTRY_INFO entry = &handleInfo->Handles[i];
+
+            // è¿‡æ»¤å‡ºå±äºç›®æ ‡è¿›ç¨‹ (æ¯”å¦‚ä½ çš„è¿›ç¨‹A) çš„å¥æŸ„
+            if (entry->UniqueProcessId == ProcessIdentity) {
+                HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Index = entry->ObjectTypeIndex;
+                HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Handle = entry->HandleValue;
+                HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Object = entry->Object;
+                POBJECT_TYPE Type = __ObGetObjectType(entry->Object);
+   /* kd > dt _object_type
+        nt!_OBJECT_TYPE
+        + 0x000 TypeList         : _LIST_ENTRY
+        + 0x010 Name : _UNICODE_STRING*/
+#ifdef _WIN64
+                PUNICODE_STRING Name = (PUNICODE_STRING)((ULONG_PTR)Type + 0x10);
+#else
+                PUNICODE_STRING Name = (PUNICODE_STRING)((ULONG_PTR)Type + 0x08);
+#endif
+
+                //RtlCopyMemory(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleType, Name->Buffer, (wcslen(Name->Buffer) + 1) * 2);
+                RtlCopyMemory(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleType, Name->Buffer, Name->Length);
+
+                //å¯¹è±¡å  ObQueryNameString
+                POBJECT_NAME_INFORMATION NameInfo = NULL;
+                ULONG RequiredLength = 0;
+                // ç¬¬ä¸€æ¬¡è°ƒç”¨è·å–æ‰€éœ€ç¼“å†²åŒºå¤§å°
+                status = ObQueryNameString(entry->Object, NULL, 0, &RequiredLength);
+                // åˆ†é…ç¼“å†²åŒº
+                NameInfo = (POBJECT_NAME_INFORMATION)ExAllocatePool(PagedPool, RequiredLength);
+                // ç¬¬äºŒæ¬¡è°ƒç”¨è·å–å¯¹è±¡åç§°
+                status = ObQueryNameString(entry->Object, NameInfo, RequiredLength, &RequiredLength);
+                if (NT_SUCCESS(status))
+                {
+                    RtlCopyMemory(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleName, NameInfo->Name.Buffer, NameInfo->Name.Length);
+
+                }
+                else
+                {
+                    ExFreePool(NameInfo);
+                }
+                HandlesInfo->NumberOfHandle++;
+
+            }
+        }
+    }
+
+    // 7. é‡Šæ”¾å†…å­˜
+    ExFreePool(handleInfo);
+    return status;
+}
+NTSTATUS InsertHandleToList(PEPROCESS EProcess, HANDLE HandleValue, ULONG_PTR ObjectHeader, PHANDLES_INFORMATION HandlesInfo)
 {
     PVOID ObjectBody = (PVOID)(ObjectHeader + _OBJECT_BODY_);
-    //¾ä±úÀàĞÍ´úºÅ
+    //å¥æŸ„ç±»å‹ä»£å·
     HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Index = *(UCHAR*)((ULONG_PTR)ObjectHeader + 0x18);
-    //ÒıÓÃ¼ÆÊı
+    //å¼•ç”¨è®¡æ•°
     HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Count = *(ULONG_PTR*)((ULONG_PTR)ObjectHeader + 0);
-    //¾ä±úÖµ
+    //å¥æŸ„å€¼
     HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Handle = HandleValue;
-    //¾ä±ú¶ÔÏó
+    //å¥æŸ„å¯¹è±¡
     HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Object = ObjectBody;
-    //¶ÔÏóÀàĞÍ
-    POBJECT_TYPE Type = __ObGetObjectType(ObjectBody);  //´«Èë¶ÔÏóÌåÖ¸Õë£¬EProcessÊÇ½ø³Ì¶ÔÏóµÄ¶ÔÏóÌå£¬´«ÈëÔò·µ»ØµÄÀàĞÍÊÇProcess
+    //å¯¹è±¡ç±»å‹
+    POBJECT_TYPE Type = __ObGetObjectType(ObjectBody);  //ä¼ å…¥å¯¹è±¡ä½“æŒ‡é’ˆï¼ŒEProcessæ˜¯è¿›ç¨‹å¯¹è±¡çš„å¯¹è±¡ä½“ï¼Œä¼ å…¥åˆ™è¿”å›çš„ç±»å‹æ˜¯Process
    /* kd > dt _object_type
         nt!_OBJECT_TYPE
         + 0x000 TypeList         : _LIST_ENTRY
@@ -173,28 +257,78 @@ NTSTATUS InsertHandleToList(PEPROCESS EProcess,HANDLE HandleValue,ULONG_PTR Obje
 #else
     PUNICODE_STRING Name = (PUNICODE_STRING)((ULONG_PTR)Type + 0x08);
 #endif
-    
+
     //RtlCopyMemory(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleType, Name->Buffer, (wcslen(Name->Buffer) + 1) * 2);
     RtlCopyMemory(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleType, Name->Buffer, Name->Length);
 
-    //¶ÔÏóÃû  ObQueryNameString
+    //å¯¹è±¡å  ObQueryNameString
     POBJECT_NAME_INFORMATION NameInfo = NULL;
     ULONG RequiredLength = 0;
-    // µÚÒ»´Îµ÷ÓÃ»ñÈ¡ËùĞè»º³åÇø´óĞ¡
-    NTSTATUS Status = ObQueryNameString(ObjectBody,NULL,0,&RequiredLength);
-    // ·ÖÅä»º³åÇø
+    // ç¬¬ä¸€æ¬¡è°ƒç”¨è·å–æ‰€éœ€ç¼“å†²åŒºå¤§å°
+    NTSTATUS Status = ObQueryNameString(ObjectBody, NULL, 0, &RequiredLength);
+    // åˆ†é…ç¼“å†²åŒº
     NameInfo = (POBJECT_NAME_INFORMATION)ExAllocatePool(PagedPool, RequiredLength);
-    // µÚ¶ş´Îµ÷ÓÃ»ñÈ¡¶ÔÏóÃû³Æ
-    Status = ObQueryNameString(ObjectBody, NameInfo,RequiredLength,&RequiredLength);
-    if (NT_SUCCESS(Status)) 
+    // ç¬¬äºŒæ¬¡è°ƒç”¨è·å–å¯¹è±¡åç§°
+    Status = ObQueryNameString(ObjectBody, NameInfo, RequiredLength, &RequiredLength);
+    if (NT_SUCCESS(Status))
     {
         RtlCopyMemory(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleName, NameInfo->Name.Buffer, NameInfo->Name.Length);
     }
-    else 
+    else
     {
         ExFreePool(NameInfo);
     }
-    
+
     return Status;
 }
 
+NTSTATUS PsCloseHandle(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)
+{
+    NTSTATUS Status = STATUS_UNSUCCESSFUL;
+    PCOMMUNICATE_CLOSE_HANDLE v5 = (PCOMMUNICATE_CLOSE_HANDLE)InputBuffer;
+    //å‚æ•°æ£€æŸ¥
+    if (!InputBuffer || InputBufferLength != sizeof(COMMUNICATE_CLOSE_HANDLE))
+    {
+        return STATUS_INVALID_PARAMETER;
+    }
+    if (v5->ProcessId == 0 && v5->TargetHandle == 0)
+    {
+        return STATUS_INVALID_PARAMETER;
+    }
+    PEPROCESS TargetProcess = NULL;
+    KAPC_STATE ApcState;
+    HANDLE hProcess = NULL;
+    PVOID Object = NULL;
+    HANDLE TargetHandle = v5->TargetHandle;
+    __try {
+        Status = PsLookupProcessByProcessId(v5->ProcessId, &TargetProcess);
+        if (!NT_SUCCESS(Status)) {
+            __leave;
+        }
+        if (KeGetCurrentIrql() != PASSIVE_LEVEL)
+            return STATUS_UNSUCCESSFUL;
+        if (TargetHandle == NULL || TargetHandle == (HANDLE)-1)
+            return STATUS_INVALID_HANDLE;
+        KeStackAttachProcess(TargetProcess, &ApcState);
+        Status = ObReferenceObjectByHandle(
+            TargetHandle,
+            0,
+            NULL,
+            KernelMode,
+            &Object,
+            NULL
+        );
+        if (NT_SUCCESS(Status)) {
+            ObDereferenceObject(Object);
+            Status = ZwClose(TargetHandle);
+        }
+        KeUnstackDetachProcess(&ApcState);
+    }
+    __finally {
+        // é‡Šæ”¾EPROCESSå¼•ç”¨
+        if (TargetProcess) {
+            ObDereferenceObject(TargetProcess);
+        }
+    }
+    return Status;
+}

@@ -32,8 +32,8 @@ typedef enum _OPERATE_TYPE_
 	START_PROC_MON,
 	STOP_PROC_MON,
 	GET_EVENTS_PROC_MON,
+	CLOSE_HANDLE,
 	SERVICE_MAX
-
 }OPERATE_TYPE;
 
 typedef NTSTATUS(*LPFN_SERVICEADDRESS)(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue);

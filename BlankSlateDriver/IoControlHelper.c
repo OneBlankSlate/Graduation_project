@@ -24,6 +24,7 @@ LPFN_SERVICEADDRESS __ServiceArray[] = {
 	MonitorProcess,
 	StopMonitorProcess,
 	GetProcEvents,
+	PsCloseHandle,
 	NULL
 };
 NTSTATUS CommunicateNeitherControl(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)

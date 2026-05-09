@@ -38,6 +38,7 @@ DriverModuleWindow::~DriverModuleWindow()
 
 void DriverModuleWindow::ListDriverModules()
 {
+    //__debugbreak();
     vector<DRIVER_MODULE_ENTRY> DriverModuleInfo;
     DriverModuleInfo.reserve(100);
     EnumDriverModule(DriverModuleInfo);
@@ -66,7 +67,9 @@ void DriverModuleWindow::ListDriverModules()
 
 void DriverModuleWindow::RefreshDriverModule()
 {
-    m_model.clear();
+    //m_model.clear();  //这种方法清理数据行的同时也会清理表头，因此每次刷新之后表头都会变成数字
+    //只清理数据行，不清理表头
+    m_model.removeRows(0, m_model.rowCount());
     ListDriverModules();
 }
 
