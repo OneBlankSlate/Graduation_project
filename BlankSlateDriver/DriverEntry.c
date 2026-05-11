@@ -5,6 +5,7 @@
 #include"SystemModule.h"
 #include"ProcessHelper.h"
 #include"ProcMonitor.h"
+#include "FileMonitor.h"
 //注册表回调使用的Cookie
 LARGE_INTEGER g_liRegCookie;
 //   bu BlankSlateDriver!DriverEntry
@@ -54,7 +55,28 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 	InitializeSystemSource();
 	InitializeCallbackSource(DriverObject);
 	GetDriverObject(DriverObject);
-	DbgPrint("[wdk]DriverEntry");
+	// 初始化文件监控模块
+	Status = InitializeFileMonitor(DriverObject);
+	if (!NT_SUCCESS(Status)) {
+		DbgPrint("[wdk] File Monitor initialization failed: 0x%X\n", Status);
+	}
+	else {
+		DbgPrint("[wdk] File Monitor initialized successfully\n");
+	}
+
+	// 注册 MiniFilter
+	Status = FltRegisterFilter(DriverObject, &FilterRegistration, &gFilterHandle);
+	if (NT_SUCCESS(Status)) {
+		Status = FltStartFiltering(gFilterHandle);
+		if (!NT_SUCCESS(Status)) {
+			FltUnregisterFilter(gFilterHandle);
+			gFilterHandle = NULL;
+		}
+		else {}
+	}
+	else {
+		return Status;
+	}
 
 	return STATUS_SUCCESS;
 }
@@ -86,6 +108,14 @@ VOID DriverUnload(IN PDRIVER_OBJECT DriverObject)
 		ExFreePoolWithTag(g_context, CONTEXT_TAG);
 		g_context = NULL;
 	}
+
+	// 停止和反初始化文件监控
+	if (gFilterHandle) {
+		FltUnregisterFilter(gFilterHandle);
+		gFilterHandle = NULL;
+	}
+
+	UninitializeFileMonitor();
 
 }
 NTSTATUS DispatchRoutine(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)

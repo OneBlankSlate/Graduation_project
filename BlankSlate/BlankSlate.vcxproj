@@ -104,6 +104,8 @@
   <ItemGroup>
     <ClCompile Include="DriverModule.cpp" />
     <ClCompile Include="DriverModuleWindow.cpp" />
+    <ClCompile Include="FileMonitor.c" />
+    <ClCompile Include="FileMonWindow.cpp" />
     <ClCompile Include="IoControlHelper.cpp" />
     <ClCompile Include="ProcessHandle.cpp" />
     <ClCompile Include="ProcessHandleWindow.cpp" />
@@ -126,6 +128,7 @@
     <ClCompile Include="BlankSlate.cpp" />
     <ClCompile Include="main.cpp" />
     <QtUic Include="DriverModuleWindow.ui" />
+    <QtUic Include="FileMonWindow.ui" />
     <QtUic Include="ProcessHandleWindow.ui" />
     <QtUic Include="ProcessMemoryWindow.ui" />
     <QtUic Include="ProcessModuleWindow.ui" />
@@ -142,6 +145,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DriverModule.h" />
+    <QtMoc Include="FileMonWindow.h" />
+    <ClInclude Include="FileMonCommon.h" />
+    <ClInclude Include="FileMonitor.h" />
     <ClInclude Include="IoControlHelper.h" />
     <QtMoc Include="ProcMonWindow.h" />
     <ClInclude Include="ProcMonCommon.h" />

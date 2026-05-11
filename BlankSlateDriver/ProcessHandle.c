@@ -160,7 +160,6 @@ NTSTATUS HandleTable3(ULONG_PTR TableCode, PEPROCESS EProcess, PHANDLES_INFORMAT
 }
 NTSTATUS EnumProcessHandlesByService(HANDLE ProcessIdentity, PEPROCESS EProcess, PHANDLES_INFORMATION HandlesInfo, ULONG NumberOfHandle)
 {
-    __debugbreak();
     PFN_ZW_QUERY_SYSTEM_INFORMATION ZwQuerySystemInformation =
         (PFN_ZW_QUERY_SYSTEM_INFORMATION)MmGetSystemRoutineAddress(&(UNICODE_STRING)RTL_CONSTANT_STRING(L"ZwQuerySystemInformation"));
 

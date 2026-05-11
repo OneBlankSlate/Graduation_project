@@ -33,6 +33,9 @@ typedef enum _OPERATE_TYPE_
 	STOP_PROC_MON,
 	GET_EVENTS_PROC_MON,
 	CLOSE_HANDLE,
+	START_FILE_MON,     // 启动文件监控
+	STOP_FILE_MON,      // 停止文件监控
+	GET_EVENTS_FILE_MON, // 获取文件事件
 	SERVICE_MAX
 }OPERATE_TYPE;
 

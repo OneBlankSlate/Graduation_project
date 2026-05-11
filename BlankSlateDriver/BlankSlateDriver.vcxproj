@@ -175,6 +175,7 @@
     </ClCompile>
     <Link>
       <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
+      <AdditionalDependencies>FltMgr.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -223,6 +224,7 @@
   <ItemGroup>
     <ClCompile Include="CallbackHelper.c" />
     <ClCompile Include="DriverEntry.c" />
+    <ClCompile Include="FileMonitor.c" />
     <ClCompile Include="IoControlHelper.c" />
     <ClCompile Include="MemoryHelper.c" />
     <ClCompile Include="ObjectHelper.c" />
@@ -240,6 +242,8 @@
   <ItemGroup>
     <ClInclude Include="CallbackHelper.h" />
     <ClInclude Include="DriverEntry.h" />
+    <ClInclude Include="FileMonCommon.h" />
+    <ClInclude Include="FileMonitor.h" />
     <ClInclude Include="IoControlHelper.h" />
     <ClInclude Include="MemoryHelper.h" />
     <ClInclude Include="ObjectHelper.h" />
@@ -253,6 +257,9 @@
     <ClInclude Include="StringHelper.h" />
     <ClInclude Include="SystemHelper.h" />
     <ClInclude Include="SystemModule.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Inf Include="1.inf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

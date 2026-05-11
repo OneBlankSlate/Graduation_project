@@ -1,0 +1,348 @@
+#include "FileMonWindow.h"
+#include <QMessageBox>
+#include <QDateTime>
+#include <QHeaderView>
+#include"FileMonitor.h"
+#pragma comment(lib, "Psapi.lib")
+FileMonWindow::FileMonWindow(QWidget* parent)
+    : QWidget(parent)
+    , ui(new Ui::FileMonWindowClass)
+    , m_updateTimer(new QTimer(this))
+{
+    ui->setupUi(this);
+
+    // 初始化模型
+    m_model = new QStandardItemModel(this);
+    setupTableView();
+
+    // 连接按钮信号
+    connect(ui->StartMonBtn, &QPushButton::clicked, this, &FileMonWindow::onStartClicked);
+    connect(ui->StopMonBtn, &QPushButton::clicked, this, &FileMonWindow::onStopClicked);
+    connect(ui->RefreshLogBtn, &QPushButton::clicked, this, &FileMonWindow::onRefreshClicked);
+    connect(ui->ClearLogBtn, &QPushButton::clicked, this, &FileMonWindow::onClearClicked);
+
+    // 设置定时器
+    m_updateTimer->setInterval(1000); // 1秒刷新一次
+    connect(m_updateTimer, &QTimer::timeout, this, &FileMonWindow::updateEvents);
+
+    // 初始状态
+    updateUIState(false);
+}
+
+FileMonWindow::~FileMonWindow()
+{
+    if (m_isMonitoring) {
+        onStopClicked(); // 确保停止监控
+    }
+    delete ui;
+}
+
+void FileMonWindow::setupTableView()
+{
+    // 设置表头
+    QStringList headers = {
+        QStringLiteral("时间"),
+        QStringLiteral("操作"),
+        QStringLiteral("PID"),
+        QStringLiteral("进程名"),
+        QStringLiteral("文件路径")
+    };
+    m_model->setHorizontalHeaderLabels(headers);
+
+    // 设置表格属性
+    ui->FileMon_TableView->setModel(m_model);
+    ui->FileMon_TableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->FileMon_TableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->FileMon_TableView->horizontalHeader()->setStretchLastSection(true);
+    ui->FileMon_TableView->setSortingEnabled(true);
+
+    // 设置列宽
+    ui->FileMon_TableView->setColumnWidth(0, 180);   // 时间
+    ui->FileMon_TableView->setColumnWidth(1, 100);   // 操作
+    ui->FileMon_TableView->setColumnWidth(2, 80);    // PID
+    ui->FileMon_TableView->setColumnWidth(3, 150);   // 进程名
+    ui->FileMon_TableView->setColumnWidth(4, 400);    // 文件路径
+}
+
+void FileMonWindow::updateUIState(bool isMonitoring)
+{
+    m_isMonitoring = isMonitoring;
+    ui->StartMonBtn->setEnabled(!isMonitoring);
+    ui->StopMonBtn->setEnabled(isMonitoring);
+    ui->RefreshLogBtn->setEnabled(true);
+    ui->ClearLogBtn->setEnabled(true);
+
+    if (isMonitoring) {
+        m_updateTimer->start();
+    }
+    else {
+        m_updateTimer->stop();
+    }
+}
+
+QString FileMonWindow::fileTimeToString(ULONGLONG fileTime)
+{
+    // 将 Windows FILETIME 转换为 QDateTime
+    FILETIME ft;
+    ft.dwLowDateTime = (DWORD)(fileTime & 0xFFFFFFFF);
+    ft.dwHighDateTime = (DWORD)(fileTime >> 32);
+
+    SYSTEMTIME st;
+    FileTimeToSystemTime(&ft, &st);
+
+    QDateTime datetime;
+    datetime.setDate(QDate(st.wYear, st.wMonth, st.wDay));
+    datetime.setTime(QTime(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds));
+
+    return datetime.toString("yyyy-MM-dd hh:mm:ss.zzz");
+}
+
+QString FileMonWindow::fileEventTypeToString(FILE_EVENT_TYPE type)
+{
+    switch (type) {
+    case FileCreateOrOpen:
+        return QStringLiteral("创建/打开");
+    case FileRead:
+        return QStringLiteral("读取");
+    case FileWrite:
+        return QStringLiteral("写入");
+    case FileDelete:
+        return QStringLiteral("删除");
+    case FileRename:
+        return QStringLiteral("重命名");
+    case FileSetInfo:
+        return QStringLiteral("设置信息");
+    default:
+        return QStringLiteral("未知");
+    }
+}
+
+void FileMonWindow::onStartClicked()
+{
+    DWORD bytesReturned = 0;
+    COMMUNICATE_FILE_MON input = {};
+    input.OperateType = START_FILE_MON;
+    BOOL result = CommunicateDevice(&input, sizeof(input), nullptr, 0, &bytesReturned);
+
+    if (result) {
+        m_updateTimer->start();
+        updateUIState(true);
+    }
+    else {
+        QMessageBox::warning(this, "错误", "启动进程监控失败");
+    }
+}
+
+void FileMonWindow::onStopClicked()
+{
+    DWORD bytesReturned = 0;
+    COMMUNICATE_FILE_MON input = {};
+    input.OperateType = STOP_FILE_MON;
+    BOOL result = CommunicateDevice(&input, sizeof(input), nullptr, 0, &bytesReturned);
+
+    if (result) {
+        m_updateTimer->stop();
+        updateUIState(false);
+    }
+    else {
+        QMessageBox::warning(this, "错误", "停止进程监控失败");
+    }
+}
+
+void FileMonWindow::onRefreshClicked()
+{
+    updateEvents();
+}
+
+void FileMonWindow::onClearClicked()
+{
+    m_model->removeRows(0, m_model->rowCount());
+}
+
+void FileMonWindow::updateEvents()
+{
+    if (!m_isMonitoring) {
+        return;
+    }
+
+    //
+    // 分配缓冲区
+    //
+    DWORD bufferSize =
+        FILE_EVENT_PACKET_SIZE;
+
+    BYTE* buffer =
+        new BYTE[bufferSize];
+
+    if (!buffer) {
+        return;
+    }
+
+    //
+    // 设置事件包
+    //
+    PFILE_EVENT_PACKET packet =
+        reinterpret_cast<PFILE_EVENT_PACKET>(
+            buffer);
+
+    packet->EventCount =
+        MAX_FILE_EVENTS;
+
+    packet->BufferSize =
+        bufferSize;
+
+    DWORD bytesReturned = 0;
+
+    COMMUNICATE_FILE_MON input = {};
+
+    input.OperateType =
+        GET_EVENTS_FILE_MON;
+
+    //
+    // 与驱动通信
+    //
+    if (CommunicateDevice(
+        &input,
+        sizeof(COMMUNICATE_FILE_MON),
+        buffer,
+        bufferSize,
+        &bytesReturned))
+    {
+        if (bytesReturned > 0)
+        {
+            DWORD eventCount =
+                bytesReturned /
+                sizeof(FILE_EVENT);
+
+            for (DWORD i = 0;
+                i < eventCount &&
+                i < packet->EventCount;
+                i++)
+            {
+                const FILE_EVENT& event =
+                    packet->Events[i];
+
+                QList<QStandardItem*> rowItems;
+
+                //
+                // 时间
+                //
+                QString timeStr =
+                    fileTimeToString(
+                        event.TimeStamp);
+
+                rowItems.append(
+                    new QStandardItem(
+                        timeStr));
+
+                //
+                // 操作类型
+                //
+                QString operationStr =
+                    fileEventTypeToString(
+                        event.Type);
+
+                rowItems.append(
+                    new QStandardItem(
+                        operationStr));
+
+                //
+                // PID
+                //
+                rowItems.append(
+                    new QStandardItem(
+                        QString::number(
+                            event.ProcessId)));
+
+                //
+                // 进程名
+                //
+                QString processName =
+                    "Unknown";
+
+                //
+                // PID 4 特殊处理
+                //
+                if (event.ProcessId == 4)
+                {
+                    processName = "System";
+                }
+                else
+                {
+                    HANDLE hProcess =
+                        OpenProcess(
+                            PROCESS_QUERY_LIMITED_INFORMATION,
+                            FALSE,
+                            event.ProcessId);
+
+                    if (hProcess)
+                    {
+                        WCHAR processPath[MAX_PATH] = { 0 };
+
+                        DWORD pathSize =
+                            MAX_PATH;
+
+                        if (QueryFullProcessImageNameW(
+                            hProcess,
+                            0,
+                            processPath,
+                            &pathSize))
+                        {
+                            QFileInfo fileInfo(
+                                QString::fromWCharArray(
+                                    processPath));
+
+                            processName =
+                                fileInfo.fileName();
+                        }
+
+                        CloseHandle(hProcess);
+                    }
+                }
+
+                rowItems.append(
+                    new QStandardItem(
+                        processName));
+
+                //
+                // 文件路径
+                //
+                QString filePath =
+                    QString::fromWCharArray(
+                        event.FilePath);
+
+                rowItems.append(
+                    new QStandardItem(
+                        filePath));
+
+                //
+                // 额外信息
+                //
+                QString extraInfo =
+                    QString::fromWCharArray(
+                        event.ExtraInfo);
+
+                rowItems.append(
+                    new QStandardItem(
+                        extraInfo));
+
+                //
+                // 添加到模型
+                //
+                m_model->appendRow(
+                    rowItems);
+            }
+
+            //
+            // 自动滚动
+            //
+            if (eventCount > 0)
+            {
+                ui->FileMon_TableView
+                    ->scrollToBottom();
+            }
+        }
+    }
+
+    delete[] buffer;
+}

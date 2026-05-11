@@ -72,6 +72,12 @@
     <Filter Include="帮助\进程帮助\进程监控">
       <UniqueIdentifier>{b325684d-8fe6-4c70-8b35-d5d22dbec48c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="窗口\文件监控窗口">
+      <UniqueIdentifier>{cfab4411-ebb8-4d5c-888f-d8c137cb60f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\文件监控">
+      <UniqueIdentifier>{df34b438-a92c-46e6-a1d2-1d1799c735f7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="BlankSlate.ui">
@@ -117,6 +123,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="ProcMonWindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="FileMonWindow.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
@@ -178,6 +187,12 @@
     <ClCompile Include="ProcMonitor.cpp">
       <Filter>帮助\进程帮助\进程监控</Filter>
     </ClCompile>
+    <ClCompile Include="FileMonWindow.cpp">
+      <Filter>窗口\文件监控窗口</Filter>
+    </ClCompile>
+    <ClCompile Include="FileMonitor.c">
+      <Filter>帮助\文件监控</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="BlankSlate.h">
@@ -206,6 +221,9 @@
     </QtMoc>
     <QtMoc Include="ProcMonWindow.h">
       <Filter>窗口\进程监控窗口</Filter>
+    </QtMoc>
+    <QtMoc Include="FileMonWindow.h">
+      <Filter>窗口\文件监控窗口</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
@@ -247,6 +265,12 @@
     </ClInclude>
     <ClInclude Include="ProcMonitor.h">
       <Filter>帮助\进程帮助\进程监控</Filter>
+    </ClInclude>
+    <ClInclude Include="FileMonCommon.h">
+      <Filter>窗口\文件监控窗口</Filter>
+    </ClInclude>
+    <ClInclude Include="FileMonitor.h">
+      <Filter>帮助\文件监控</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

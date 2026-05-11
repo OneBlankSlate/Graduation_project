@@ -56,6 +56,9 @@
     <Filter Include="进程帮助\进程监控">
       <UniqueIdentifier>{7f924e37-3cbb-4594-b451-fbd1e11fd32b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="文件监控">
+      <UniqueIdentifier>{fbdf310f-e676-4127-85fd-6d488ba3c190}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DriverEntry.c">
@@ -102,6 +105,9 @@
     </ClCompile>
     <ClCompile Include="ProcMonitor.c">
       <Filter>进程帮助\进程监控</Filter>
+    </ClCompile>
+    <ClCompile Include="FileMonitor.c">
+      <Filter>文件监控</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -150,5 +156,16 @@
     <ClInclude Include="ProcMonitor.h">
       <Filter>进程帮助\进程监控</Filter>
     </ClInclude>
+    <ClInclude Include="FileMonitor.h">
+      <Filter>文件监控</Filter>
+    </ClInclude>
+    <ClInclude Include="FileMonCommon.h">
+      <Filter>文件监控</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Inf Include="1.inf">
+      <Filter>Driver Files</Filter>
+    </Inf>
   </ItemGroup>
 </Project>

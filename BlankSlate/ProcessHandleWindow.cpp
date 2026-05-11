@@ -40,7 +40,6 @@ ProcessHandleWindow::~ProcessHandleWindow()
 {}
 void ProcessHandleWindow::ListProcessHandleInfo(HANDLE ProcessId)
 {
-	__debugbreak();
 	vector<HANDLE_INFORMATION_ENTRY> HandleInfo;
 	HandleInfo.reserve(1000);
 	int i = 0;
