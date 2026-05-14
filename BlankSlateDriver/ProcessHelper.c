@@ -161,12 +161,8 @@ VOID SetProcessInfoToList(PPROCESS_INFORMATIONS ProcessInfos, ULONG NumberOfProc
     { 
 #ifdef _WIN64
         ULONG_PTR ProcessIdentity = *(PULONG_PTR)((ULONG_PTR)EProcess + 0x440);
-        strcpy_s(ProcessInfos->ProcessInfo[v1].ImageName, 15, (char*)((ULONG_PTR)EProcess + 0x5a8));
-        /*ULONG_PTR ProcessIdentity = *(PULONG_PTR)((ULONG_PTR)EProcess + 0x180);
-        strcpy_s(ProcessInfos->ProcessInfo[v1].ImageName, 15, (char*)((ULONG_PTR)EProcess + 0x2e0));*/
 #else
         ULONG_PTR ProcessIdentity = *(PULONG_PTR)((ULONG_PTR)EProcess + 0xb4);
-
 #endif 
 
         if (ProcessIdentity)
@@ -177,13 +173,24 @@ VOID SetProcessInfoToList(PPROCESS_INFORMATIONS ProcessInfos, ULONG NumberOfProc
         {
             ProcessInfos->ProcessInfo[v1].ProcessIdentity = PsGetProcessId(EProcess);
         }
-        //ProcessInfos->ProcessInfo[v1].CreateTime = PsGetProcessCreateTimeQuadPart(EProcess);
 
         ProcessInfos->ProcessInfo[v1].ParentPid = (ULONG_PTR)PsGetProcessInheritedFromUniqueProcessId(EProcess);
         ProcessInfos->ProcessInfo[v1].EProcess = EProcess;
+        // 先获取完整路径
         wchar_t ProcessPath[MAX_PATH] = { 0 };
         GetProcessFullPathByPeb(EProcess, ProcessPath, MAX_PATH);
         RtlCopyMemory(ProcessInfos->ProcessInfo[v1].ProcessPath, ProcessPath, MAX_PATH);
+        // 从完整路径中提取进程名，避免EPROCESS ImageFileName的15字节截断问题
+        UNICODE_STRING uniPath = { 0 };
+        RtlInitUnicodeString(&uniPath, ProcessPath);
+        PUNICODE_STRING pImageName = GetNameByPath(&uniPath);
+        if (pImageName && pImageName->Buffer && pImageName->Length > 0)
+        {
+            ULONG copyLen = min(pImageName->Length, sizeof(ProcessInfos->ProcessInfo[v1].ImageName) - sizeof(WCHAR));
+            RtlCopyMemory(ProcessInfos->ProcessInfo[v1].ImageName, pImageName->Buffer, copyLen);
+            ProcessInfos->ProcessInfo[v1].ImageName[copyLen / sizeof(WCHAR)] = L'\0';
+            ExFreePool(pImageName);
+        }
     }
     ProcessInfos->NumberOfProcess++;
     

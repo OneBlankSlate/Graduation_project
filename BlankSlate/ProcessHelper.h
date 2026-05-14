@@ -260,7 +260,7 @@ typedef struct _SYSTEM_PROCESS_INFORMATION
 //进程基本信息
 typedef struct _PROCESS_INFORMATION_ENTRY_
 {
-	char ImageName[15];
+	WCHAR ImageName[MAX_PATH];
 	ULONG_PTR ProcessIdentity;
 	ULONG_PTR ParentPid;
 	WCHAR ProcessPath[MAX_PATH];

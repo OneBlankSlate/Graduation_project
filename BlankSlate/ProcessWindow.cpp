@@ -29,7 +29,7 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     //获取进程信息并打印
     ListProcessInfo();
     // 设置每一列的宽度  宽度的设置必须在信息插入完成后进行，否则会被覆盖！
-    ui.Process_TableView->horizontalHeader()->resizeSection(0, 100); // 第一列宽度为100
+    ui.Process_TableView->horizontalHeader()->resizeSection(0, 150); // 第一列宽度为100
     ui.Process_TableView->horizontalHeader()->resizeSection(1, 50); // 第二列宽度为50
     ui.Process_TableView->horizontalHeader()->resizeSection(2, 60); // 第三列宽度为60
     ui.Process_TableView->horizontalHeader()->resizeSection(3, 400); // 第三列宽度为200
@@ -95,7 +95,7 @@ void ProcessWindow::ListProcessInfo()
     {
         QList<QStandardItem*> rowItems;
         // ImageFileName
-        rowItems.append(new QStandardItem(QString::fromUtf8(v1->ImageName)));
+        rowItems.append(new QStandardItem(QString::fromWCharArray(v1->ImageName)));
         // ProcessIdentity
         rowItems.append(new QStandardItem(QString::number(v1->ProcessIdentity)));
         // ParentPid
