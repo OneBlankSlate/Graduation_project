@@ -6,6 +6,8 @@ DriverModuleWindow::DriverModuleWindow(QWidget *parent)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
+    // 窗口占满屏幕
+    this->showMaximized();
     m_model.setColumnCount(5); // 设置列数为7
     //列表属性
     ui.DriverModule_TableView->setSelectionBehavior(QAbstractItemView::SelectRows);  // 设置选择行为为整行选中
@@ -16,9 +18,16 @@ DriverModuleWindow::DriverModuleWindow(QWidget *parent)
     // 设置表头
     QStringList headers = { QStringLiteral("驱动名"), QStringLiteral("基地址"), QStringLiteral("大小"), QStringLiteral("驱动模块入口"), QStringLiteral("驱动路径")};
     m_model.setHorizontalHeaderLabels(headers);
-    
+    // 最后一列自动填满剩余空间
+    ui.DriverModule_TableView->horizontalHeader()->setStretchLastSection(true);
     // 添加数据
     ListDriverModules();
+    // 设置列宽（必须在数据插入后设置）
+    ui.DriverModule_TableView->horizontalHeader()->resizeSection(0, 200); // 驱动名
+    ui.DriverModule_TableView->horizontalHeader()->resizeSection(1, 130); // 基地址
+    ui.DriverModule_TableView->horizontalHeader()->resizeSection(2, 110); // 大小
+    ui.DriverModule_TableView->horizontalHeader()->resizeSection(3, 150); // 驱动模块入口
+    // 驱动路径由setStretchLastSection自动填满
 
     //添加菜单项
     m_TableViewMenu = new QMenu(ui.DriverModule_TableView);
