@@ -1,4 +1,4 @@
-#include"ProcessPath.h"
+ï»¿#include"ProcessPath.h"
 #include"ProcessHelper.h"
 #include"IoControlHelper.h"
 BOOL GetProcessPath()
@@ -6,7 +6,7 @@ BOOL GetProcessPath()
 
 	PROCESS_PATH_REQUEST ProcessPathRequest = { 0 };
 	ProcessPathRequest.ProcessIdentity = GetProcessIdentity(_T("Dbgview.exe"));
-	//Í¨¹ıÉè±¸Á´½ÓÃû´ò¿ªÉè±¸¶ÔÏó »ñµÃÉè±¸¶ÔÏó¾ä±ú
+	//é€šè¿‡è®¾å¤‡é“¾æ¥åæ‰“å¼€è®¾å¤‡å¯¹è±¡ è·å¾—è®¾å¤‡å¯¹è±¡å¥æŸ„
 	HANDLE DeviceHandle = CreateFile(SYMBOLIC_LINK,
 		GENERIC_READ | GENERIC_WRITE,
 		FILE_SHARE_READ | FILE_SHARE_WRITE,
@@ -34,7 +34,7 @@ BOOL GetProcessPath()
 	}
 	else if (IsOk == TRUE)
 	{
-		wprintf(L"ÍêÕûÂ·¾¶£º%s\r\n", ProcessPathRequest.ProcessPath);
+		wprintf(L"å®Œæ•´è·¯å¾„ï¼š%s\r\n", ProcessPathRequest.ProcessPath);
 		return TRUE;
 	}
 	if (DeviceHandle != NULL)

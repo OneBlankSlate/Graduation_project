@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -78,6 +78,12 @@
     <Filter Include="帮助\文件监控">
       <UniqueIdentifier>{df34b438-a92c-46e6-a1d2-1d1799c735f7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="窗口\线程监控窗口">
+      <UniqueIdentifier>{41e67307-2e9b-4ade-baa1-a6111ca7d45f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\进程帮助\线程监控">
+      <UniqueIdentifier>{5a6f4f28-c06d-4226-b026-ace12357aa26}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="BlankSlate.ui">
@@ -126,6 +132,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="FileMonWindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="ThreadMonWindow.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
@@ -193,6 +202,12 @@
     <ClCompile Include="FileMonitor.c">
       <Filter>帮助\文件监控</Filter>
     </ClCompile>
+    <ClCompile Include="ThreadMonWindow.cpp">
+      <Filter>窗口\线程监控窗口</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadMonitor.cpp">
+      <Filter>帮助\进程帮助\线程监控</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="BlankSlate.h">
@@ -224,6 +239,9 @@
     </QtMoc>
     <QtMoc Include="FileMonWindow.h">
       <Filter>窗口\文件监控窗口</Filter>
+    </QtMoc>
+    <QtMoc Include="ThreadMonWindow.h">
+      <Filter>窗口\线程监控窗口</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
@@ -271,6 +289,12 @@
     </ClInclude>
     <ClInclude Include="FileMonitor.h">
       <Filter>帮助\文件监控</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadMonitor.h">
+      <Filter>帮助\进程帮助\线程监控</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadMonCommon.h">
+      <Filter>窗口\线程监控窗口</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -15,24 +15,24 @@ ProcMonWindow::ProcMonWindow(QWidget* parent)
 {
     ui->setupUi(this);
 
-    // ÉèÖÃ±í¸ñÄ£ĞÍ
+    // è®¾ç½®è¡¨æ ¼æ¨¡å‹
     m_model = new QStandardItemModel(this);
     setupTableView();
 
-    // Á¬½Ó°´Å¥ĞÅºÅ
+    // è¿æ¥æŒ‰é’®ä¿¡å·
     connect(ui->btnStart, &QPushButton::clicked, this, &ProcMonWindow::onStartClicked);
     connect(ui->btnStop, &QPushButton::clicked, this, &ProcMonWindow::onStopClicked);
     connect(ui->btnRefresh, &QPushButton::clicked, this, &ProcMonWindow::onRefreshClicked);
     connect(ui->btnClear, &QPushButton::clicked, this, &ProcMonWindow::onClearClicked);
 
-    // ÉèÖÃ¶¨Ê±Æ÷
-    m_updateTimer->setInterval(1000); // 1Ãë¸üĞÂÒ»´ÎÊÂ¼ş
-    //m_statusTimer->setInterval(2000); // 2Ãë¸üĞÂÒ»´Î×´Ì¬
+    // è®¾ç½®å®šæ—¶å™¨
+    m_updateTimer->setInterval(1000); // 1ç§’æ›´æ–°ä¸€æ¬¡äº‹ä»¶
+    //m_statusTimer->setInterval(2000); // 2ç§’æ›´æ–°ä¸€æ¬¡çŠ¶æ€
 
     connect(m_updateTimer, &QTimer::timeout, this, &ProcMonWindow::updateEvents);
     //connect(m_statusTimer, &QTimer::timeout, this, &ProcMonWindow::updateStatus);
 
-    // ³õÊ¼×´Ì¬
+    // åˆå§‹çŠ¶æ€
     updateUIState(false);
 }
 
@@ -43,27 +43,27 @@ ProcMonWindow::~ProcMonWindow()
 
 void ProcMonWindow::setupTableView()
 {
-    // ÉèÖÃ±íÍ·
-    QStringList headers = { QStringLiteral("ÀàĞÍ"), QStringLiteral("Ê±¼ä"), QStringLiteral("½ø³ÌID"), QStringLiteral("¸¸½ø³ÌID"),QStringLiteral("½ø³ÌÃû³Æ"),QStringLiteral("¸¸½ø³ÌÃû³Æ"),QStringLiteral("Ó³ÏñÂ·¾¶"),QStringLiteral("ÃüÁîĞĞ")};
+    // è®¾ç½®è¡¨å¤´
+    QStringList headers = { QStringLiteral("ç±»å‹"), QStringLiteral("æ—¶é—´"), QStringLiteral("è¿›ç¨‹ID"), QStringLiteral("çˆ¶è¿›ç¨‹ID"),QStringLiteral("è¿›ç¨‹åç§°"),QStringLiteral("çˆ¶è¿›ç¨‹åç§°"),QStringLiteral("æ˜ åƒè·¯å¾„"),QStringLiteral("å‘½ä»¤è¡Œ") };
     m_model->setHorizontalHeaderLabels(headers);
 
-    // ÉèÖÃ±í¸ñÊôĞÔ
+    // è®¾ç½®è¡¨æ ¼å±æ€§
     ui->ProcMon_TableView->setModel(m_model);
     ui->ProcMon_TableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->ProcMon_TableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->ProcMon_TableView->horizontalHeader()->setStretchLastSection(true);
     ui->ProcMon_TableView->setSortingEnabled(true);
 
-    // ÉèÖÃÁĞ¿í
-  
-    ui->ProcMon_TableView->setColumnWidth(0, 80);   // ÀàĞÍ
-    ui->ProcMon_TableView->setColumnWidth(1, 180);  // Ê±¼ä
-    ui->ProcMon_TableView->setColumnWidth(2, 80);   // ½ø³ÌID
-    ui->ProcMon_TableView->setColumnWidth(3, 80);   // ¸¸½ø³ÌID
-    ui->ProcMon_TableView->setColumnWidth(4, 200);  // ½ø³ÌÃû³Æ
-    ui->ProcMon_TableView->setColumnWidth(5, 200);  // ¸¸½ø³ÌÃû³Æ
-    ui->ProcMon_TableView->setColumnWidth(6, 300);  // Ó³ÏñÂ·¾¶
-    ui->ProcMon_TableView->setColumnWidth(7, 300);  // ÃüÁîĞĞ
+    // è®¾ç½®åˆ—å®½
+
+    ui->ProcMon_TableView->setColumnWidth(0, 80);   // ç±»å‹
+    ui->ProcMon_TableView->setColumnWidth(1, 180);  // æ—¶é—´
+    ui->ProcMon_TableView->setColumnWidth(2, 80);   // è¿›ç¨‹ID
+    ui->ProcMon_TableView->setColumnWidth(3, 80);   // çˆ¶è¿›ç¨‹ID
+    ui->ProcMon_TableView->setColumnWidth(4, 200);  // è¿›ç¨‹åç§°
+    ui->ProcMon_TableView->setColumnWidth(5, 200);  // çˆ¶è¿›ç¨‹åç§°
+    ui->ProcMon_TableView->setColumnWidth(6, 300);  // æ˜ åƒè·¯å¾„
+    ui->ProcMon_TableView->setColumnWidth(7, 300);  // å‘½ä»¤è¡Œ
 }
 
 void ProcMonWindow::onStartClicked()
@@ -80,7 +80,7 @@ void ProcMonWindow::onStartClicked()
         updateUIState(true);
     }
     else {
-        QMessageBox::warning(this, "´íÎó", "Æô¶¯½ø³Ì¼à¿ØÊ§°Ü");
+        QMessageBox::warning(this, "é”™è¯¯", "å¯åŠ¨è¿›ç¨‹ç›‘æ§å¤±è´¥");
     }
 }
 
@@ -97,7 +97,7 @@ void ProcMonWindow::onStopClicked()
         updateUIState(false);
     }
     else {
-        QMessageBox::warning(this, "´íÎó", "Í£Ö¹½ø³Ì¼à¿ØÊ§°Ü");
+        QMessageBox::warning(this, "é”™è¯¯", "åœæ­¢è¿›ç¨‹ç›‘æ§å¤±è´¥");
     }
 }
 
@@ -114,7 +114,7 @@ void ProcMonWindow::onClearClicked()
 
 void ProcMonWindow::updateEvents()
 {
-    // ·ÖÅä»º³åÇø»ñÈ¡ÊÂ¼ş
+    // åˆ†é…ç¼“å†²åŒºè·å–äº‹ä»¶
     const ULONG maxEvents = 100;
     DWORD bufferSize = sizeof(EVENT_PACKET) + (maxEvents - 1) * sizeof(PROCESS_EVENT);
     PEVENT_PACKET packet = (PEVENT_PACKET)malloc(bufferSize);
@@ -131,7 +131,7 @@ void ProcMonWindow::updateEvents()
             addEventToTable(packet->Events[i]);
         }
 
-        // ×Ô¶¯¹ö¶¯µ½×îĞÂÊÂ¼ş
+        // è‡ªåŠ¨æ»šåŠ¨åˆ°æœ€æ–°äº‹ä»¶
         if (eventCount > 0) {
             ui->ProcMon_TableView->scrollToBottom();
         }
@@ -142,35 +142,35 @@ void ProcMonWindow::addEventToTable(const PROCESS_EVENT& event)
 {
     QList<QStandardItem*> rowItems;
 
-    // ÊÂ¼şÀàĞÍ
-    QString typeStr = (event.Type == ProcessCreate) ? QStringLiteral("´´½¨") : QStringLiteral("ÍË³ö");
+    // äº‹ä»¶ç±»å‹
+    QString typeStr = (event.Type == ProcessCreate) ? QStringLiteral("åˆ›å»º") : QStringLiteral("é€€å‡º");
     rowItems << new QStandardItem(typeStr);
 
-    // Ê±¼ä´Á
+    // æ—¶é—´æˆ³
     ULONG64 fileTime = (event.Type == ProcessCreate) ? event.CreateTime : event.ExitTime;
     QString timeStr = fileTimeToString(fileTime);
     rowItems << new QStandardItem(timeStr);
 
-    // ½ø³ÌID
+    // è¿›ç¨‹ID
     rowItems << new QStandardItem(QString::number(event.ProcessId));
 
-    // ¸¸½ø³ÌID
+    // çˆ¶è¿›ç¨‹ID
     rowItems << new QStandardItem(QString::number(event.ParentProcessId));
 
-    // ½ø³ÌÃû³Æ
+    // è¿›ç¨‹åç§°
     rowItems << new QStandardItem(QString::fromWCharArray(event.ImageName));
 
-    // ¸¸½ø³ÌÃû³Æ
+    // çˆ¶è¿›ç¨‹åç§°
     rowItems << new QStandardItem(QString::fromWCharArray(event.ParentProcessName));
-    // Ó³ÏñÂ·¾¶
+    // æ˜ åƒè·¯å¾„
     rowItems << new QStandardItem(QString::fromWCharArray(event.ImagePath));
 
-    // ÃüÁîĞĞ
+    // å‘½ä»¤è¡Œ
     rowItems << new QStandardItem(QString::fromWCharArray(event.CommandLine));
 
-    // ÉèÖÃĞĞ±³¾°É«
+    // è®¾ç½®è¡ŒèƒŒæ™¯è‰²ï¼ˆç»Ÿä¸€é…è‰²æ–¹æ¡ˆï¼šåˆ›å»º=æµ…ç»¿ï¼Œé€€å‡º=æµ…çº¢ï¼‰
     QColor bgColor = (event.Type == ProcessCreate) ?
-        QColor(220, 255, 220) : QColor(255, 220, 220);
+        QColor(204, 239, 206) : QColor(255, 199, 206);
 
     for (QStandardItem* item : rowItems) {
         item->setBackground(QBrush(bgColor));
@@ -178,7 +178,7 @@ void ProcMonWindow::addEventToTable(const PROCESS_EVENT& event)
 
     m_model->appendRow(rowItems);
 
-    // ÏŞÖÆ±í¸ñĞĞÊı£¬±ÜÃâÄÚ´æÕ¼ÓÃ¹ı´ó
+    // é™åˆ¶è¡¨æ ¼è¡Œæ•°ï¼Œé¿å…å†…å­˜å ç”¨è¿‡å¤§
     if (m_model->rowCount() > 1000) {
         m_model->removeRow(0);
     }
@@ -192,9 +192,9 @@ QString ProcMonWindow::fileTimeToString(ULONG64 fileTime)
         return QString();
     }
 
-    // ½«FILETIME×ª»»ÎªQDateTime
-    // FILETIMEÊÇ×Ô1601-01-01 00:00:00ÒÔÀ´µÄ100ÄÉÃë¼ä¸ôÊı
-    // ×ª»»Îª×Ô1970-01-01 00:00:00ÒÔÀ´µÄºÁÃëÊı
+    // å°†FILETIMEè½¬æ¢ä¸ºQDateTime
+    // FILETIMEæ˜¯è‡ª1601-01-01 00:00:00ä»¥æ¥çš„100çº³ç§’é—´éš”æ•°
+    // è½¬æ¢ä¸ºè‡ª1970-01-01 00:00:00ä»¥æ¥çš„æ¯«ç§’æ•°
     ULONGLONG unixTime = (fileTime - 116444736000000000ULL) / 10000ULL;
     QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(unixTime);
 

@@ -1,6 +1,6 @@
-#pragma once
+ï»¿#pragma once
 #include<fltKernel.h>
-//¶ÔÏóÌåµÃ¶ÔÏóÍ·
+//å¯¹è±¡ä½“å¾—å¯¹è±¡å¤´
 #define OBJECT_TO_OBJECT_HEADER(o) CONTAINING_RECORD((o),OBJECT_HEADER,Body)
 typedef struct _OBJECT_TYPE_INITIALIZER
 {
@@ -74,7 +74,7 @@ typedef struct _OBJECT_TYPE_1
 	struct _LIST_ENTRY CallbackList;
 }OBJECT_TYPE_1, * POBJECT_TYPE_1;
 #endif
-//Õâ¸ö½á¹¹ÊÇÔÚwindbgÖĞ²éµ½µÄ£¬¸úsourceinsightÓĞµã²»Ò»Ñù
+//è¿™ä¸ªç»“æ„æ˜¯åœ¨windbgä¸­æŸ¥åˆ°çš„ï¼Œè·Ÿsourceinsightæœ‰ç‚¹ä¸ä¸€æ ·
 typedef struct _OBJECT_HEADER
 {
 	ULONG_PTR PointerCount;

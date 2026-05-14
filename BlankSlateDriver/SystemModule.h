@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include<fltKernel.h>
 #include"IoControlHelper.h"
 
@@ -24,7 +24,7 @@ typedef struct _SYSTEM_MODULE_INFORMATION
 #pragma endregion
 
 
-//Ã¶¾ÙÇı¶¯Ä£¿éÏà¹Ø½á¹¹
+//æšä¸¾é©±åŠ¨æ¨¡å—ç›¸å…³ç»“æ„
 typedef struct _DRIVER_MODULE_ENTRY_
 {
     WCHAR DriverName[MAX_PATH];

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <QWidget>
 #include "ui_ProcessHandleWindow.h"
 #include<QStandardItemModel>
@@ -9,18 +9,18 @@ class ProcessHandleWindow : public QWidget
 	Q_OBJECT
 
 public:
-	// ĞŞ¸Ä¹¹Ôìº¯Êı
+	// ä¿®æ”¹æ„é€ å‡½æ•°
 	ProcessHandleWindow(HANDLE ProcessId, QWidget* parent = nullptr);
 	~ProcessHandleWindow();
 	void ListProcessHandleInfo(HANDLE ProcessId);
 private:
 	Ui::ProcessHandleWindowClass ui;
 	QStandardItemModel m_model;
-	QMenu* m_TableViewMenu;  //²Ëµ¥£¬ĞèÒªÍ·ÎÄ¼ş<QMenu>
+	QMenu* m_TableViewMenu;  //èœå•ï¼Œéœ€è¦å¤´æ–‡ä»¶<QMenu>
 	QAction* CloseHandleAct;
 	HANDLE m_ProcessId;
 public slots:
-	void Menu_Slot(QPoint p);//ÓÒ¼ü²Ëµ¥²Ûº¯Êı
+	void Menu_Slot(QPoint p);//å³é”®èœå•æ§½å‡½æ•°
 	void CloseHandle();
 
 };

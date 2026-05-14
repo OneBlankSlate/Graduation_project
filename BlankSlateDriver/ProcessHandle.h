@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include<fltKernel.h>
 #include"IoControlHelper.h"
 
@@ -12,15 +12,15 @@
 #define _OBJECT_BODY_ 0x18
 #endif
 
-//���̾��
+//进程句柄
 typedef struct _HANDLE_INFORMATION_ENTRY_
 {
     WCHAR HandleType[0x20];
     WCHAR HandleName[MAX_PATH];
     HANDLE Handle;
     PVOID Object;
-    UCHAR Index;   //������͵Ĵ��š�����
-    ULONG64 Count;   //��������ü���	
+    UCHAR Index;   //句柄类型的代号、索引
+    ULONG64 Count;   //句柄的引用计数	
 }HANDLE_INFORMATION_ENTRY, * PHANDLE_INFORMATION_ENTRY;
 typedef struct _HANDLES_INFORMATION_
 {
@@ -36,46 +36,46 @@ typedef struct _COMMUNICATE_PROCESS_HANDLE_
 
 typedef struct _HANDLE_TABLE
 {
-    ULONG_PTR TableCode;                  //ָ�������Ĵ洢�ṹ
-    PVOID QuotaProcess;               //��������ڴ���Դ��¼�ڴ˽�����
-    PVOID UniqueProcessId;                //�������̵�ID�����ڻص�����
-    ULONG_PTR HandleLock;      //HANDLE_TABLE_LOCKS=4��������������ھ������չʱʹ��
-    LIST_ENTRY HandleTableList;           //���еľ�����γ�һ������������ͷΪȫ�ֱ���HandleTableListHead
-    ULONG_PTR HandleContentionEvent;   //���ڷ��ʾ��ʱ�������������ڴ������ϵȴ�
-    PVOID DebugInfo;   //������Ϣ�����ڵ��Ծ��ʱ������
-    LONG ExtraInfoPages;                  //�����Ϣ��ռ�õ�ҳ������
+    ULONG_PTR TableCode;                  //指向句柄表的存储结构
+    PVOID QuotaProcess;               //句柄表的内存资源记录在此进程中
+    PVOID UniqueProcessId;                //创建进程的ID，用于回调函数
+    ULONG_PTR HandleLock;      //HANDLE_TABLE_LOCKS=4，句柄表锁，仅在句柄表扩展时使用
+    LIST_ENTRY HandleTableList;           //所有的句柄表形成一个链表，链表头为全局变量HandleTableListHead
+    ULONG_PTR HandleContentionEvent;   //若在访问句柄时发生竞争，则在此推锁上等待
+    PVOID DebugInfo;   //调试信息，仅在调试句柄时有意义
+    LONG ExtraInfoPages;                  //审计信息所占用的页面数量
     union
     {
-        ULONG Flags;                      //��־��
-        UCHAR StrictFIFO : 1;               //�Ƿ�ʹ��FIFO�������ã������ͷ�������
+        ULONG Flags;                      //标志域
+        UCHAR StrictFIFO : 1;               //是否使用FIFO风格的重用，即先释放先重用
     };
-    ULONG FirstFreeHandle;                      //����������ͷ�ľ������
+    ULONG FirstFreeHandle;                      //空闲链表表头的句柄索引
     struct _HANDLE_TABLE_ENTRY* LastFreeHandleEntry;
     ULONG HandleCount;
-    ULONG NextHandleNeedingPool;          //��һ�ξ������չ����ʼ�������
-    ULONG HandleCountHighWatermark;                     //����ʹ�õľ�����������
+    ULONG NextHandleNeedingPool;          //下一次句柄表扩展的起始句柄索引
+    ULONG HandleCountHighWatermark;                     //正在使用的句柄表项的数量
 }HANDLE_TABLE, * PHANDLE_TABLE;
 typedef struct _HANDLE_TABLE_ENTRY
 {
     union
     {
-        PVOID Object;                         //ָ�����������Ķ��󣬶����Ƶĺ���λ�������dt��_OBJECT_HEADER
-        ULONG_PTR ObAttributes;               //�����λ���ر��壬�μ�OBJ_HANDLE_ATTRIBUTES�궨��
-        PVOID InfoTable;   //PHANDLE_TABLE_ENTRY_INFO ���������ҳ��ĵ�һ�����ʹ�ô˳�Աָ��һ�ű�
+        PVOID Object;                         //指向句柄所代表的对象，二进制的后三位清零可以dt到_OBJECT_HEADER
+        ULONG_PTR ObAttributes;               //最低三位有特别含义，参加OBJ_HANDLE_ATTRIBUTES宏定义
+        PVOID InfoTable;   //PHANDLE_TABLE_ENTRY_INFO 各个句柄表页面的第一个表项，使用此成员指向一张表
         ULONG_PTR Value;
     };
     union
     {
-        ULONG GrantedAccess;                  //��������
+        ULONG GrantedAccess;                  //访问掩码
         struct
-        {                                     //��NtGlobalFlag�а���FLG_KERNEL_STACK_DB���ʱʹ��
+        {                                     //当NtGlobalFlag中包含FLG_KERNEL_STACK_DB标记时使用
             USHORT GrantedAccessIndex;
             USHORT CreatorBackTraceIndex;
         };
-        ULONG NextFreeTableEntry;              //����ʱ��ʾ��һ�����о������
+        ULONG NextFreeTableEntry;              //空闲时表示下一个空闲句柄索引
     };
 } HANDLE_TABLE_ENTRY, * PHANDLE_TABLE_ENTRY;
-//�رվ��
+//关闭句柄
 typedef struct COMMUNICATE_CLOSE_HANDLE
 {
     OPERATE_TYPE OperateType;
@@ -85,28 +85,28 @@ typedef struct COMMUNICATE_CLOSE_HANDLE
 typedef enum _SYSTEM_INFORMATION_CLASS {
     SystemBasicInformation = 0,
     SystemProcessInformation = 5,
-    // ... ������Աʡ��
-    SystemHandleInformation = 16,  // <--- ��Ҫ�õ�ֵ
+    // ... 其他成员省略
+    SystemHandleInformation = 16,  // <--- 你要用的值
     SystemObjectInformation = 17,
-    // ... �ȵ�
+    // ... 等等
 } SYSTEM_INFORMATION_CLASS;
-// ���������Ŀ����ϸ��Ϣ
+// 单个句柄条目的详细信息
 typedef struct _SYSTEM_HANDLE_TABLE_ENTRY_INFO {
-    USHORT UniqueProcessId;     // �������� PID
-    USHORT CreatorBackTraceIndex; // �������� (ͨ������)
-    UCHAR ObjectTypeIndex;      // �ں˶����������� (���ļ������̡��̵߳�)
-    UCHAR HandleAttributes;     // ������� (�� OBJ_INHERIT)
-    USHORT HandleValue;         // <--- �ص㣺�������ֵ (����֮ǰ������ 0xC4)
-    PVOID Object;               // �ں˶�����ĵ�ַ (EPROCESS / EOBJECT ��)
-    ULONG GrantedAccess;        // �þ��ӵ�еķ���Ȩ�� (ACCESS_MASK)
+    USHORT UniqueProcessId;     // 所属进程 PID
+    USHORT CreatorBackTraceIndex; // 回溯索引 (通常无用)
+    UCHAR ObjectTypeIndex;      // 内核对象类型索引 (如文件、进程、线程等)
+    UCHAR HandleAttributes;     // 句柄属性 (如 OBJ_INHERIT)
+    USHORT HandleValue;         // <--- 重点：句柄的数值 (如你之前看到的 0xC4)
+    PVOID Object;               // 内核对象体的地址 (EPROCESS / EOBJECT 等)
+    ULONG GrantedAccess;        // 该句柄拥有的访问权限 (ACCESS_MASK)
 } SYSTEM_HANDLE_TABLE_ENTRY_INFO, * PSYSTEM_HANDLE_TABLE_ENTRY_INFO;
 
-// �������ϵͳ����Ļ�����ͷ��
+// 存放所有系统句柄的缓冲区头部
 typedef struct _SYSTEM_HANDLE_INFORMATION {
-    ULONG NumberOfHandles;      // ��ǰ��������ʵ�ʰ����ľ������
-    SYSTEM_HANDLE_TABLE_ENTRY_INFO Handles[1]; // �������飬ʵ�ʳ����� NumberOfHandles ����
+    ULONG NumberOfHandles;      // 当前缓冲区中实际包含的句柄总数
+    SYSTEM_HANDLE_TABLE_ENTRY_INFO Handles[1]; // 柔性数组，实际长度由 NumberOfHandles 决定
 } SYSTEM_HANDLE_INFORMATION, * PSYSTEM_HANDLE_INFORMATION;
-// ��������ԭ��
+// 声明函数原型
 typedef NTSTATUS(*PFN_ZW_QUERY_SYSTEM_INFORMATION)(
     SYSTEM_INFORMATION_CLASS SystemInformationClass,
     PVOID SystemInformation,

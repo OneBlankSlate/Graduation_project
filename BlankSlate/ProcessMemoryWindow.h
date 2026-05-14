@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <QWidget>
 #include "ui_ProcessMemoryWindow.h"
@@ -15,23 +15,23 @@ public:
 	void ListProcessMemoryInfo();
 	void OpenReadMemWind();
 	void OpenWriteMemWind();
-	void ModifyProcessProtect(int columnIndex, const QVariant& newValue);  //ÓÃÓÚĞŞ¸ÄÄÚ´æ±£»¤ÊôĞÔµÄº¯Êı
-	//²Ëµ¥
-	QMenu* m_TableViewMenu;  //²Ëµ¥£¬ĞèÒªÍ·ÎÄ¼ş<QMenu>
-	QAction* RefreshAct;     //Ë¢ĞÂ
-	QAction* NoAccessAct;    //²»¿É·ÃÎÊ
-	QAction* ReadAct;        //Ö»¶Á
-	QAction* ReadWriteAct;   //¶ÁĞ´
-	QAction* WriteCopyAct;   //Ğ´¿½±´
-	QAction* ReadExecuteAct; //Ö´ĞĞ¶Á
-	QAction* ReadWriteGuardAct; //¶ÁĞ´±£»¤
-	QAction* RecoverProtectAct; //±£»¤ÊôĞÔ»Ö¸´
+	void ModifyProcessProtect(int columnIndex, const QVariant& newValue);  //ç”¨äºä¿®æ”¹å†…å­˜ä¿æŠ¤å±æ€§çš„å‡½æ•°
+	//èœå•
+	QMenu* m_TableViewMenu;  //èœå•ï¼Œéœ€è¦å¤´æ–‡ä»¶<QMenu>
+	QAction* RefreshAct;     //åˆ·æ–°
+	QAction* NoAccessAct;    //ä¸å¯è®¿é—®
+	QAction* ReadAct;        //åªè¯»
+	QAction* ReadWriteAct;   //è¯»å†™
+	QAction* WriteCopyAct;   //å†™æ‹·è´
+	QAction* ReadExecuteAct; //æ‰§è¡Œè¯»
+	QAction* ReadWriteGuardAct; //è¯»å†™ä¿æŠ¤
+	QAction* RecoverProtectAct; //ä¿æŠ¤å±æ€§æ¢å¤
 
 	HANDLE m_ProcessId;
-	ULONG m_OldProtect;   //Ö±½Ó´æ×Ö·û´®£¬±ãÓÚÖ±½Ó»Ö¸´
+	ULONG m_OldProtect;   //ç›´æ¥å­˜å­—ç¬¦ä¸²ï¼Œä¾¿äºç›´æ¥æ¢å¤
 private:
 	Ui::ProcessMemoryWindowClass ui;
-	QStandardItemModel m_model;  // ÓÃÓÚ¹ÜÀíQTableViewµÄÊı¾İÄ£ĞÍ
+	QStandardItemModel m_model;  // ç”¨äºç®¡ç†QTableViewçš„æ•°æ®æ¨¡å‹
 private slots:
 	void Menu_Slot(QPoint p);
 	void RefreshMemory();

@@ -6,28 +6,28 @@ DriverModuleWindow::DriverModuleWindow(QWidget *parent)
 	: QWidget(parent)
 {
 	ui.setupUi(this);
-    m_model.setColumnCount(5); // ÉèÖÃÁĞÊıÎª7
-    //ÁĞ±íÊôĞÔ
-    ui.DriverModule_TableView->setSelectionBehavior(QAbstractItemView::SelectRows);  // ÉèÖÃÑ¡ÔñĞĞÎªÎªÕûĞĞÑ¡ÖĞ
-    ui.DriverModule_TableView->setContextMenuPolicy(Qt::CustomContextMenu); //¿Éµ¯³öÓÒ¼ü²Ëµ¥  ±ØĞëÉèÖÃ
-    ui.DriverModule_TableView->setEditTriggers(QAbstractItemView::NoEditTriggers);//²»¿É±à¼­
-    // ½«Ä£ĞÍÉèÖÃµ½ÊÓÍ¼
+    m_model.setColumnCount(5); // è®¾ç½®åˆ—æ•°ä¸º7
+    //åˆ—è¡¨å±æ€§
+    ui.DriverModule_TableView->setSelectionBehavior(QAbstractItemView::SelectRows);  // è®¾ç½®é€‰æ‹©è¡Œä¸ºä¸ºæ•´è¡Œé€‰ä¸­
+    ui.DriverModule_TableView->setContextMenuPolicy(Qt::CustomContextMenu); //å¯å¼¹å‡ºå³é”®èœå•  å¿…é¡»è®¾ç½®
+    ui.DriverModule_TableView->setEditTriggers(QAbstractItemView::NoEditTriggers);//ä¸å¯ç¼–è¾‘
+    // å°†æ¨¡å‹è®¾ç½®åˆ°è§†å›¾
     ui.DriverModule_TableView->setModel(&m_model);
-    // ÉèÖÃ±íÍ·
-    QStringList headers = { QStringLiteral("Çı¶¯Ãû"), QStringLiteral("»ùµØÖ·"), QStringLiteral("´óĞ¡"), QStringLiteral("Çı¶¯Ä£¿éÈë¿Ú"), QStringLiteral("Çı¶¯Â·¾¶")};
+    // è®¾ç½®è¡¨å¤´
+    QStringList headers = { QStringLiteral("é©±åŠ¨å"), QStringLiteral("åŸºåœ°å€"), QStringLiteral("å¤§å°"), QStringLiteral("é©±åŠ¨æ¨¡å—å…¥å£"), QStringLiteral("é©±åŠ¨è·¯å¾„")};
     m_model.setHorizontalHeaderLabels(headers);
     
-    // Ìí¼ÓÊı¾İ
+    // æ·»åŠ æ•°æ®
     ListDriverModules();
 
-    //Ìí¼Ó²Ëµ¥Ïî
+    //æ·»åŠ èœå•é¡¹
     m_TableViewMenu = new QMenu(ui.DriverModule_TableView);
-    RefreshAct = new QAction(QStringLiteral("Ë¢ĞÂ"), ui.DriverModule_TableView);
-    UnloadAct= new QAction(QStringLiteral("Ğ¶ÔØ"), ui.DriverModule_TableView);
+    RefreshAct = new QAction(QStringLiteral("åˆ·æ–°"), ui.DriverModule_TableView);
+    UnloadAct= new QAction(QStringLiteral("å¸è½½"), ui.DriverModule_TableView);
     m_TableViewMenu->addAction(RefreshAct);
     m_TableViewMenu->addAction(UnloadAct);
-    //ÏûÏ¢¹ØÁª
-    connect(ui.DriverModule_TableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(Menu_Slot(QPoint)));  //²Ëµ¥³õÊ¼»¯
+    //æ¶ˆæ¯å…³è”
+    connect(ui.DriverModule_TableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(Menu_Slot(QPoint)));  //èœå•åˆå§‹åŒ–
     connect(RefreshAct, &QAction::triggered, this, &DriverModuleWindow::RefreshDriverModule);
     connect(UnloadAct, &QAction::triggered, this, &DriverModuleWindow::UnloadDriverModule);
     
@@ -42,7 +42,7 @@ void DriverModuleWindow::ListDriverModules()
     vector<DRIVER_MODULE_ENTRY> DriverModuleInfo;
     DriverModuleInfo.reserve(100);
     EnumDriverModule(DriverModuleInfo);
-    // Ìí¼ÓÊı¾İ
+    // æ·»åŠ æ•°æ®
     vector<DRIVER_MODULE_ENTRY>::iterator v1;
     for (v1 = DriverModuleInfo.begin(); v1 != DriverModuleInfo.end(); v1++)
     {
@@ -58,7 +58,7 @@ void DriverModuleWindow::ListDriverModules()
         // DriverPath
         rowItems.append(new QStandardItem(QString::fromWCharArray(v1->DriverPath)));
 
-        // ½«ÕûĞĞÊı¾İÌí¼Óµ½Ä£ĞÍÖĞ
+        // å°†æ•´è¡Œæ•°æ®æ·»åŠ åˆ°æ¨¡å‹ä¸­
         m_model.appendRow(rowItems);
     }
 
@@ -67,8 +67,8 @@ void DriverModuleWindow::ListDriverModules()
 
 void DriverModuleWindow::RefreshDriverModule()
 {
-    //m_model.clear();  //ÕâÖÖ·½·¨ÇåÀíÊı¾İĞĞµÄÍ¬Ê±Ò²»áÇåÀí±íÍ·£¬Òò´ËÃ¿´ÎË¢ĞÂÖ®ºó±íÍ·¶¼»á±ä³ÉÊı×Ö
-    //Ö»ÇåÀíÊı¾İĞĞ£¬²»ÇåÀí±íÍ·
+    //m_model.clear();  //è¿™ç§æ–¹æ³•æ¸…ç†æ•°æ®è¡Œçš„åŒæ—¶ä¹Ÿä¼šæ¸…ç†è¡¨å¤´ï¼Œå› æ­¤æ¯æ¬¡åˆ·æ–°ä¹‹åè¡¨å¤´éƒ½ä¼šå˜æˆæ•°å­—
+    //åªæ¸…ç†æ•°æ®è¡Œï¼Œä¸æ¸…ç†è¡¨å¤´
     m_model.removeRows(0, m_model.rowCount());
     ListDriverModules();
 }
@@ -77,18 +77,18 @@ void DriverModuleWindow::UnloadDriverModule()
 {
     QModelIndexList selectedRows = ui.DriverModule_TableView->selectionModel()->selectedRows();
     if (!selectedRows.isEmpty()) {
-        QModelIndex index = selectedRows.first(); // »ñÈ¡Ñ¡ÖĞĞĞµÄµÚÒ»¸öË÷Òı
+        QModelIndex index = selectedRows.first(); // è·å–é€‰ä¸­è¡Œçš„ç¬¬ä¸€ä¸ªç´¢å¼•
         QModelIndex targetIndex = index.sibling(index.row(), 0); 
-        QString value = targetIndex.data().toString(); // »ñÈ¡¸ÃÁĞµÄÖµ
-         // ĞøĞ´²¿·Ö£º»ñÈ¡´¿Çı¶¯Ãû£¨È¥µô.sysºó×º£©
+        QString value = targetIndex.data().toString(); // è·å–è¯¥åˆ—çš„å€¼
+         // ç»­å†™éƒ¨åˆ†ï¼šè·å–çº¯é©±åŠ¨åï¼ˆå»æ‰.sysåç¼€ï¼‰
         QString driverName = value;
 
-        // ÒÆ³ı.sysºó×º
+        // ç§»é™¤.sysåç¼€
         if (driverName.endsWith(".sys", Qt::CaseInsensitive)) {
-            driverName = driverName.left(driverName.length() - 4); // È¥µô".sys"£¨4¸ö×Ö·û£©
+            driverName = driverName.left(driverName.length() - 4); // å»æ‰".sys"ï¼ˆ4ä¸ªå­—ç¬¦ï¼‰
         }
 
-        // ×ª»»Îªchar*ÀàĞÍ
+        // è½¬æ¢ä¸ºchar*ç±»å‹
         QByteArray byteArray = driverName.toLocal8Bit();
         char* driverNameChar = byteArray.data();
         UnloadDriver(driverNameChar);
@@ -97,22 +97,22 @@ void DriverModuleWindow::UnloadDriverModule()
 
 void DriverModuleWindow::Menu_Slot(QPoint p)
 {
-    QModelIndex index = ui.DriverModule_TableView->indexAt(p);//»ñÈ¡Êó±êµã»÷Î»ÖÃÏîµÄË÷Òı
-    if (index.isValid())//Êı¾İÏîÊÇ·ñÓĞĞ§£¬¿Õ°×´¦µã»÷ÎŞ²Ëµ¥
+    QModelIndex index = ui.DriverModule_TableView->indexAt(p);//è·å–é¼ æ ‡ç‚¹å‡»ä½ç½®é¡¹çš„ç´¢å¼•
+    if (index.isValid())//æ•°æ®é¡¹æ˜¯å¦æœ‰æ•ˆï¼Œç©ºç™½å¤„ç‚¹å‡»æ— èœå•
     {
-        QItemSelectionModel* selections = ui.DriverModule_TableView->selectionModel();//»ñÈ¡µ±Ç°µÄÑ¡ÔñÄ£ĞÍ
-        QModelIndexList selected = selections->selectedIndexes();//·µ»Øµ±Ç°Ñ¡ÔñµÄÄ£ĞÍË÷Òı
-        if (selected.count() == 1) //Ñ¡Ôñµ¥¸öÏîÄ¿Ê±µÄÓÒ¼ü²Ëµ¥ÏÔÊ¾Action1
+        QItemSelectionModel* selections = ui.DriverModule_TableView->selectionModel();//è·å–å½“å‰çš„é€‰æ‹©æ¨¡å‹
+        QModelIndexList selected = selections->selectedIndexes();//è¿”å›å½“å‰é€‰æ‹©çš„æ¨¡å‹ç´¢å¼•
+        if (selected.count() == 1) //é€‰æ‹©å•ä¸ªé¡¹ç›®æ—¶çš„å³é”®èœå•æ˜¾ç¤ºAction1
         {
             //RefreshAct->setVisible(true);
             m_TableViewMenu->setVisible(true);
         }
-        else   //Èç¹ûÑ¡ÖĞ¶à¸öÏîÄ¿£¬ÔòÓÒ¼ü²Ëµ¥ÏÔÊ¾Action2
+        else   //å¦‚æœé€‰ä¸­å¤šä¸ªé¡¹ç›®ï¼Œåˆ™å³é”®èœå•æ˜¾ç¤ºAction2
         {
             //ModuleAct->setVisible(true);
             m_TableViewMenu->setVisible(true);
         }
-        m_TableViewMenu->exec(QCursor::pos());//Êı¾İÏîÓĞĞ§²ÅÏÔÊ¾²Ëµ¥
+        m_TableViewMenu->exec(QCursor::pos());//æ•°æ®é¡¹æœ‰æ•ˆæ‰æ˜¾ç¤ºèœå•
     }
 
 }

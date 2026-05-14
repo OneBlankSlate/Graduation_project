@@ -1,4 +1,4 @@
-#include "WriteMemoryWindow.h"
+ï»¿#include "WriteMemoryWindow.h"
 #include"ProcessMemory.h"
 WriteMemoryWindow::WriteMemoryWindow(HANDLE ProcessIdentity, QWidget *parent)
 	: QWidget(parent)
@@ -18,13 +18,13 @@ BOOL WriteMemoryWindow::WriteVirtualMemory()
 	{
 		return IsOk;
 	}
-	//È¡µØÖ·
+	//å–åœ°å€
 	QString value = ui.WriteAddr_LineEdit->text();
 	bool Ok = false;
 	unsigned long long address = value.toULongLong(&Ok,16);
 	PVOID pValue = (PVOID)address;
 
-	//È¡Êý¾ÝºÍ³¤¶È
+	//å–æ•°æ®å’Œé•¿åº¦
 	QByteArray data = QByteArray::fromHex(ui.NewValue_LineEdit->text().toLatin1());
 	char* BufferData = (char*)data.constData();
 	int BufferLength = data.size();

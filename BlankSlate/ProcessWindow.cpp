@@ -9,45 +9,45 @@
 ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
 {
 	ui.setupUi(this);
-    //ÁĞ±íÊôĞÔ
-    ui.Process_TableView->setSelectionBehavior(QAbstractItemView::SelectRows);  // ÉèÖÃÑ¡ÔñĞĞÎªÎªÕûĞĞÑ¡ÖĞ
-    ui.Process_TableView->horizontalHeader()->setStretchLastSection(true); //×îºóÒ»ÁĞÌîÂú±í
-    ui.Process_TableView->setContextMenuPolicy(Qt::CustomContextMenu); //¿Éµ¯³öÓÒ¼ü²Ëµ¥  ±ØĞëÉèÖÃ
-    ui.Process_TableView->setEditTriggers(QAbstractItemView::NoEditTriggers);//²»¿É±à¼­
-    //m_model = new QStandardItemModel();  //Ö¸ÕëÀàĞÍ
+    //åˆ—è¡¨å±æ€§
+    ui.Process_TableView->setSelectionBehavior(QAbstractItemView::SelectRows);  // è®¾ç½®é€‰æ‹©è¡Œä¸ºä¸ºæ•´è¡Œé€‰ä¸­
+    ui.Process_TableView->horizontalHeader()->setStretchLastSection(true); //æœ€åä¸€åˆ—å¡«æ»¡è¡¨
+    ui.Process_TableView->setContextMenuPolicy(Qt::CustomContextMenu); //å¯å¼¹å‡ºå³é”®èœå•  å¿…é¡»è®¾ç½®
+    ui.Process_TableView->setEditTriggers(QAbstractItemView::NoEditTriggers);//ä¸å¯ç¼–è¾‘
+    //m_model = new QStandardItemModel();  //æŒ‡é’ˆç±»å‹
     
 
-    m_model.setColumnCount(5); // ÉèÖÃÁĞÊıÎª5
-    // ÉèÖÃ±íÍ·
-    QStringList headers = { QStringLiteral("Ó³ÏñÃû³Æ"), QStringLiteral("½ø³ÌID"), QStringLiteral("¸¸½ø³ÌID"), QStringLiteral("Ó³ÏñÂ·¾¶"), QStringLiteral("EPROCESS") };
+    m_model.setColumnCount(5); // è®¾ç½®åˆ—æ•°ä¸º5
+    // è®¾ç½®è¡¨å¤´
+    QStringList headers = { QStringLiteral("æ˜ åƒåç§°"), QStringLiteral("è¿›ç¨‹ID"), QStringLiteral("çˆ¶è¿›ç¨‹ID"), QStringLiteral("æ˜ åƒè·¯å¾„"), QStringLiteral("EPROCESS") };
     m_model.setHorizontalHeaderLabels(headers);
 
-    // ½«Ä£ĞÍÉèÖÃµ½ÊÓÍ¼
-    ui.Process_TableView->setModel(&m_model);  //Ö»ÓÃÉèÖÃÕâÒ»´Î£¬¹ØÁªÉÏÖ®ºó£¬ÒÔºóÖ±½Ó²Ù×÷m_model¾ÍĞĞÁË
+    // å°†æ¨¡å‹è®¾ç½®åˆ°è§†å›¾
+    ui.Process_TableView->setModel(&m_model);  //åªç”¨è®¾ç½®è¿™ä¸€æ¬¡ï¼Œå…³è”ä¸Šä¹‹åï¼Œä»¥åç›´æ¥æ“ä½œm_modelå°±è¡Œäº†
 
     ui.Process_TableView->show();
-    //»ñÈ¡½ø³ÌĞÅÏ¢²¢´òÓ¡
+    //è·å–è¿›ç¨‹ä¿¡æ¯å¹¶æ‰“å°
     ListProcessInfo();
-    // ÉèÖÃÃ¿Ò»ÁĞµÄ¿í¶È  ¿í¶ÈµÄÉèÖÃ±ØĞëÔÚĞÅÏ¢²åÈëÍê³Éºó½øĞĞ£¬·ñÔò»á±»¸²¸Ç£¡
-    ui.Process_TableView->horizontalHeader()->resizeSection(0, 100); // µÚÒ»ÁĞ¿í¶ÈÎª100
-    ui.Process_TableView->horizontalHeader()->resizeSection(1, 50); // µÚ¶şÁĞ¿í¶ÈÎª50
-    ui.Process_TableView->horizontalHeader()->resizeSection(2, 60); // µÚÈıÁĞ¿í¶ÈÎª60
-    ui.Process_TableView->horizontalHeader()->resizeSection(3, 400); // µÚÈıÁĞ¿í¶ÈÎª200
-    ui.Process_TableView->horizontalHeader()->resizeSection(4, 150); // µÚÈıÁĞ¿í¶ÈÎª80
-    //Ìí¼Ó²Ëµ¥Ïî
+    // è®¾ç½®æ¯ä¸€åˆ—çš„å®½åº¦  å®½åº¦çš„è®¾ç½®å¿…é¡»åœ¨ä¿¡æ¯æ’å…¥å®Œæˆåè¿›è¡Œï¼Œå¦åˆ™ä¼šè¢«è¦†ç›–ï¼
+    ui.Process_TableView->horizontalHeader()->resizeSection(0, 100); // ç¬¬ä¸€åˆ—å®½åº¦ä¸º100
+    ui.Process_TableView->horizontalHeader()->resizeSection(1, 50); // ç¬¬äºŒåˆ—å®½åº¦ä¸º50
+    ui.Process_TableView->horizontalHeader()->resizeSection(2, 60); // ç¬¬ä¸‰åˆ—å®½åº¦ä¸º60
+    ui.Process_TableView->horizontalHeader()->resizeSection(3, 400); // ç¬¬ä¸‰åˆ—å®½åº¦ä¸º200
+    ui.Process_TableView->horizontalHeader()->resizeSection(4, 150); // ç¬¬ä¸‰åˆ—å®½åº¦ä¸º80
+    //æ·»åŠ èœå•é¡¹
     m_TableViewMenu = new QMenu(ui.Process_TableView);
-    RefreshAct = new QAction(QStringLiteral("Ë¢ĞÂ"), ui.Process_TableView);
-    ModuleAct = new QAction(QStringLiteral("²é¿´½ø³ÌÄ£¿é"), ui.Process_TableView);
-    HandleAct = new QAction(QStringLiteral("²é¿´½ø³Ì¾ä±ú"), ui.Process_TableView);
-    MemoryAct = new QAction(QStringLiteral("²é¿´½ø³ÌÄÚ´æ"), ui.Process_TableView);
-    TerminateProcessAct = new QAction(QStringLiteral("½áÊø½ø³Ì"), ui.Process_TableView);
-    HideProcessAct = new QAction(QStringLiteral("Òş²Ø½ø³Ì"), ui.Process_TableView);
-    ProtectProcessAct = new QAction(QStringLiteral("±£»¤½ø³Ì"), ui.Process_TableView);
-    UnprotectProcessAct = new QAction(QStringLiteral("³·Ïú±£»¤"), ui.Process_TableView);
-    Hook_NtTerminateProAct = new QAction(QStringLiteral("hookÀàĞÍ-½ø³Ì·À¹Ø±Õ"),ui.Process_TableView);
-    Unhook_NtTerminateProAct = new QAction(QStringLiteral("unhookÀàĞÍ-½ø³Ì·À¹Ø±Õ"), ui.Process_TableView);
-    Hook_NtWriteVirtualMemoryAct = new QAction(QStringLiteral("hookÀàĞÍ-½ø³Ì·ÀĞ´Èë"), ui.Process_TableView);
-    Unhook_NtWriteVirtualMemoryAct = new QAction(QStringLiteral("unhookÀàĞÍ-½ø³Ì·ÀĞ´Èë"), ui.Process_TableView);
+    RefreshAct = new QAction(QStringLiteral("åˆ·æ–°"), ui.Process_TableView);
+    ModuleAct = new QAction(QStringLiteral("æŸ¥çœ‹è¿›ç¨‹æ¨¡å—"), ui.Process_TableView);
+    HandleAct = new QAction(QStringLiteral("æŸ¥çœ‹è¿›ç¨‹å¥æŸ„"), ui.Process_TableView);
+    MemoryAct = new QAction(QStringLiteral("æŸ¥çœ‹è¿›ç¨‹å†…å­˜"), ui.Process_TableView);
+    TerminateProcessAct = new QAction(QStringLiteral("ç»“æŸè¿›ç¨‹"), ui.Process_TableView);
+    HideProcessAct = new QAction(QStringLiteral("éšè—è¿›ç¨‹"), ui.Process_TableView);
+    ProtectProcessAct = new QAction(QStringLiteral("ä¿æŠ¤è¿›ç¨‹"), ui.Process_TableView);
+    UnprotectProcessAct = new QAction(QStringLiteral("æ’¤é”€ä¿æŠ¤"), ui.Process_TableView);
+    Hook_NtTerminateProAct = new QAction(QStringLiteral("hookç±»å‹-è¿›ç¨‹é˜²å…³é—­"),ui.Process_TableView);
+    Unhook_NtTerminateProAct = new QAction(QStringLiteral("unhookç±»å‹-è¿›ç¨‹é˜²å…³é—­"), ui.Process_TableView);
+    Hook_NtWriteVirtualMemoryAct = new QAction(QStringLiteral("hookç±»å‹-è¿›ç¨‹é˜²å†™å…¥"), ui.Process_TableView);
+    Unhook_NtWriteVirtualMemoryAct = new QAction(QStringLiteral("unhookç±»å‹-è¿›ç¨‹é˜²å†™å…¥"), ui.Process_TableView);
     m_TableViewMenu->addAction(RefreshAct);
     m_TableViewMenu->addAction(ModuleAct);
     m_TableViewMenu->addAction(HandleAct);
@@ -61,8 +61,8 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     m_TableViewMenu->addAction(Hook_NtWriteVirtualMemoryAct);
     m_TableViewMenu->addAction(Unhook_NtWriteVirtualMemoryAct);
 
-    //ÏûÏ¢¹ØÁª
-    connect(ui.Process_TableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(Menu_Slot(QPoint)));  //²Ëµ¥³õÊ¼»¯
+    //æ¶ˆæ¯å…³è”
+    connect(ui.Process_TableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(Menu_Slot(QPoint)));  //èœå•åˆå§‹åŒ–
     connect(RefreshAct, &QAction::triggered, this, &ProcessWindow::RefreshProcess);
     connect(ModuleAct, &QAction::triggered,this, &ProcessWindow::OpenProcessModuleWindow);
     connect(HandleAct, &QAction::triggered, this, &ProcessWindow::OpenProcessHandleWindow);
@@ -89,7 +89,7 @@ void ProcessWindow::ListProcessInfo()
     vector<PROCESS_INFORMATION_ENTRY> ProcessInfo;
     ProcessInfo.reserve(100);
     EnumProcess(ProcessInfo);
-    // Ìí¼ÓÊı¾İ
+    // æ·»åŠ æ•°æ®
     vector<PROCESS_INFORMATION_ENTRY>::iterator v1;
     for (v1 = ProcessInfo.begin(); v1 != ProcessInfo.end(); v1++)
     {
@@ -105,7 +105,7 @@ void ProcessWindow::ListProcessInfo()
         // EProcess
         rowItems.append(new QStandardItem("0x" + (QString::number((ULONG_PTR)v1->EProcess, 16)).toUpper()));
 
-        // ½«ÕûĞĞÊı¾İÌí¼Óµ½Ä£ĞÍÖĞ
+        // å°†æ•´è¡Œæ•°æ®æ·»åŠ åˆ°æ¨¡å‹ä¸­
         m_model.appendRow(rowItems);
     }
 }
@@ -114,9 +114,9 @@ void ProcessWindow::TerminateProcess()
 {
     QModelIndexList selectedRows = ui.Process_TableView->selectionModel()->selectedRows();
     if (!selectedRows.isEmpty()) {
-        QModelIndex index = selectedRows.first(); // »ñÈ¡Ñ¡ÖĞĞĞµÄµÚÒ»¸öË÷Òı
-        QModelIndex targetIndex = index.sibling(index.row(), 1); // »ñÈ¡µÚ 1 ÁĞµÄË÷Òı-id
-        QString value = targetIndex.data().toString(); // »ñÈ¡¸ÃÁĞµÄÖµ
+        QModelIndex index = selectedRows.first(); // è·å–é€‰ä¸­è¡Œçš„ç¬¬ä¸€ä¸ªç´¢å¼•
+        QModelIndex targetIndex = index.sibling(index.row(), 1); // è·å–ç¬¬ 1 åˆ—çš„ç´¢å¼•-id
+        QString value = targetIndex.data().toString(); // è·å–è¯¥åˆ—çš„å€¼
 
         BOOL IsOk = FALSE;
         COMMUNICATE_TERMINATE_PROCESS v1;
@@ -133,9 +133,9 @@ void ProcessWindow::HideProcess()
 {
     QModelIndexList selectedRows = ui.Process_TableView->selectionModel()->selectedRows();
     if (!selectedRows.isEmpty()) {
-        QModelIndex index = selectedRows.first(); // »ñÈ¡Ñ¡ÖĞĞĞµÄµÚÒ»¸öË÷Òı
-        QModelIndex targetIndex = index.sibling(index.row(), 1); // »ñÈ¡µÚ 1 ÁĞµÄË÷Òı-id
-        QString value = targetIndex.data().toString(); // »ñÈ¡¸ÃÁĞµÄÖµ
+        QModelIndex index = selectedRows.first(); // è·å–é€‰ä¸­è¡Œçš„ç¬¬ä¸€ä¸ªç´¢å¼•
+        QModelIndex targetIndex = index.sibling(index.row(), 1); // è·å–ç¬¬ 1 åˆ—çš„ç´¢å¼•-id
+        QString value = targetIndex.data().toString(); // è·å–è¯¥åˆ—çš„å€¼
 
         BOOL IsOk = FALSE;
         COMMUNICATE_HIDE_PROCESS v1;
@@ -153,9 +153,9 @@ void ProcessWindow::ProtectProcess()
 {
     QModelIndexList selectedRows = ui.Process_TableView->selectionModel()->selectedRows();
     if (!selectedRows.isEmpty()) {
-        QModelIndex index = selectedRows.first(); // »ñÈ¡Ñ¡ÖĞĞĞµÄµÚÒ»¸öË÷Òı
-        QModelIndex targetIndex = index.sibling(index.row(), 1); // »ñÈ¡µÚ 1 ÁĞµÄË÷Òı-id
-        QString value = targetIndex.data().toString(); // »ñÈ¡¸ÃÁĞµÄÖµ
+        QModelIndex index = selectedRows.first(); // è·å–é€‰ä¸­è¡Œçš„ç¬¬ä¸€ä¸ªç´¢å¼•
+        QModelIndex targetIndex = index.sibling(index.row(), 1); // è·å–ç¬¬ 1 åˆ—çš„ç´¢å¼•-id
+        QString value = targetIndex.data().toString(); // è·å–è¯¥åˆ—çš„å€¼
 
         BOOL IsOk = FALSE;
         COMMUNICATE_PROTECT_PROCESS v1;
@@ -173,9 +173,9 @@ void ProcessWindow::UnprotectProcess()
 {
     QModelIndexList selectedRows = ui.Process_TableView->selectionModel()->selectedRows();
     if (!selectedRows.isEmpty()) {
-        QModelIndex index = selectedRows.first(); // »ñÈ¡Ñ¡ÖĞĞĞµÄµÚÒ»¸öË÷Òı
-        QModelIndex targetIndex = index.sibling(index.row(), 1); // »ñÈ¡µÚ 1 ÁĞµÄË÷Òı-id
-        QString value = targetIndex.data().toString(); // »ñÈ¡¸ÃÁĞµÄÖµ
+        QModelIndex index = selectedRows.first(); // è·å–é€‰ä¸­è¡Œçš„ç¬¬ä¸€ä¸ªç´¢å¼•
+        QModelIndex targetIndex = index.sibling(index.row(), 1); // è·å–ç¬¬ 1 åˆ—çš„ç´¢å¼•-id
+        QString value = targetIndex.data().toString(); // è·å–è¯¥åˆ—çš„å€¼
 
         BOOL IsOk = FALSE;
         COMMUNICATE_PROTECT_PROCESS v1;
@@ -204,7 +204,7 @@ void ProcessWindow::hook_NtTerminateProcess()
             NULL
         );
         if (hDevice == INVALID_HANDLE_VALUE) {
-            MessageBox(NULL, _T("´ò¿ªÉè±¸Ê§°Ü"), _T("ÌáÊ¾"), NULL);
+            MessageBox(NULL, _T("æ‰“å¼€è®¾å¤‡å¤±è´¥"), _T("æç¤º"), NULL);
         }*/
 
 
@@ -219,25 +219,25 @@ void ProcessWindow::hook_NtTerminateProcess()
         //    NULL
         //);
         //if (hDevice == INVALID_HANDLE_VALUE) {
-        //    MessageBox(NULL, _T("´ò¿ªÉè±¸Ê§°Ü"), _T("ÌáÊ¾"), NULL);
+        //    MessageBox(NULL, _T("æ‰“å¼€è®¾å¤‡å¤±è´¥"), _T("æç¤º"), NULL);
         //}
         //PROTECT_CONFIG config = { 0 };
         //QModelIndexList selectedRows = ui.Process_TableView->selectionModel()->selectedRows();
         //if (!selectedRows.isEmpty()) {
-        //    QModelIndex index = selectedRows.first(); // »ñÈ¡Ñ¡ÖĞĞĞµÄµÚÒ»¸öË÷Òı
-        //    QModelIndex targetIndex = index.sibling(index.row(), 0); // »ñÈ¡µÚ 0 ÁĞµÄË÷Òı-½ø³ÌÃû
-        //    QString value = targetIndex.data().toString(); // »ñÈ¡¸ÃÁĞµÄÖµ
-        //    // ½«QString×ª»»Îªstd::wstring
+        //    QModelIndex index = selectedRows.first(); // è·å–é€‰ä¸­è¡Œçš„ç¬¬ä¸€ä¸ªç´¢å¼•
+        //    QModelIndex targetIndex = index.sibling(index.row(), 0); // è·å–ç¬¬ 0 åˆ—çš„ç´¢å¼•-è¿›ç¨‹å
+        //    QString value = targetIndex.data().toString(); // è·å–è¯¥åˆ—çš„å€¼
+        //    // å°†QStringè½¬æ¢ä¸ºstd::wstring
         //    std::wstring wstr = value.toStdWString();
 
-        //    // ¼ì²é³¤¶È£¬±ÜÃâÒç³ö
+        //    // æ£€æŸ¥é•¿åº¦ï¼Œé¿å…æº¢å‡º
         //    if (wstr.length() < 256) {
-        //        wcscpy_s(config.ProcessName, 256, wstr.c_str()); // Ê¹ÓÃ°²È«¸´ÖÆº¯Êı
+        //        wcscpy_s(config.ProcessName, 256, wstr.c_str()); // ä½¿ç”¨å®‰å…¨å¤åˆ¶å‡½æ•°
         //    }
         //    else {
-        //        // ´¦ÀíÒç³öÇé¿ö£¬ÀıÈç½Ø¶Ï×Ö·û´®
+        //        // å¤„ç†æº¢å‡ºæƒ…å†µï¼Œä¾‹å¦‚æˆªæ–­å­—ç¬¦ä¸²
         //        wcsncpy_s(config.ProcessName, 256, wstr.c_str(), 255);
-        //        config.ProcessName[255] = L'\0'; // È·±£¿ÕÖÕÖ¹
+        //        config.ProcessName[255] = L'\0'; // ç¡®ä¿ç©ºç»ˆæ­¢
         //    }
 
         //}
@@ -276,7 +276,7 @@ void ProcessWindow::unhook_NtTerminateProcess()
 
     }
     else {
-        ::MessageBox(NULL, _T("Çı¶¯Ğ¶ÔØÊ§°Ü"), _T("ÌáÊ¾"), NULL);
+        ::MessageBox(NULL, _T("é©±åŠ¨å¸è½½å¤±è´¥"), _T("æç¤º"), NULL);
     }*/
 
 }
@@ -294,10 +294,10 @@ void ProcessWindow::OpenProcessModuleWindow()
 {
     QModelIndexList selectedRows = ui.Process_TableView->selectionModel()->selectedRows();
     if (!selectedRows.isEmpty()) {
-        QModelIndex index = selectedRows.first(); // »ñÈ¡Ñ¡ÖĞĞĞµÄµÚÒ»¸öË÷Òı
-        QModelIndex targetIndex = index.sibling(index.row(), 0); // »ñÈ¡µÚ 0 ÁĞµÄË÷Òı
-        QString value = targetIndex.data().toString(); // »ñÈ¡¸ÃÁĞµÄÖµ
-        // µÃµ½ÁËÄ¿±ê½ø³ÌÃû   ×÷Îª²ÎÊı´«µİ¸øÄ£¿é´°¿Ú
+        QModelIndex index = selectedRows.first(); // è·å–é€‰ä¸­è¡Œçš„ç¬¬ä¸€ä¸ªç´¢å¼•
+        QModelIndex targetIndex = index.sibling(index.row(), 0); // è·å–ç¬¬ 0 åˆ—çš„ç´¢å¼•
+        QString value = targetIndex.data().toString(); // è·å–è¯¥åˆ—çš„å€¼
+        // å¾—åˆ°äº†ç›®æ ‡è¿›ç¨‹å   ä½œä¸ºå‚æ•°ä¼ é€’ç»™æ¨¡å—çª—å£
         ProcessModuleWindow* ProcessModuleWind = new ProcessModuleWindow(value);
         ProcessModuleWind->show();
     }
@@ -307,10 +307,10 @@ void ProcessWindow::OpenProcessHandleWindow()
 {
     QModelIndexList selectedRows = ui.Process_TableView->selectionModel()->selectedRows();
     if (!selectedRows.isEmpty()) {
-        QModelIndex index = selectedRows.first(); // »ñÈ¡Ñ¡ÖĞĞĞµÄµÚÒ»¸öË÷Òı
-        QModelIndex targetIndex = index.sibling(index.row(), 1); // »ñÈ¡µÚ 1 ÁĞµÄË÷Òı
-        QString value = targetIndex.data().toString(); // »ñÈ¡¸ÃÁĞµÄÖµ
-        // µÃµ½ÁËÄ¿±ê½ø³ÌÃû   ×÷Îª²ÎÊı´«µİ¸øÄ£¿é´°¿Ú
+        QModelIndex index = selectedRows.first(); // è·å–é€‰ä¸­è¡Œçš„ç¬¬ä¸€ä¸ªç´¢å¼•
+        QModelIndex targetIndex = index.sibling(index.row(), 1); // è·å–ç¬¬ 1 åˆ—çš„ç´¢å¼•
+        QString value = targetIndex.data().toString(); // è·å–è¯¥åˆ—çš„å€¼
+        // å¾—åˆ°äº†ç›®æ ‡è¿›ç¨‹å   ä½œä¸ºå‚æ•°ä¼ é€’ç»™æ¨¡å—çª—å£
         ProcessHandleWindow* ProcessModuleWind = new ProcessHandleWindow((HANDLE)value.toLongLong());
         ProcessModuleWind->show();
     }
@@ -321,10 +321,10 @@ void ProcessWindow::OpenProcessMemoryWindow()
     
     QModelIndexList selectedRows = ui.Process_TableView->selectionModel()->selectedRows();
     if (!selectedRows.isEmpty()) {
-        QModelIndex index = selectedRows.first(); // »ñÈ¡Ñ¡ÖĞĞĞµÄµÚÒ»¸öË÷Òı
-        QModelIndex targetIndex = index.sibling(index.row(), 1); // »ñÈ¡µÚ 1 ÁĞµÄË÷Òı-id
-        QString value = targetIndex.data().toString(); // »ñÈ¡¸ÃÁĞµÄÖµ
-        // µÃµ½ÁËÄ¿±ê½ø³Ìid   ×÷Îª²ÎÊı´«µİ¸øÄ£¿é´°¿Ú
+        QModelIndex index = selectedRows.first(); // è·å–é€‰ä¸­è¡Œçš„ç¬¬ä¸€ä¸ªç´¢å¼•
+        QModelIndex targetIndex = index.sibling(index.row(), 1); // è·å–ç¬¬ 1 åˆ—çš„ç´¢å¼•-id
+        QString value = targetIndex.data().toString(); // è·å–è¯¥åˆ—çš„å€¼
+        // å¾—åˆ°äº†ç›®æ ‡è¿›ç¨‹id   ä½œä¸ºå‚æ•°ä¼ é€’ç»™æ¨¡å—çª—å£
         ProcessMemoryWindow* ProcessModuleWind = new ProcessMemoryWindow(value);
         ProcessModuleWind->show();
     }
@@ -332,30 +332,30 @@ void ProcessWindow::OpenProcessMemoryWindow()
 
 void ProcessWindow::Menu_Slot(QPoint p)
 {
-    QModelIndex index = ui.Process_TableView->indexAt(p);//»ñÈ¡Êó±êµã»÷Î»ÖÃÏîµÄË÷Òı
-    if (index.isValid())//Êı¾İÏîÊÇ·ñÓĞĞ§£¬¿Õ°×´¦µã»÷ÎŞ²Ëµ¥
+    QModelIndex index = ui.Process_TableView->indexAt(p);//è·å–é¼ æ ‡ç‚¹å‡»ä½ç½®é¡¹çš„ç´¢å¼•
+    if (index.isValid())//æ•°æ®é¡¹æ˜¯å¦æœ‰æ•ˆï¼Œç©ºç™½å¤„ç‚¹å‡»æ— èœå•
     {
-        QItemSelectionModel* selections = ui.Process_TableView->selectionModel();//»ñÈ¡µ±Ç°µÄÑ¡ÔñÄ£ĞÍ
-        QModelIndexList selected = selections->selectedIndexes();//·µ»Øµ±Ç°Ñ¡ÔñµÄÄ£ĞÍË÷Òı
-        if (selected.count() == 1) //Ñ¡Ôñµ¥¸öÏîÄ¿Ê±µÄÓÒ¼ü²Ëµ¥ÏÔÊ¾Action1
+        QItemSelectionModel* selections = ui.Process_TableView->selectionModel();//è·å–å½“å‰çš„é€‰æ‹©æ¨¡å‹
+        QModelIndexList selected = selections->selectedIndexes();//è¿”å›å½“å‰é€‰æ‹©çš„æ¨¡å‹ç´¢å¼•
+        if (selected.count() == 1) //é€‰æ‹©å•ä¸ªé¡¹ç›®æ—¶çš„å³é”®èœå•æ˜¾ç¤ºAction1
         {
             //RefreshAct->setVisible(true);
             m_TableViewMenu->setVisible(true);
         }
-        else   //Èç¹ûÑ¡ÖĞ¶à¸öÏîÄ¿£¬ÔòÓÒ¼ü²Ëµ¥ÏÔÊ¾Action2
+        else   //å¦‚æœé€‰ä¸­å¤šä¸ªé¡¹ç›®ï¼Œåˆ™å³é”®èœå•æ˜¾ç¤ºAction2
         {
             //ModuleAct->setVisible(true);
             m_TableViewMenu->setVisible(true);
         }
-        m_TableViewMenu->exec(QCursor::pos());//Êı¾İÏîÓĞĞ§²ÅÏÔÊ¾²Ëµ¥
+        m_TableViewMenu->exec(QCursor::pos());//æ•°æ®é¡¹æœ‰æ•ˆæ‰æ˜¾ç¤ºèœå•
     }
    
 }
 
 void ProcessWindow::RefreshProcess()
 {
-    //m_model.clear();  //ÕâÖÖ·½·¨ÇåÀíÊı¾İĞĞµÄÍ¬Ê±Ò²»áÇåÀí±íÍ·£¬Òò´ËÃ¿´ÎË¢ĞÂÖ®ºó±íÍ·¶¼»á±ä³ÉÊı×Ö
-    //Ö»ÇåÀíÊı¾İĞĞ£¬²»ÇåÀí±íÍ·
+    //m_model.clear();  //è¿™ç§æ–¹æ³•æ¸…ç†æ•°æ®è¡Œçš„åŒæ—¶ä¹Ÿä¼šæ¸…ç†è¡¨å¤´ï¼Œå› æ­¤æ¯æ¬¡åˆ·æ–°ä¹‹åè¡¨å¤´éƒ½ä¼šå˜æˆæ•°å­—
+    //åªæ¸…ç†æ•°æ®è¡Œï¼Œä¸æ¸…ç†è¡¨å¤´
     m_model.removeRows(0, m_model.rowCount());
     ListProcessInfo();
 }

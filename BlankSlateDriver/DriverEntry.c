@@ -6,7 +6,7 @@
 #include"ProcessHelper.h"
 #include"ProcMonitor.h"
 #include "FileMonitor.h"
-//×¢²á±í»Øµ÷Ê¹ÓÃµÄCookie
+//æ³¨å†Œè¡¨å›žè°ƒä½¿ç”¨çš„Cookie
 LARGE_INTEGER g_liRegCookie;
 //   bu BlankSlateDriver!DriverEntry
 NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
@@ -17,15 +17,15 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 	PDEVICE_EXTENSION DeviceExtension = NULL;
 	UNICODE_STRING DeviceName;
 	UNICODE_STRING SymbolicLink;
-	//ÉèÖÃÐ¶ÔØº¯Êý
+	//è®¾ç½®å¸è½½å‡½æ•°
 	DriverObject->DriverUnload = DriverUnload;
 
 	RtlInitUnicodeString(&DeviceName, DEVICE_NAME);
 	RtlInitUnicodeString(&SymbolicLink, SYMBOLIC_LINK);
-	//´´½¨Éè±¸¶ÔÏó
-	Status = IoCreateDevice(DriverObject,  //Çý¶¯¶ÔÏó
-		sizeof(DEVICE_EXTENSION),          //Éè±¸À©Õ¹
-		&DeviceName,                       //Éè±¸Ãû³Æ
+	//åˆ›å»ºè®¾å¤‡å¯¹è±¡
+	Status = IoCreateDevice(DriverObject,  //é©±åŠ¨å¯¹è±¡
+		sizeof(DEVICE_EXTENSION),          //è®¾å¤‡æ‰©å±•
+		&DeviceName,                       //è®¾å¤‡åç§°
 		FILE_DEVICE_UNKNOWN,
 		0,
 		TRUE,
@@ -51,11 +51,11 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 		DriverObject->MajorFunction[i] = DispatchRoutine;
 	}
 	DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = IoControlRoutine;
-	//±ØÒªµÄ³õÊ¼»¯ÐÐÎª
+	//å¿…è¦çš„åˆå§‹åŒ–è¡Œä¸º
 	InitializeSystemSource();
 	InitializeCallbackSource(DriverObject);
 	GetDriverObject(DriverObject);
-	// ³õÊ¼»¯ÎÄ¼þ¼à¿ØÄ£¿é
+	// åˆå§‹åŒ–æ–‡ä»¶ç›‘æŽ§æ¨¡å—
 	Status = InitializeFileMonitor(DriverObject);
 	if (!NT_SUCCESS(Status)) {
 		DbgPrint("[wdk] File Monitor initialization failed: 0x%X\n", Status);
@@ -64,7 +64,7 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 		DbgPrint("[wdk] File Monitor initialized successfully\n");
 	}
 
-	// ×¢²á MiniFilter
+	// æ³¨å†Œ MiniFilter
 	Status = FltRegisterFilter(DriverObject, &FilterRegistration, &gFilterHandle);
 	if (NT_SUCCESS(Status)) {
 		Status = FltStartFiltering(gFilterHandle);
@@ -88,28 +88,28 @@ VOID DriverUnload(IN PDRIVER_OBJECT DriverObject)
 	while (DeviceObject != NULL)
 	{
 		DeviceExtension = (PDEVICE_EXTENSION)DeviceObject->DeviceExtension;
-		//É¾³ý·ûºÅÁ´½Ó
+		//åˆ é™¤ç¬¦å·é“¾æŽ¥
 		UNICODE_STRING SymbolicLink = DeviceExtension->SymbolicLink;
 		IoDeleteSymbolicLink(&SymbolicLink);
 		DeviceObject = DeviceObject->NextDevice;
 		IoDeleteDevice(DeviceExtension->DeviceObject);
 
 	}
-	//±ØÒªµÄUninitialize
+	//å¿…è¦çš„Uninitialize
 	UninitializeSystemSource();
 	UninitializeCallbackSource();
 
 	if (g_context) {
-		// Í£Ö¹¼à¿Ø
+		// åœæ­¢ç›‘æŽ§
 		if (g_context->IsMonitoring && g_context->NotifyHandle) {
 			PsSetCreateProcessNotifyRoutineEx(ProcessNotifyCallback, TRUE);
 		}
-		// ÊÍ·ÅÉÏÏÂÎÄ
+		// é‡Šæ”¾ä¸Šä¸‹æ–‡
 		ExFreePoolWithTag(g_context, CONTEXT_TAG);
 		g_context = NULL;
 	}
 
-	// Í£Ö¹ºÍ·´³õÊ¼»¯ÎÄ¼þ¼à¿Ø
+	// åœæ­¢å’Œååˆå§‹åŒ–æ–‡ä»¶ç›‘æŽ§
 	if (gFilterHandle) {
 		FltUnregisterFilter(gFilterHandle);
 		gFilterHandle = NULL;
@@ -122,7 +122,7 @@ NTSTATUS DispatchRoutine(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
 {
 	//KdPrint(("Enter HelloDDKDispatchRoutine\n"));
 	PIO_STACK_LOCATION IoStackLocation = IoGetCurrentIrpStackLocation(Irp);
-	//½¨Á¢Ò»¸ö×Ö·û´®Êý×éÓëIRPÀàÐÍ¶ÔÓ¦ÆðÀ´
+	//å»ºç«‹ä¸€ä¸ªå­—ç¬¦ä¸²æ•°ç»„ä¸ŽIRPç±»åž‹å¯¹åº”èµ·æ¥
 	static char* v1[] =
 	{
 		"IRP_MJ_CREATE",
@@ -164,7 +164,7 @@ NTSTATUS DispatchRoutine(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
 
 	}
 	NTSTATUS Status = STATUS_SUCCESS;
-	//Íê³ÉIRP
+	//å®ŒæˆIRP
 	Irp->IoStatus.Status = Status;
 	Irp->IoStatus.Information = 0;
 	IoCompleteRequest(Irp, IO_NO_INCREMENT);
@@ -176,13 +176,13 @@ NTSTATUS IoControlRoutine(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
 	PDEVICE_EXTENSION DeviceExtension = (PDEVICE_EXTENSION)DeviceObject->DeviceExtension;
 	NTSTATUS Status = STATUS_SUCCESS;
 	PIO_STACK_LOCATION IoStackLocation = IoGetCurrentIrpStackLocation(Irp);
-	//µÃµ½ÊäÈë»º³åÇø
+	//å¾—åˆ°è¾“å…¥ç¼“å†²åŒº
 	PVOID InputBuffer = Irp->AssociatedIrp.SystemBuffer;
 	ULONG InputBufferLength = IoStackLocation->Parameters.DeviceIoControl.InputBufferLength;
-	//µÃµ½Êä³ö»º³åÇø
+	//å¾—åˆ°è¾“å‡ºç¼“å†²åŒº
 	PVOID OutputBuffer = Irp->AssociatedIrp.SystemBuffer;
 	ULONG OutputBufferLength = IoStackLocation->Parameters.DeviceIoControl.OutputBufferLength;
-	//µÃµ½IOCTLÂë
+	//å¾—åˆ°IOCTLç 
 	ULONG Code = IoStackLocation->Parameters.DeviceIoControl.IoControlCode;
 
 	ULONG Information = 0;
@@ -207,7 +207,7 @@ NTSTATUS IoControlRoutine(IN PDEVICE_OBJECT DeviceObject, IN PIRP Irp)
 	}
 
 	}
-	//Íê³ÉIrp
+	//å®ŒæˆIrp
 	Irp->IoStatus.Status = Status;
 	Irp->IoStatus.Information = Information;
 	IoCompleteRequest(Irp, IO_NO_INCREMENT);

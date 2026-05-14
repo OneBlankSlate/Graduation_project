@@ -1,12 +1,12 @@
-#include"StringHelper.h"
+ï»¿#include"StringHelper.h"
 
 
 char* Wchar2Char(WCHAR* wstr)
 {
 	/*
-	CP_ACP£ºÊ¹ÓÃÏµÍ³Ä¬ÈÏµÄANSI±àÂë¡£
-	CP_UTF8£ºUTF-8±àÂë¡£
-	CP_OEMCP£ºOEM×Ö·û¼¯¡£
+	CP_ACPï¼šä½¿ç”¨ç³»ç»Ÿé»˜è®¤çš„ANSIç¼–ç ã€‚
+	CP_UTF8ï¼šUTF-8ç¼–ç ã€‚
+	CP_OEMCPï¼šOEMå­—ç¬¦é›†ã€‚
 	*/
 	char* str = NULL;
 	ULONG Length = 0;
@@ -53,7 +53,7 @@ wchar_t* Char2Wchar(CHAR* str)
 		{
 			return NULL;
 		}
-		// Ö´ĞĞ×ª»»
+		// æ‰§è¡Œè½¬æ¢
 		int result = MultiByteToWideChar(CP_UTF8, 0, str, -1, wstr, Length);
 		if (result == 0)
 		{

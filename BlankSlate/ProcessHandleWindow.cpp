@@ -3,20 +3,20 @@
 #include"ProcessHandle.h"
 #include"ProcessHelper.h"
 #include<QStandardItem>
-// ·½°¸¶ş£ºµ¥¸ö¹¹Ôìº¯Êı
-ProcessHandleWindow::ProcessHandleWindow(HANDLE ProcessId, QWidget* parent)	: QWidget(parent), m_ProcessId(ProcessId)  // ±£´æ½ø³Ì¾ä±ú/ID
+// æ–¹æ¡ˆäºŒï¼šå•ä¸ªæ„é€ å‡½æ•°
+ProcessHandleWindow::ProcessHandleWindow(HANDLE ProcessId, QWidget* parent)	: QWidget(parent), m_ProcessId(ProcessId)  // ä¿å­˜è¿›ç¨‹å¥æŸ„/ID
 {
 	ui.setupUi(this);
-	// ½«Ä£ĞÍÉèÖÃµ½ÊÓÍ¼
-	ui.ProcessHandle_TableView->setModel(&m_model);  //Ö»ÓÃÉèÖÃÕâÒ»´Î£¬¹ØÁªÉÏÖ®ºó£¬ÒÔºóÖ±½Ó²Ù×÷m_model¾ÍĞĞÁË
+	// å°†æ¨¡å‹è®¾ç½®åˆ°è§†å›¾
+	ui.ProcessHandle_TableView->setModel(&m_model);  //åªç”¨è®¾ç½®è¿™ä¸€æ¬¡ï¼Œå…³è”ä¸Šä¹‹åï¼Œä»¥åç›´æ¥æ“ä½œm_modelå°±è¡Œäº†
 
-	 //ÁĞ±íÊôĞÔ
-	ui.ProcessHandle_TableView->setSelectionBehavior(QAbstractItemView::SelectRows);  // ÉèÖÃÑ¡ÔñĞĞÎªÎªÕûĞĞÑ¡ÖĞ
-	ui.ProcessHandle_TableView->setContextMenuPolicy(Qt::CustomContextMenu); //¿Éµ¯³öÓÒ¼ü²Ëµ¥  ±ØĞëÉèÖÃ
-	ui.ProcessHandle_TableView->setEditTriggers(QAbstractItemView::NoEditTriggers);//²»¿É±à¼­
-	m_model.setColumnCount(5); // ÉèÖÃÁĞÊıÎª5
-	// ÉèÖÃ±íÍ·
-	QStringList headers = { QStringLiteral("¾ä±úÀàĞÍ"), QStringLiteral("¾ä±úÃû"), QStringLiteral("¾ä±ú"),QStringLiteral("¾ä±ú¶ÔÏó"),QStringLiteral("¾ä±úÀàĞÍ´úºÅ")};
+	 //åˆ—è¡¨å±æ€§
+	ui.ProcessHandle_TableView->setSelectionBehavior(QAbstractItemView::SelectRows);  // è®¾ç½®é€‰æ‹©è¡Œä¸ºä¸ºæ•´è¡Œé€‰ä¸­
+	ui.ProcessHandle_TableView->setContextMenuPolicy(Qt::CustomContextMenu); //å¯å¼¹å‡ºå³é”®èœå•  å¿…é¡»è®¾ç½®
+	ui.ProcessHandle_TableView->setEditTriggers(QAbstractItemView::NoEditTriggers);//ä¸å¯ç¼–è¾‘
+	m_model.setColumnCount(5); // è®¾ç½®åˆ—æ•°ä¸º5
+	// è®¾ç½®è¡¨å¤´
+	QStringList headers = { QStringLiteral("å¥æŸ„ç±»å‹"), QStringLiteral("å¥æŸ„å"), QStringLiteral("å¥æŸ„"),QStringLiteral("å¥æŸ„å¯¹è±¡"),QStringLiteral("å¥æŸ„ç±»å‹ä»£å·")};
 	m_model.setHorizontalHeaderLabels(headers);
 
 
@@ -29,10 +29,10 @@ ProcessHandleWindow::ProcessHandleWindow(HANDLE ProcessId, QWidget* parent)	: QW
 	ui.ProcessHandle_TableView->horizontalHeader()->resizeSection(5, 70);
 
 	m_TableViewMenu = new QMenu(ui.ProcessHandle_TableView);
-	CloseHandleAct = new QAction(QStringLiteral("¹Ø±Õ¾ä±ú"), ui.ProcessHandle_TableView);
+	CloseHandleAct = new QAction(QStringLiteral("å…³é—­å¥æŸ„"), ui.ProcessHandle_TableView);
 	m_TableViewMenu->addAction(CloseHandleAct);
-	//ÏûÏ¢¹ØÁª
-	connect(ui.ProcessHandle_TableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(Menu_Slot(QPoint)));  //²Ëµ¥³õÊ¼»¯
+	//æ¶ˆæ¯å…³è”
+	connect(ui.ProcessHandle_TableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(Menu_Slot(QPoint)));  //èœå•åˆå§‹åŒ–
 	connect(CloseHandleAct, &QAction::triggered, this, &ProcessHandleWindow::CloseHandle);
 }
 
@@ -49,17 +49,17 @@ void ProcessHandleWindow::ListProcessHandleInfo(HANDLE ProcessId)
 	for (v1 = HandleInfo.begin(); v1 != HandleInfo.end(); v1++)
 	{
 		QList<QStandardItem*> rowItems;
-		// ¾ä±úÀàĞÍ
+		// å¥æŸ„ç±»å‹
 		rowItems.append(new QStandardItem(QString::fromWCharArray(v1->HandleType)));
-		// ¾ä±úÃû
-		rowItems.append(new QStandardItem(QString::fromWCharArray(v1->HandleName)));  //0xÊ®Áù½øÖÆ
-		// ¾ä±ú
+		// å¥æŸ„å
+		rowItems.append(new QStandardItem(QString::fromWCharArray(v1->HandleName)));  //0xåå…­è¿›åˆ¶
+		// å¥æŸ„
 		rowItems.append(new QStandardItem("0x" + (QString::number((ULONG_PTR)v1->Handle, 16)).toUpper()));
-		// ¾ä±ú¶ÔÏó
+		// å¥æŸ„å¯¹è±¡
 		rowItems.append(new QStandardItem("0x" + (QString::number((ULONG_PTR)v1->Object,16)).toUpper()));
-		// ¾ä±úÀàĞÍ´úºÅ
+		// å¥æŸ„ç±»å‹ä»£å·
 		rowItems.append(new QStandardItem(QString::number(v1->Index)));
-		// ½«ÕûĞĞÊı¾İÌí¼Óµ½Ä£ĞÍÖĞ
+		// å°†æ•´è¡Œæ•°æ®æ·»åŠ åˆ°æ¨¡å‹ä¸­
 		m_model.appendRow(rowItems);
 	}
 }
@@ -68,10 +68,10 @@ void ProcessHandleWindow::CloseHandle()
 	EnableDebugPrivilege();
 	QModelIndexList selectedRows = ui.ProcessHandle_TableView->selectionModel()->selectedRows();
 	if (!selectedRows.isEmpty()) {
-		QModelIndex index = selectedRows.first(); // »ñÈ¡Ñ¡ÖĞĞĞµÄµÚÒ»¸öË÷Òı
-		QModelIndex targetIndex = index.sibling(index.row(), 2); // »ñÈ¡µÚ 2 ÁĞµÄË÷Òı-¾ä±úÖµ
-		QString value = targetIndex.data().toString(); // »ñÈ¡¸ÃÁĞµÄÖµ
-		 // ×ª»»ÎªÊ®Áù½øÖÆÊıÖµ
+		QModelIndex index = selectedRows.first(); // è·å–é€‰ä¸­è¡Œçš„ç¬¬ä¸€ä¸ªç´¢å¼•
+		QModelIndex targetIndex = index.sibling(index.row(), 2); // è·å–ç¬¬ 2 åˆ—çš„ç´¢å¼•-å¥æŸ„å€¼
+		QString value = targetIndex.data().toString(); // è·å–è¯¥åˆ—çš„å€¼
+		 // è½¬æ¢ä¸ºåå…­è¿›åˆ¶æ•°å€¼
 		bool ok;
 		HANDLE targetHandle = (HANDLE)value.toULongLong(&ok, 16);
 		BOOL IsOk = FALSE;
@@ -92,22 +92,22 @@ void ProcessHandleWindow::CloseHandle()
 
 void ProcessHandleWindow::Menu_Slot(QPoint p)
 {
-	QModelIndex index = ui.ProcessHandle_TableView->indexAt(p);//»ñÈ¡Êó±êµã»÷Î»ÖÃÏîµÄË÷Òı
-	if (index.isValid())//Êı¾İÏîÊÇ·ñÓĞĞ§£¬¿Õ°×´¦µã»÷ÎŞ²Ëµ¥
+	QModelIndex index = ui.ProcessHandle_TableView->indexAt(p);//è·å–é¼ æ ‡ç‚¹å‡»ä½ç½®é¡¹çš„ç´¢å¼•
+	if (index.isValid())//æ•°æ®é¡¹æ˜¯å¦æœ‰æ•ˆï¼Œç©ºç™½å¤„ç‚¹å‡»æ— èœå•
 	{
-		QItemSelectionModel* selections = ui.ProcessHandle_TableView->selectionModel();//»ñÈ¡µ±Ç°µÄÑ¡ÔñÄ£ĞÍ
-		QModelIndexList selected = selections->selectedIndexes();//·µ»Øµ±Ç°Ñ¡ÔñµÄÄ£ĞÍË÷Òı
-		if (selected.count() == 1) //Ñ¡Ôñµ¥¸öÏîÄ¿Ê±µÄÓÒ¼ü²Ëµ¥ÏÔÊ¾Action1
+		QItemSelectionModel* selections = ui.ProcessHandle_TableView->selectionModel();//è·å–å½“å‰çš„é€‰æ‹©æ¨¡å‹
+		QModelIndexList selected = selections->selectedIndexes();//è¿”å›å½“å‰é€‰æ‹©çš„æ¨¡å‹ç´¢å¼•
+		if (selected.count() == 1) //é€‰æ‹©å•ä¸ªé¡¹ç›®æ—¶çš„å³é”®èœå•æ˜¾ç¤ºAction1
 		{
 			//RefreshAct->setVisible(true);
 			m_TableViewMenu->setVisible(true);
 		}
-		else   //Èç¹ûÑ¡ÖĞ¶à¸öÏîÄ¿£¬ÔòÓÒ¼ü²Ëµ¥ÏÔÊ¾Action2
+		else   //å¦‚æœé€‰ä¸­å¤šä¸ªé¡¹ç›®ï¼Œåˆ™å³é”®èœå•æ˜¾ç¤ºAction2
 		{
 			//ModuleAct->setVisible(true);
 			m_TableViewMenu->setVisible(true);
 		}
-		m_TableViewMenu->exec(QCursor::pos());//Êı¾İÏîÓĞĞ§²ÅÏÔÊ¾²Ëµ¥
+		m_TableViewMenu->exec(QCursor::pos());//æ•°æ®é¡¹æœ‰æ•ˆæ‰æ˜¾ç¤ºèœå•
 	}
 
 }

@@ -10,35 +10,35 @@ ProcessMemoryWindow::ProcessMemoryWindow(const QString& ProcessIdentity,QWidget 
 	ui.setupUi(this);
 	m_OldProtect = 0;
 
-	 //ÁĞ±íÊôĞÔ
-	ui.ProcessMemory_TableView->setSelectionBehavior(QAbstractItemView::SelectRows);  // ÉèÖÃÑ¡ÔñĞĞÎªÎªÕûĞĞÑ¡ÖĞ
-	ui.ProcessMemory_TableView->setContextMenuPolicy(Qt::CustomContextMenu); //¿Éµ¯³öÓÒ¼ü²Ëµ¥  ±ØĞëÉèÖÃ
-	ui.ProcessMemory_TableView->setEditTriggers(QAbstractItemView::NoEditTriggers);//²»¿É±à¼­
-	m_model.setColumnCount(5); // ÉèÖÃÁĞÊıÎª5
-	// ÉèÖÃ±íÍ·
-	QStringList headers = { QStringLiteral("µØÖ·"), QStringLiteral("´óĞ¡"), QStringLiteral("Protect"),QStringLiteral("State"),QStringLiteral("Type")};
+	 //åˆ—è¡¨å±æ€§
+	ui.ProcessMemory_TableView->setSelectionBehavior(QAbstractItemView::SelectRows);  // è®¾ç½®é€‰æ‹©è¡Œä¸ºä¸ºæ•´è¡Œé€‰ä¸­
+	ui.ProcessMemory_TableView->setContextMenuPolicy(Qt::CustomContextMenu); //å¯å¼¹å‡ºå³é”®èœå•  å¿…é¡»è®¾ç½®
+	ui.ProcessMemory_TableView->setEditTriggers(QAbstractItemView::NoEditTriggers);//ä¸å¯ç¼–è¾‘
+	m_model.setColumnCount(5); // è®¾ç½®åˆ—æ•°ä¸º5
+	// è®¾ç½®è¡¨å¤´
+	QStringList headers = { QStringLiteral("åœ°å€"), QStringLiteral("å¤§å°"), QStringLiteral("Protect"),QStringLiteral("State"),QStringLiteral("Type")};
 	m_model.setHorizontalHeaderLabels(headers);
-	// ½«Ä£ĞÍÉèÖÃµ½ÊÓÍ¼
-	ui.ProcessMemory_TableView->setModel(&m_model);  //Ö»ÓÃÉèÖÃÕâÒ»´Î£¬¹ØÁªÉÏÖ®ºó£¬ÒÔºóÖ±½Ó²Ù×÷m_model¾ÍĞĞÁË
+	// å°†æ¨¡å‹è®¾ç½®åˆ°è§†å›¾
+	ui.ProcessMemory_TableView->setModel(&m_model);  //åªç”¨è®¾ç½®è¿™ä¸€æ¬¡ï¼Œå…³è”ä¸Šä¹‹åï¼Œä»¥åç›´æ¥æ“ä½œm_modelå°±è¡Œäº†
 	ui.ProcessMemory_TableView->show();
-	//ÁĞÄÚ´æ
+	//åˆ—å†…å­˜
 	m_ProcessId = (HANDLE)ProcessIdentity.toULongLong();
 	ListProcessMemoryInfo();
-	//Á¬½Ó¶ÁĞ´µÄ²Ûº¯Êı
+	//è¿æ¥è¯»å†™çš„æ§½å‡½æ•°
 	connect(ui.ReadMemory_Button, &QPushButton::clicked, this, &ProcessMemoryWindow::OpenReadMemWind);
 	connect(ui.WriteMemory_Button, &QPushButton::clicked, this, &ProcessMemoryWindow::OpenWriteMemWind);
 
 
-	//Ìí¼Ó²Ëµ¥Ïî
+	//æ·»åŠ èœå•é¡¹
 	m_TableViewMenu = new QMenu(ui.ProcessMemory_TableView);
-	RefreshAct = new QAction(QStringLiteral("Ë¢ĞÂ"), ui.ProcessMemory_TableView);
-	NoAccessAct = new QAction(QStringLiteral("ĞŞ¸ÄÎª-No Acccess"), ui.ProcessMemory_TableView);
-	ReadAct = new QAction(QStringLiteral("ĞŞ¸ÄÎª-Read"), ui.ProcessMemory_TableView);
-	ReadWriteAct = new QAction(QStringLiteral("ĞŞ¸ÄÎª-ReadWrite"), ui.ProcessMemory_TableView);
-	WriteCopyAct = new QAction(QStringLiteral("ĞŞ¸ÄÎª-WriteCopy"), ui.ProcessMemory_TableView);
-	ReadExecuteAct = new QAction(QStringLiteral("ĞŞ¸ÄÎª-ReadExecute"), ui.ProcessMemory_TableView);
-	ReadWriteGuardAct = new QAction(QStringLiteral("ĞŞ¸ÄÎª-ReadWriteGuard"), ui.ProcessMemory_TableView);
-	RecoverProtectAct = new QAction(QStringLiteral("»Ö¸´±£»¤ÊôĞÔ"), ui.ProcessMemory_TableView);
+	RefreshAct = new QAction(QStringLiteral("åˆ·æ–°"), ui.ProcessMemory_TableView);
+	NoAccessAct = new QAction(QStringLiteral("ä¿®æ”¹ä¸º-No Acccess"), ui.ProcessMemory_TableView);
+	ReadAct = new QAction(QStringLiteral("ä¿®æ”¹ä¸º-Read"), ui.ProcessMemory_TableView);
+	ReadWriteAct = new QAction(QStringLiteral("ä¿®æ”¹ä¸º-ReadWrite"), ui.ProcessMemory_TableView);
+	WriteCopyAct = new QAction(QStringLiteral("ä¿®æ”¹ä¸º-WriteCopy"), ui.ProcessMemory_TableView);
+	ReadExecuteAct = new QAction(QStringLiteral("ä¿®æ”¹ä¸º-ReadExecute"), ui.ProcessMemory_TableView);
+	ReadWriteGuardAct = new QAction(QStringLiteral("ä¿®æ”¹ä¸º-ReadWriteGuard"), ui.ProcessMemory_TableView);
+	RecoverProtectAct = new QAction(QStringLiteral("æ¢å¤ä¿æŠ¤å±æ€§"), ui.ProcessMemory_TableView);
 	m_TableViewMenu->addAction(RefreshAct);
 	m_TableViewMenu->addAction(NoAccessAct);
 	m_TableViewMenu->addAction(ReadAct);
@@ -47,8 +47,8 @@ ProcessMemoryWindow::ProcessMemoryWindow(const QString& ProcessIdentity,QWidget 
 	m_TableViewMenu->addAction(ReadExecuteAct);
 	m_TableViewMenu->addAction(ReadWriteGuardAct);
 	m_TableViewMenu->addAction(RecoverProtectAct);
-	//ÏûÏ¢¹ØÁª
-	connect(ui.ProcessMemory_TableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(Menu_Slot(QPoint)));  //²Ëµ¥³õÊ¼»¯
+	//æ¶ˆæ¯å…³è”
+	connect(ui.ProcessMemory_TableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(Menu_Slot(QPoint)));  //èœå•åˆå§‹åŒ–
 	connect(RefreshAct, &QAction::triggered, this, &ProcessMemoryWindow::RefreshMemory);
 	connect(NoAccessAct, &QAction::triggered, this, &ProcessMemoryWindow::SetNoAccess);
 	connect(ReadAct, &QAction::triggered, this, &ProcessMemoryWindow::SetRead);
@@ -65,23 +65,23 @@ ProcessMemoryWindow::~ProcessMemoryWindow()
 }
 void ProcessMemoryWindow::Menu_Slot(QPoint p)
 {
-	QModelIndex index = ui.ProcessMemory_TableView->indexAt(p);//»ñÈ¡Êó±êµã»÷Î»ÖÃÏîµÄË÷Òı
-	if (index.isValid())//Êı¾İÏîÊÇ·ñÓĞĞ§£¬¿Õ°×´¦µã»÷ÎŞ²Ëµ¥
+	QModelIndex index = ui.ProcessMemory_TableView->indexAt(p);//è·å–é¼ æ ‡ç‚¹å‡»ä½ç½®é¡¹çš„ç´¢å¼•
+	if (index.isValid())//æ•°æ®é¡¹æ˜¯å¦æœ‰æ•ˆï¼Œç©ºç™½å¤„ç‚¹å‡»æ— èœå•
 	{
-		//ÏÔÊ¾²Ëµ¥
-		QItemSelectionModel* selections = ui.ProcessMemory_TableView->selectionModel();//»ñÈ¡µ±Ç°µÄÑ¡ÔñÄ£ĞÍ
-		QModelIndexList selected = selections->selectedIndexes();//·µ»Øµ±Ç°Ñ¡ÔñµÄÄ£ĞÍË÷Òı
-		if (selected.count() == 1) //Ñ¡Ôñµ¥¸öÏîÄ¿Ê±µÄÓÒ¼ü²Ëµ¥ÏÔÊ¾Action1
+		//æ˜¾ç¤ºèœå•
+		QItemSelectionModel* selections = ui.ProcessMemory_TableView->selectionModel();//è·å–å½“å‰çš„é€‰æ‹©æ¨¡å‹
+		QModelIndexList selected = selections->selectedIndexes();//è¿”å›å½“å‰é€‰æ‹©çš„æ¨¡å‹ç´¢å¼•
+		if (selected.count() == 1) //é€‰æ‹©å•ä¸ªé¡¹ç›®æ—¶çš„å³é”®èœå•æ˜¾ç¤ºAction1
 		{
 			//RefreshAct->setVisible(true);
 			m_TableViewMenu->setVisible(true);
 		}
-		else   //Èç¹ûÑ¡ÖĞ¶à¸öÏîÄ¿£¬ÔòÓÒ¼ü²Ëµ¥ÏÔÊ¾Action2
+		else   //å¦‚æœé€‰ä¸­å¤šä¸ªé¡¹ç›®ï¼Œåˆ™å³é”®èœå•æ˜¾ç¤ºAction2
 		{
 			//RefreshAct->setVisible(true);
 			m_TableViewMenu->setVisible(true);
 		}
-		m_TableViewMenu->exec(QCursor::pos());//Êı¾İÏîÓĞĞ§²ÅÏÔÊ¾²Ëµ¥
+		m_TableViewMenu->exec(QCursor::pos());//æ•°æ®é¡¹æœ‰æ•ˆæ‰æ˜¾ç¤ºèœå•
 	}
 	
 }
@@ -94,17 +94,17 @@ void ProcessMemoryWindow::RefreshMemory()
 }
 void ProcessMemoryWindow::SetNoAccess()
 {
-	//»ñÈ¡ËùÑ¡ĞĞµÄBaseAddressºÍRegionSize
+	//è·å–æ‰€é€‰è¡Œçš„BaseAddresså’ŒRegionSize
 	QItemSelectionModel* selectionModel = ui.ProcessMemory_TableView->selectionModel();
-	QModelIndex selectedRow = selectionModel->selectedRows().first();  	// »ñÈ¡Ñ¡ÖĞĞĞµÄµÚÒ»¸öË÷Òı
-	QModelIndex baseAddressIndex = selectedRow.sibling(selectedRow.row(), 0); // »ñÈ¡Ö¸¶¨ÁĞµÄË÷Òı   baseaddress
+	QModelIndex selectedRow = selectionModel->selectedRows().first();  	// è·å–é€‰ä¸­è¡Œçš„ç¬¬ä¸€ä¸ªç´¢å¼•
+	QModelIndex baseAddressIndex = selectedRow.sibling(selectedRow.row(), 0); // è·å–æŒ‡å®šåˆ—çš„ç´¢å¼•   baseaddress
 	QModelIndex regionSizeIndex = selectedRow.sibling(selectedRow.row(), 1);  // RegionSize
 	QString address = baseAddressIndex.data().toString();
 	QString Size = regionSizeIndex.data().toString();
 	bool Ok = false;
 	PVOID BaseAddress = (PVOID)address.toULongLong(&Ok, 16);
 	SIZE_T RegionSize = Size.toULongLong(&Ok, 16);
-	//Í¨ĞÅ
+	//é€šä¿¡
 	BOOL IsOk = FALSE;
 	DWORD ReturnValue = 0;
 	COMMUNICATE_PROCESS_MEMORY v5;
@@ -117,7 +117,7 @@ void ProcessMemoryWindow::SetNoAccess()
 	IsOk = CommunicateDevice(&v5, sizeof(COMMUNICATE_PROCESS_MEMORY), &v5.Modify.OldProtect, sizeof(ULONG), &ReturnValue);
 	if (IsOk)
 	{
-		ModifyProcessProtect(2, QStringLiteral("No Access"));  //2ºÅÁĞÎªProtectÊôĞÔ
+		ModifyProcessProtect(2, QStringLiteral("No Access"));  //2å·åˆ—ä¸ºProtectå±æ€§
 		if (m_OldProtect == 0)
 		{
 			m_OldProtect = v5.Modify.OldProtect;
@@ -127,17 +127,17 @@ void ProcessMemoryWindow::SetNoAccess()
 }
 void ProcessMemoryWindow::SetRead()
 {
-	//»ñÈ¡ËùÑ¡ĞĞµÄBaseAddressºÍRegionSize
+	//è·å–æ‰€é€‰è¡Œçš„BaseAddresså’ŒRegionSize
 	QItemSelectionModel* selectionModel = ui.ProcessMemory_TableView->selectionModel();
-	QModelIndex selectedRow = selectionModel->selectedRows().first();  	// »ñÈ¡Ñ¡ÖĞĞĞµÄµÚÒ»¸öË÷Òı
-	QModelIndex baseAddressIndex = selectedRow.sibling(selectedRow.row(), 0); // »ñÈ¡Ö¸¶¨ÁĞµÄË÷Òı   baseaddress
+	QModelIndex selectedRow = selectionModel->selectedRows().first();  	// è·å–é€‰ä¸­è¡Œçš„ç¬¬ä¸€ä¸ªç´¢å¼•
+	QModelIndex baseAddressIndex = selectedRow.sibling(selectedRow.row(), 0); // è·å–æŒ‡å®šåˆ—çš„ç´¢å¼•   baseaddress
 	QModelIndex regionSizeIndex = selectedRow.sibling(selectedRow.row(), 1);  // RegionSize
 	QString address = baseAddressIndex.data().toString();
 	QString Size = regionSizeIndex.data().toString();
 	bool Ok = false;
 	PVOID BaseAddress = (PVOID)address.toULongLong(&Ok, 16);
 	SIZE_T RegionSize = Size.toULongLong(&Ok, 16);
-	//Í¨ĞÅ
+	//é€šä¿¡
 	BOOL IsOk = FALSE;
 	DWORD ReturnValue = 0;
 	COMMUNICATE_PROCESS_MEMORY v5;
@@ -150,7 +150,7 @@ void ProcessMemoryWindow::SetRead()
 	IsOk = CommunicateDevice(&v5, sizeof(COMMUNICATE_PROCESS_MEMORY), &v5.Modify.OldProtect, sizeof(ULONG), &ReturnValue);
 	if (IsOk)
 	{
-		ModifyProcessProtect(2, QStringLiteral("Read"));  //2ºÅÁĞÎªProtectÊôĞÔ
+		ModifyProcessProtect(2, QStringLiteral("Read"));  //2å·åˆ—ä¸ºProtectå±æ€§
 		if (m_OldProtect == 0)
 		{
 			m_OldProtect = v5.Modify.OldProtect;
@@ -160,17 +160,17 @@ void ProcessMemoryWindow::SetRead()
 }
 void ProcessMemoryWindow::SetReadWrite()
 {
-	//»ñÈ¡ËùÑ¡ĞĞµÄBaseAddressºÍRegionSize
+	//è·å–æ‰€é€‰è¡Œçš„BaseAddresså’ŒRegionSize
 	QItemSelectionModel* selectionModel = ui.ProcessMemory_TableView->selectionModel();
-	QModelIndex selectedRow = selectionModel->selectedRows().first();  	// »ñÈ¡Ñ¡ÖĞĞĞµÄµÚÒ»¸öË÷Òı
-	QModelIndex baseAddressIndex = selectedRow.sibling(selectedRow.row(), 0); // »ñÈ¡Ö¸¶¨ÁĞµÄË÷Òı   baseaddress
+	QModelIndex selectedRow = selectionModel->selectedRows().first();  	// è·å–é€‰ä¸­è¡Œçš„ç¬¬ä¸€ä¸ªç´¢å¼•
+	QModelIndex baseAddressIndex = selectedRow.sibling(selectedRow.row(), 0); // è·å–æŒ‡å®šåˆ—çš„ç´¢å¼•   baseaddress
 	QModelIndex regionSizeIndex = selectedRow.sibling(selectedRow.row(), 1);  // RegionSize
 	QString address = baseAddressIndex.data().toString();
 	QString Size = regionSizeIndex.data().toString();
 	bool Ok = false;
 	PVOID BaseAddress = (PVOID)address.toULongLong(&Ok, 16);
 	SIZE_T RegionSize = Size.toULongLong(&Ok, 16);
-	//Í¨ĞÅ
+	//é€šä¿¡
 	BOOL IsOk = FALSE;
 	DWORD ReturnValue = 0;
 	COMMUNICATE_PROCESS_MEMORY v5;
@@ -184,7 +184,7 @@ void ProcessMemoryWindow::SetReadWrite()
 	IsOk = CommunicateDevice(&v5, sizeof(COMMUNICATE_PROCESS_MEMORY), &v5.Modify.OldProtect, sizeof(ULONG), &ReturnValue);
 	if (IsOk)
 	{
-		ModifyProcessProtect(2, QStringLiteral("ReadWrite"));  //2ºÅÁĞÎªProtectÊôĞÔ
+		ModifyProcessProtect(2, QStringLiteral("ReadWrite"));  //2å·åˆ—ä¸ºProtectå±æ€§
 		if (m_OldProtect == 0)
 		{
 			m_OldProtect = v5.Modify.OldProtect;
@@ -194,17 +194,17 @@ void ProcessMemoryWindow::SetReadWrite()
 }
 void ProcessMemoryWindow::SetWriteCopy()
 {
-	//»ñÈ¡ËùÑ¡ĞĞµÄBaseAddressºÍRegionSize
+	//è·å–æ‰€é€‰è¡Œçš„BaseAddresså’ŒRegionSize
 	QItemSelectionModel* selectionModel = ui.ProcessMemory_TableView->selectionModel();
-	QModelIndex selectedRow = selectionModel->selectedRows().first();  	// »ñÈ¡Ñ¡ÖĞĞĞµÄµÚÒ»¸öË÷Òı
-	QModelIndex baseAddressIndex = selectedRow.sibling(selectedRow.row(), 0); // »ñÈ¡Ö¸¶¨ÁĞµÄË÷Òı   baseaddress
+	QModelIndex selectedRow = selectionModel->selectedRows().first();  	// è·å–é€‰ä¸­è¡Œçš„ç¬¬ä¸€ä¸ªç´¢å¼•
+	QModelIndex baseAddressIndex = selectedRow.sibling(selectedRow.row(), 0); // è·å–æŒ‡å®šåˆ—çš„ç´¢å¼•   baseaddress
 	QModelIndex regionSizeIndex = selectedRow.sibling(selectedRow.row(), 1);  // RegionSize
 	QString address = baseAddressIndex.data().toString();
 	QString Size = regionSizeIndex.data().toString();
 	bool Ok = false;
 	PVOID BaseAddress = (PVOID)address.toULongLong(&Ok, 16);
 	SIZE_T RegionSize = Size.toULongLong(&Ok, 16);
-	//Í¨ĞÅ
+	//é€šä¿¡
 	BOOL IsOk = FALSE;
 	DWORD ReturnValue = 0;
 	COMMUNICATE_PROCESS_MEMORY v5;
@@ -218,7 +218,7 @@ void ProcessMemoryWindow::SetWriteCopy()
 	IsOk = CommunicateDevice(&v5, sizeof(COMMUNICATE_PROCESS_MEMORY), &v5.Modify.OldProtect, sizeof(ULONG), &ReturnValue);
 	if (IsOk)
 	{
-		ModifyProcessProtect(2, QStringLiteral("WriteCopy"));  //2ºÅÁĞÎªProtectÊôĞÔ
+		ModifyProcessProtect(2, QStringLiteral("WriteCopy"));  //2å·åˆ—ä¸ºProtectå±æ€§
 		if (m_OldProtect == 0)
 		{
 			m_OldProtect = v5.Modify.OldProtect;
@@ -228,17 +228,17 @@ void ProcessMemoryWindow::SetWriteCopy()
 }
 void ProcessMemoryWindow::SetReadExecute()
 {
-	//»ñÈ¡ËùÑ¡ĞĞµÄBaseAddressºÍRegionSize
+	//è·å–æ‰€é€‰è¡Œçš„BaseAddresså’ŒRegionSize
 	QItemSelectionModel* selectionModel = ui.ProcessMemory_TableView->selectionModel();
-	QModelIndex selectedRow = selectionModel->selectedRows().first();  	// »ñÈ¡Ñ¡ÖĞĞĞµÄµÚÒ»¸öË÷Òı
-	QModelIndex baseAddressIndex = selectedRow.sibling(selectedRow.row(), 0); // »ñÈ¡Ö¸¶¨ÁĞµÄË÷Òı   baseaddress
+	QModelIndex selectedRow = selectionModel->selectedRows().first();  	// è·å–é€‰ä¸­è¡Œçš„ç¬¬ä¸€ä¸ªç´¢å¼•
+	QModelIndex baseAddressIndex = selectedRow.sibling(selectedRow.row(), 0); // è·å–æŒ‡å®šåˆ—çš„ç´¢å¼•   baseaddress
 	QModelIndex regionSizeIndex = selectedRow.sibling(selectedRow.row(), 1);  // RegionSize
 	QString address = baseAddressIndex.data().toString();
 	QString Size = regionSizeIndex.data().toString();
 	bool Ok = false;
 	PVOID BaseAddress = (PVOID)address.toULongLong(&Ok, 16);
 	SIZE_T RegionSize = Size.toULongLong(&Ok, 16);
-	//Í¨ĞÅ
+	//é€šä¿¡
 	BOOL IsOk = FALSE;
 	DWORD ReturnValue = 0;
 	COMMUNICATE_PROCESS_MEMORY v5;
@@ -252,7 +252,7 @@ void ProcessMemoryWindow::SetReadExecute()
 	IsOk = CommunicateDevice(&v5, sizeof(COMMUNICATE_PROCESS_MEMORY), &v5.Modify.OldProtect, sizeof(ULONG), &ReturnValue);
 	if (IsOk)
 	{
-		ModifyProcessProtect(2, QStringLiteral("ReadExecute"));  //2ºÅÁĞÎªProtectÊôĞÔ
+		ModifyProcessProtect(2, QStringLiteral("ReadExecute"));  //2å·åˆ—ä¸ºProtectå±æ€§
 		if (m_OldProtect == 0)
 		{
 			m_OldProtect = v5.Modify.OldProtect;
@@ -262,17 +262,17 @@ void ProcessMemoryWindow::SetReadExecute()
 }
 void ProcessMemoryWindow::SetReadWriteGuard()
 {
-	//»ñÈ¡ËùÑ¡ĞĞµÄBaseAddressºÍRegionSize
+	//è·å–æ‰€é€‰è¡Œçš„BaseAddresså’ŒRegionSize
 	QItemSelectionModel* selectionModel = ui.ProcessMemory_TableView->selectionModel();
-	QModelIndex selectedRow = selectionModel->selectedRows().first();  	// »ñÈ¡Ñ¡ÖĞĞĞµÄµÚÒ»¸öË÷Òı
-	QModelIndex baseAddressIndex = selectedRow.sibling(selectedRow.row(), 0); // »ñÈ¡Ö¸¶¨ÁĞµÄË÷Òı   baseaddress
+	QModelIndex selectedRow = selectionModel->selectedRows().first();  	// è·å–é€‰ä¸­è¡Œçš„ç¬¬ä¸€ä¸ªç´¢å¼•
+	QModelIndex baseAddressIndex = selectedRow.sibling(selectedRow.row(), 0); // è·å–æŒ‡å®šåˆ—çš„ç´¢å¼•   baseaddress
 	QModelIndex regionSizeIndex = selectedRow.sibling(selectedRow.row(), 1);  // RegionSize
 	QString address = baseAddressIndex.data().toString();
 	QString Size = regionSizeIndex.data().toString();
 	bool Ok = false;
 	PVOID BaseAddress = (PVOID)address.toULongLong(&Ok, 16);
 	SIZE_T RegionSize = Size.toULongLong(&Ok, 16);
-	//Í¨ĞÅ
+	//é€šä¿¡
 	BOOL IsOk = FALSE;
 	DWORD ReturnValue = 0;
 	COMMUNICATE_PROCESS_MEMORY v5;
@@ -286,7 +286,7 @@ void ProcessMemoryWindow::SetReadWriteGuard()
 	IsOk = CommunicateDevice(&v5, sizeof(COMMUNICATE_PROCESS_MEMORY), &v5.Modify.OldProtect, sizeof(ULONG), &ReturnValue);
 	if (IsOk)
 	{
-		ModifyProcessProtect(2, QStringLiteral("ReadWriteGuard"));  //2ºÅÁĞÎªProtectÊôĞÔ
+		ModifyProcessProtect(2, QStringLiteral("ReadWriteGuard"));  //2å·åˆ—ä¸ºProtectå±æ€§
 		if (m_OldProtect == 0)
 		{
 			m_OldProtect = v5.Modify.OldProtect;
@@ -296,17 +296,17 @@ void ProcessMemoryWindow::SetReadWriteGuard()
 }
 void ProcessMemoryWindow::RecoverProtect()
 {
-	//»ñÈ¡ËùÑ¡ĞĞµÄBaseAddressºÍRegionSize
+	//è·å–æ‰€é€‰è¡Œçš„BaseAddresså’ŒRegionSize
 	QItemSelectionModel* selectionModel = ui.ProcessMemory_TableView->selectionModel();
-	QModelIndex selectedRow = selectionModel->selectedRows().first();  	// »ñÈ¡Ñ¡ÖĞĞĞµÄµÚÒ»¸öË÷Òı
-	QModelIndex baseAddressIndex = selectedRow.sibling(selectedRow.row(), 0); // »ñÈ¡Ö¸¶¨ÁĞµÄË÷Òı   baseaddress
+	QModelIndex selectedRow = selectionModel->selectedRows().first();  	// è·å–é€‰ä¸­è¡Œçš„ç¬¬ä¸€ä¸ªç´¢å¼•
+	QModelIndex baseAddressIndex = selectedRow.sibling(selectedRow.row(), 0); // è·å–æŒ‡å®šåˆ—çš„ç´¢å¼•   baseaddress
 	QModelIndex regionSizeIndex = selectedRow.sibling(selectedRow.row(), 1);  // RegionSize
 	QString address = baseAddressIndex.data().toString();
 	QString Size = regionSizeIndex.data().toString();
 	bool Ok = false;
 	PVOID BaseAddress = (PVOID)address.toULongLong(&Ok, 16);
 	SIZE_T RegionSize = Size.toULongLong(&Ok, 16);
-	//Í¨ĞÅ
+	//é€šä¿¡
 	DWORD ReturnValue = 0;
 	COMMUNICATE_PROCESS_MEMORY v5;
 	memset(&v5, 0, sizeof(COMMUNICATE_PROCESS_MEMORY));
@@ -317,15 +317,15 @@ void ProcessMemoryWindow::RecoverProtect()
 	v5.Modify.NewProtect = m_OldProtect;  //Old
 	const WCHAR* OldProtect = GetProtect(m_OldProtect);
 	QString str = QString::fromWCharArray(OldProtect);
-	ModifyProcessProtect(2, str);  //2ºÅÁĞÎªProtectÊôĞÔ
+	ModifyProcessProtect(2, str);  //2å·åˆ—ä¸ºProtectå±æ€§
 	CommunicateDevice(&v5, sizeof(COMMUNICATE_PROCESS_MEMORY), &v5.Modify.OldProtect, sizeof(ULONG), &ReturnValue);
 }
 void ProcessMemoryWindow::ModifyProcessProtect(int columnIndex, const QVariant& newValue) {
-	// »ñÈ¡Ñ¡ÖĞÄ£ĞÍ
+	// è·å–é€‰ä¸­æ¨¡å‹
 	QItemSelectionModel* selectionModel = ui.ProcessMemory_TableView->selectionModel();
-	// »ñÈ¡µ±Ç°Ñ¡ÖĞµÄĞĞË÷Òı£¨Ö»È¡µÚÒ»¸öÑ¡ÖĞµÄĞĞ£©
+	// è·å–å½“å‰é€‰ä¸­çš„è¡Œç´¢å¼•ï¼ˆåªå–ç¬¬ä¸€ä¸ªé€‰ä¸­çš„è¡Œï¼‰
 	QModelIndexList selectedRows = selectionModel->selectedRows();
-	// »ñÈ¡Ä¿±êµ¥Ôª¸ñµÄË÷Òı
+	// è·å–ç›®æ ‡å•å…ƒæ ¼çš„ç´¢å¼•
 	QModelIndex targetIndex = selectedRows.first().sibling(selectedRows.first().row(), columnIndex);
 	if (targetIndex.isValid()) {
 		ui.ProcessMemory_TableView->model()->setData(targetIndex, newValue);
@@ -342,17 +342,17 @@ void ProcessMemoryWindow::ListProcessMemoryInfo()
 	for (v1 = MemoryInfo.begin(); v1 != MemoryInfo.end(); v1++)
 	{
 		QList<QStandardItem*> rowItems;
-		// µØÖ·
+		// åœ°å€
 		rowItems.append(new QStandardItem("0x" + (QString::number((ULONG_PTR)v1->BaseAddress,16)).toUpper()));
-		// ´óĞ¡
-		rowItems.append(new QStandardItem("0x" + (QString::number(v1->RegionSize, 16)).toUpper()));  //0xÊ®Áù½øÖÆ
+		// å¤§å°
+		rowItems.append(new QStandardItem("0x" + (QString::number(v1->RegionSize, 16)).toUpper()));  //0xåå…­è¿›åˆ¶
 		// Protect
 		rowItems.append(new QStandardItem(QString::fromWCharArray(GetProtect(v1->Protect))));
 		// State
 		rowItems.append(new QStandardItem(QString::fromWCharArray(GetState(v1->State))));
 		// type							 
 		rowItems.append(new QStandardItem(QString::fromWCharArray(GetType(v1->Type))));
-		// ½«ÕûĞĞÊı¾İÌí¼Óµ½Ä£ĞÍÖĞ
+		// å°†æ•´è¡Œæ•°æ®æ·»åŠ åˆ°æ¨¡å‹ä¸­
 		m_model.appendRow(rowItems);
 	}
 

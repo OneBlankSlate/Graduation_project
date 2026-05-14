@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -238,6 +238,7 @@
     <ClCompile Include="StringHelper.c" />
     <ClCompile Include="SystemHelper.c" />
     <ClCompile Include="SystemModule.c" />
+    <ClCompile Include="ThreadMonitor.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CallbackHelper.h" />
@@ -257,6 +258,7 @@
     <ClInclude Include="StringHelper.h" />
     <ClInclude Include="SystemHelper.h" />
     <ClInclude Include="SystemModule.h" />
+    <ClInclude Include="ThreadMonitor.h" />
   </ItemGroup>
   <ItemGroup>
     <Inf Include="1.inf" />

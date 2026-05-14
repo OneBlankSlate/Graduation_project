@@ -10,7 +10,7 @@ void EnumDriverModule(vector<DRIVER_MODULE_ENTRY>& DriverModuleInfo)
 	DriverModuleInfo.clear();
 	do
 	{
-		ULONG Size = sizeof(PDRIVER_MODULES) + NumberOfModules * sizeof(DRIVER_MODULE_ENTRY);
+		ULONG Size = sizeof(DRIVER_MODULES) + (NumberOfModules - 1) * sizeof(DRIVER_MODULE_ENTRY);
 		v5 = (PDRIVER_MODULES)malloc(Size);
 		memset(v5, 0, Size);
 		if (v5)

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <QWidget>
 #include "ui_DriverModuleWindow.h"
 #include<QStandardItemModel>
@@ -13,13 +13,13 @@ public:
 	void ListDriverModules();
 private:
 	Ui::DriverModuleWindowClass ui;
-	QStandardItemModel m_model;  // ÓÃÓÚ¹ÜÀíQTableViewµÄÊı¾İÄ£ĞÍ
-	QMenu* m_TableViewMenu;  //²Ëµ¥£¬ĞèÒªÍ·ÎÄ¼ş<QMenu>
+	QStandardItemModel m_model;  // ç”¨äºç®¡ç†QTableViewçš„æ•°æ®æ¨¡å‹
+	QMenu* m_TableViewMenu;  //èœå•ï¼Œéœ€è¦å¤´æ–‡ä»¶<QMenu>
 	QAction* RefreshAct;
 	QAction* UnloadAct;
 public slots:
-	//²Ëµ¥Ïî²Ûº¯Êı
-	void Menu_Slot(QPoint p);//ÓÒ¼ü²Ëµ¥²Ûº¯Êı
-	void RefreshDriverModule();   //Ë¢ĞÂ
+	//èœå•é¡¹æ§½å‡½æ•°
+	void Menu_Slot(QPoint p);//å³é”®èœå•æ§½å‡½æ•°
+	void RefreshDriverModule();   //åˆ·æ–°
 	void UnloadDriverModule();
 };

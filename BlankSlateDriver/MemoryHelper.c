@@ -1,4 +1,4 @@
-#include "MemoryHelper.h"
+ï»¿#include "MemoryHelper.h"
 #include"ProcessHelper.h"
 #include"IoControlHelper.h"
 BOOLEAN MapFileInKernelSpace(WCHAR* FullPath, PVOID* VirtualAddress, PSIZE_T ViewSize)
@@ -16,19 +16,19 @@ BOOLEAN MapFileInKernelSpace(WCHAR* FullPath, PVOID* VirtualAddress, PSIZE_T Vie
 		return FALSE;
 	}
 
-	//½«ÎÄ¼şÂ·¾¶×ª»»³ÉUNICODE_STRING´æ´¢
+	//å°†æ–‡ä»¶è·¯å¾„è½¬æ¢æˆUNICODE_STRINGå­˜å‚¨
 	RtlInitUnicodeString(&v1, FullPath);
-	//¸ù¾İUNICODE STRING´´½¨¶ÔÏóÊôĞÔ
+	//æ ¹æ®UNICODE STRINGåˆ›å»ºå¯¹è±¡å±æ€§
 	InitializeObjectAttributes(&ObjectAttributes,
 		&v1,
 		OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE,
 		NULL,
 		NULL);
-	// »ñµÃÎÄ¼ş¾ä±ú
+	// è·å¾—æ–‡ä»¶å¥æŸ„
 	//zwcrete
 	Status = IoCreateFile(&FileHandle,
 		GENERIC_READ | SYNCHRONIZE,
-		&ObjectAttributes, // ÎÄ¼ş¾ø¶ÔÂ·¾¶
+		&ObjectAttributes, // æ–‡ä»¶ç»å¯¹è·¯å¾„
 		&IoStatusBlock,
 		NULL,
 		FILE_ATTRIBUTE_NORMAL,
@@ -45,15 +45,15 @@ BOOLEAN MapFileInKernelSpace(WCHAR* FullPath, PVOID* VirtualAddress, PSIZE_T Vie
 	{
 		return FALSE;
 	}
-	//¸ù¾İÎÄ¼ş¾ä±ú´´½¨Ó³Éä¶ÔÏó
+	//æ ¹æ®æ–‡ä»¶å¥æŸ„åˆ›å»ºæ˜ å°„å¯¹è±¡
 	ObjectAttributes.ObjectName = NULL;
-	//´´½¨ÄÚ´æÓ³Éä
+	//åˆ›å»ºå†…å­˜æ˜ å°„
 	Status = ZwCreateSection(&SectionHandle,
 		SECTION_QUERY | SECTION_MAP_READ,
 		&ObjectAttributes,
 		NULL,
 		PAGE_WRITECOPY,
-		SEC_IMAGE,    //ÄÚ´æ¶ÔÆë  0x1000
+		SEC_IMAGE,    //å†…å­˜å¯¹é½  0x1000
 		FileHandle
 	);
 	ZwClose(FileHandle);
@@ -62,7 +62,7 @@ BOOLEAN MapFileInKernelSpace(WCHAR* FullPath, PVOID* VirtualAddress, PSIZE_T Vie
 		return FALSE;
 	}
 	Status = ZwMapViewOfSection(SectionHandle,
-		NtCurrentProcess(),  // Ó³Éäµ½µ±Ç°½ø³ÌµÄÄÚ´æ¿Õ¼äÖĞ
+		NtCurrentProcess(),  // æ˜ å°„åˆ°å½“å‰è¿›ç¨‹çš„å†…å­˜ç©ºé—´ä¸­
 		VirtualAddress,
 		0,
 		0,
@@ -84,7 +84,7 @@ BOOLEAN MapFileInKernelSpace(WCHAR* FullPath, PVOID* VirtualAddress, PSIZE_T Vie
 
 NTSTATUS VirtualProtect(PMDL* Mdl, PVOID VirtualAddress1, PSIZE_T ViewSize, PVOID* VirtualAddress2)
 {
-	*Mdl = MmCreateMdl(NULL, VirtualAddress1, ViewSize);    //ĞÂ½¨ÄÚ´æÃèÊöÁ´£¬Á½¸öĞéÄâµØÖ·Ö¸ÏòÍ¬Ò»¿éÎïÀíµØÖ·£¬ĞÂ½¨ÊÇÎªÁË¿ÉÒÔ¶ÔÄ¿±êÎïÀíµØÖ·½øĞĞĞ´²Ù×÷
+	*Mdl = MmCreateMdl(NULL, VirtualAddress1, ViewSize);    //æ–°å»ºå†…å­˜æè¿°é“¾ï¼Œä¸¤ä¸ªè™šæ‹Ÿåœ°å€æŒ‡å‘åŒä¸€å—ç‰©ç†åœ°å€ï¼Œæ–°å»ºæ˜¯ä¸ºäº†å¯ä»¥å¯¹ç›®æ ‡ç‰©ç†åœ°å€è¿›è¡Œå†™æ“ä½œ
 	if (!(*Mdl))
 		return STATUS_UNSUCCESSFUL;
 	MmBuildMdlForNonPagedPool(*Mdl);
@@ -110,7 +110,7 @@ NTSTATUS UnVirtualProtect(PMDL Mdl, PVOID VirtualAddress2)
 //	ULONG_PTR ModuleBase = 0;
 //	ULONG SizeOfImage = 0;
 //	ULONG_PTR ProcessIdentity = 0;
-//	//²ÎÊı¼ì²é
+//	//å‚æ•°æ£€æŸ¥
 //	if (!InputBuffer || InputBufferLength != sizeof(COMMUNICATE_PROCESS_MODULE) || !OutputBuffer || !OutputBufferLength)
 //	{
 //		return STATUS_INVALID_PARAMETER;
@@ -124,7 +124,7 @@ NTSTATUS UnVirtualProtect(PMDL Mdl, PVOID VirtualAddress2)
 //	}
 //	if (ProcessIdentity)
 //	{
-//		Status2 = PsLookupProcessByProcessId((HANDLE)ProcessIdentity, &EProcess);  //Ä¿Ç°Õâ¸öº¯ÊıÃ»¼ì²â
+//		Status2 = PsLookupProcessByProcessId((HANDLE)ProcessIdentity, &EProcess);  //ç›®å‰è¿™ä¸ªå‡½æ•°æ²¡æ£€æµ‹
 //	}
 //	if (!EProcess)
 //	{
@@ -160,7 +160,7 @@ NTSTATUS SafeCopyProcessModule(PEPROCESS EProcess, ULONG_PTR ModuleBase, ULONG S
 	memset(v5, 0, SizeOfImage);
 	if (EProcess != IoGetCurrentProcess())
 	{
-		KeStackAttachProcess(EProcess, &ApcState);  //¸½¼Ó½ø³Ì ÓÎÏ·¼ì²âKeStackAttachProcess
+		KeStackAttachProcess(EProcess, &ApcState);  //é™„åŠ è¿›ç¨‹ æ¸¸æˆæ£€æµ‹KeStackAttachProcess
 		IsAttach = TRUE;
 	}
 	Status = SafeCopyMemoryR32R0(ModuleBase, (ULONG_PTR)v5, SizeOfImage);
@@ -178,7 +178,7 @@ NTSTATUS SafeCopyProcessModule(PEPROCESS EProcess, ULONG_PTR ModuleBase, ULONG S
 		FreePoolWithTag(v5, 0);
 		v5 = NULL;
 	}
-	return Status;   //ÕâÀïÃ»ÓĞ½Øµ½£¬²»È·¶¨
+	return Status;   //è¿™é‡Œæ²¡æœ‰æˆªåˆ°ï¼Œä¸ç¡®å®š
 }
 
 
@@ -187,7 +187,7 @@ NTSTATUS SafeCopyMemoryR32R0(ULONG_PTR Source, ULONG_PTR Destination, ULONG View
 {
 	NTSTATUS Status = STATUS_UNSUCCESSFUL;
 	ULONG v1 = 0;
-	ULONG v2 = PAGE_SIZE - (Source & 0xFFF);   //Ê£Óà²¿·Ö
+	ULONG v2 = PAGE_SIZE - (Source & 0xFFF);   //å‰©ä½™éƒ¨åˆ†
 	if (KeGetCurrentIrql() <= APC_LEVEL && Source <= USER_ADDRESS_END && Destination >= SYSTEM_ADDRESS_START && ViewSize > 0)
 	{
 		while (v1 < ViewSize)
@@ -200,7 +200,7 @@ NTSTATUS SafeCopyMemoryR32R0(ULONG_PTR Source, ULONG_PTR Destination, ULONG View
 				v2 = ViewSize - v1;
 			}
 #ifdef _WIN64
-			Mdl = IoAllocateMdl((PVOID)(Source & 0xFFFFFFFFFFFFF000), PAGE_SIZE, FALSE, FALSE, NULL);  //·ÖÅäÄÚ´æÃèÊö·ûÁĞ±í (MDL)
+			Mdl = IoAllocateMdl((PVOID)(Source & 0xFFFFFFFFFFFFF000), PAGE_SIZE, FALSE, FALSE, NULL);  //åˆ†é…å†…å­˜æè¿°ç¬¦åˆ—è¡¨ (MDL)
 #else
 			Mdl = IoAllocateMdl((PVOID)(Source & 0xFFFFF000), PAGE_SIZE, FALSE, FALSE, NULL);
 #endif
@@ -208,9 +208,9 @@ NTSTATUS SafeCopyMemoryR32R0(ULONG_PTR Source, ULONG_PTR Destination, ULONG View
 			{
 				__try
 				{
-					//Ì½²âÖ¸¶¨µÄĞéÄâÄÚ´æÒ³£¬Ê¹Æä×¤Áô£¬²¢½«ÆäËø¶¨ÔÚÄÚ´æÖĞ£¬ (ÀıÈç DMA ´«Êä) ¡£ Õâ¿ÉÈ·±£µ±Éè±¸Çı¶¯
-					//³ÌĞò (»òÓ²¼ş) ÈÔÔÚÊ¹ÓÃÒ³ÃæÊ±£¬ÎŞ·¨ÊÍ·ÅºÍÖØĞÂ·ÖÅäÒ³Ãæ¡£
-					MmProbeAndLockPages(Mdl, UserMode, IoReadAccess);   //Ö÷Òª×÷ÓÃÊÇÈ·±£ÔÚÉè±¸Çı¶¯³ÌĞò»òÓ²¼şÊ¹ÓÃÄÚ´æÒ³ÃæÊ±£¬ÕâĞ©Ò³Ãæ²»»á±»ÊÍ·Å»òÖØĞÂ·ÖÅä
+					//æ¢æµ‹æŒ‡å®šçš„è™šæ‹Ÿå†…å­˜é¡µï¼Œä½¿å…¶é©»ç•™ï¼Œå¹¶å°†å…¶é”å®šåœ¨å†…å­˜ä¸­ï¼Œ (ä¾‹å¦‚ DMA ä¼ è¾“) ã€‚ è¿™å¯ç¡®ä¿å½“è®¾å¤‡é©±åŠ¨
+					//ç¨‹åº (æˆ–ç¡¬ä»¶) ä»åœ¨ä½¿ç”¨é¡µé¢æ—¶ï¼Œæ— æ³•é‡Šæ”¾å’Œé‡æ–°åˆ†é…é¡µé¢ã€‚
+					MmProbeAndLockPages(Mdl, UserMode, IoReadAccess);   //ä¸»è¦ä½œç”¨æ˜¯ç¡®ä¿åœ¨è®¾å¤‡é©±åŠ¨ç¨‹åºæˆ–ç¡¬ä»¶ä½¿ç”¨å†…å­˜é¡µé¢æ—¶ï¼Œè¿™äº›é¡µé¢ä¸ä¼šè¢«é‡Šæ”¾æˆ–é‡æ–°åˆ†é…
 					IsOk = TRUE;
 				}
 				__except (EXCEPTION_EXECUTE_HANDLER)
@@ -220,17 +220,17 @@ NTSTATUS SafeCopyMemoryR32R0(ULONG_PTR Source, ULONG_PTR Destination, ULONG View
 				if (IsOk)
 				{
 					/*
-					MmGetSystemAddressForMdlSafe ÊÇÒ»¸öÓÃÓÚ½«ÄÚ´æÃèÊö·ûÁĞ±í£¨MDL£©ÖĞÃèÊöµÄÄÚ´æÓ³Éäµ½ÏµÍ³µØÖ·¿Õ¼äµÄº¯Êı£¬ÒÔ±ãÇı¶¯³ÌĞò¿ÉÒÔ·ÃÎÊ¸ÃÄÚ´æ
-					ÆäÖ÷Òª¹¦ÄÜÊÇ½«ÓÃ»§Ä£Ê½»º³åÇøÓ³ÉäÎªÏµÍ³µØÖ·£¬ÒÔ±ãÉè±¸Çı¶¯³ÌĞòÄÜ¹»¶ÁÈ¡»òĞ´ÈëÕâĞ©Êı¾İ
+					MmGetSystemAddressForMdlSafe æ˜¯ä¸€ä¸ªç”¨äºå°†å†…å­˜æè¿°ç¬¦åˆ—è¡¨ï¼ˆMDLï¼‰ä¸­æè¿°çš„å†…å­˜æ˜ å°„åˆ°ç³»ç»Ÿåœ°å€ç©ºé—´çš„å‡½æ•°ï¼Œä»¥ä¾¿é©±åŠ¨ç¨‹åºå¯ä»¥è®¿é—®è¯¥å†…å­˜
+					å…¶ä¸»è¦åŠŸèƒ½æ˜¯å°†ç”¨æˆ·æ¨¡å¼ç¼“å†²åŒºæ˜ å°„ä¸ºç³»ç»Ÿåœ°å€ï¼Œä»¥ä¾¿è®¾å¤‡é©±åŠ¨ç¨‹åºèƒ½å¤Ÿè¯»å–æˆ–å†™å…¥è¿™äº›æ•°æ®
 					*/
 					VirtualAddress = MmGetSystemAddressForMdlSafe(Mdl, NormalPagePriority);   
 					if (VirtualAddress)
 					{
 						RtlCopyMemory((PVOID)Destination, (PVOID)((ULONG_PTR)VirtualAddress + (Source & 0xFFF)), v2);
 					}
-					MmUnlockPages(Mdl);  //½â³ıËø¶¨
+					MmUnlockPages(Mdl);  //è§£é™¤é”å®š
 				}
-				IoFreeMdl(Mdl);  //ÊÍ·ÅMdl
+				IoFreeMdl(Mdl);  //é‡Šæ”¾Mdl
 			}
 			if (v1)
 			{
@@ -255,7 +255,7 @@ NTSTATUS SafeCopyMemoryR02R3(ULONG_PTR Source, ULONG_PTR Destination, ULONG Size
 	{
 		return Status;
 	}
-	MmBuildMdlForNonPagedPool(Mdl1);  //½ÓÊÕÖ¸¶¨·Ç·ÖÒ³ĞéÄâÄÚ´æ»º³åÇøµÄ MDL£¬²¢¸üĞÂËüÒÔÃèÊö»ù´¡ÎïÀíÒ³¡£
+	MmBuildMdlForNonPagedPool(Mdl1);  //æ¥æ”¶æŒ‡å®šéåˆ†é¡µè™šæ‹Ÿå†…å­˜ç¼“å†²åŒºçš„ MDLï¼Œå¹¶æ›´æ–°å®ƒä»¥æè¿°åŸºç¡€ç‰©ç†é¡µã€‚
 	VirtualAddress1 = MmGetSystemAddressForMdlSafe(Mdl1, NormalPagePriority);
 	if (!VirtualAddress1)
 	{

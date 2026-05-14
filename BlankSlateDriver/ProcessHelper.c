@@ -1,4 +1,4 @@
-#include"ProcessHelper.h"
+ï»¿#include"ProcessHelper.h"
 #include"MemoryHelper.h"
 #include"IoControlHelper.h"
 #include"ObjectHelper.h"
@@ -52,11 +52,11 @@ BOOLEAN PsIsProcessTermination(PEPROCESS EProcess)
 }
 BOOLEAN PsIsRealProcess(PEPROCESS EProcess)
 {
-    //²é¿´EProcessÊÇ·ñ¾ßÓĞ½ø³Ì¶ÔÏóµÄÌØÕ÷
+    //æŸ¥çœ‹EProcessæ˜¯å¦å…·æœ‰è¿›ç¨‹å¯¹è±¡çš„ç‰¹å¾
     ULONG_PTR ObjectType;
     ULONG_PTR ObjectTypeAddress;
-    ULONG_PTR ProcessType = ((ULONG_PTR)*PsProcessType);  //ÏµÍ³µÚÒ»Ä£¿éµ¼³öµÄÈ«¾Ö±äÁ¿
-    //´ÓÏµÍ³µÄµÚÒ»¸öÄ£¿é£¨ntkrnlpa.exe)ÖĞµÄµ¼³ö±íÖĞ»ñµÃº¯ÊıµØÖ·
+    ULONG_PTR ProcessType = ((ULONG_PTR)*PsProcessType);  //ç³»ç»Ÿç¬¬ä¸€æ¨¡å—å¯¼å‡ºçš„å…¨å±€å˜é‡
+    //ä»ç³»ç»Ÿçš„ç¬¬ä¸€ä¸ªæ¨¡å—ï¼ˆntkrnlpa.exe)ä¸­çš„å¯¼å‡ºè¡¨ä¸­è·å¾—å‡½æ•°åœ°å€
     if (__ObGetObjectType == NULL)
     {
         UNICODE_STRING v1;
@@ -78,7 +78,7 @@ NTSTATUS PsEnumProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputB
 {
     NTSTATUS Status = STATUS_SUCCESS;
     PPROCESS_INFORMATIONS ProcessInfos = (PPROCESS_INFORMATIONS)OutputBuffer;
-    //²ÎÊı¼ì²é
+    //å‚æ•°æ£€æŸ¥
     if (!InputBuffer || InputBufferLength != sizeof(OPERATE_TYPE) || !OutputBuffer || OutputBufferLength < sizeof(PROCESS_INFORMATIONS))
     {
         return STATUS_INVALID_PARAMETER;
@@ -195,7 +195,7 @@ NTSTATUS PsTerminateProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID Ou
     PEPROCESS EProcess;
     HANDLE ProcessHandle;
     PCOMMUNICATE_HIDE_PROCESS v5 = (PCOMMUNICATE_HIDE_PROCESS)InputBuffer;  
-    //²ÎÊı¼ì²é
+    //å‚æ•°æ£€æŸ¥
     if (!InputBuffer || InputBufferLength != sizeof(COMMUNICATE_HIDE_PROCESS))
     {
         return STATUS_INVALID_PARAMETER;
@@ -245,14 +245,14 @@ NTSTATUS PsTerminateProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID Ou
 NTSTATUS PsHideProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)
 {
     NTSTATUS Status = STATUS_SUCCESS;
-    PEPROCESS TargetEProcess = NULL;   //ÒªÒş²ØµÄ½ø³Ì
-    PEPROCESS AheadEProcess = NULL;    //±£´æ__System½ø³Ì¶ÔÏóµÄÇ°Ò»¸ö
-    PEPROCESS v1 = NULL;         //ÓÎ×ß¶ÔÏó
-    char* TargetImageFileName = NULL;   //ÒªÒş²ØµÄ½ø³ÌµÄÃû³Æ
-    char* ImageFileName = NULL;        //±£´æÓÎ×ß¶ÔÏóÖĞµÄImageFileName
+    PEPROCESS TargetEProcess = NULL;   //è¦éšè—çš„è¿›ç¨‹
+    PEPROCESS AheadEProcess = NULL;    //ä¿å­˜__Systemè¿›ç¨‹å¯¹è±¡çš„å‰ä¸€ä¸ª
+    PEPROCESS v1 = NULL;         //æ¸¸èµ°å¯¹è±¡
+    char* TargetImageFileName = NULL;   //è¦éšè—çš„è¿›ç¨‹çš„åç§°
+    char* ImageFileName = NULL;        //ä¿å­˜æ¸¸èµ°å¯¹è±¡ä¸­çš„ImageFileName
     PLIST_ENTRY ListEntry;
     PCOMMUNICATE_HIDE_PROCESS v5 = (PCOMMUNICATE_HIDE_PROCESS)InputBuffer;
-    //²ÎÊı¼ì²é
+    //å‚æ•°æ£€æŸ¥
     if (!InputBuffer || InputBufferLength != sizeof(COMMUNICATE_HIDE_PROCESS))
     {
         return STATUS_INVALID_PARAMETER;
@@ -278,11 +278,11 @@ NTSTATUS PsHideProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputB
                 TargetImageFileName = (char*)((UINT8*)TargetEProcess + ImageNameOffset);
                 v1 = __SystemEProcess;
                 ListEntry = (PLIST_ENTRY)((UINT8*)__SystemEProcess + ActiveLinkOffset);
-                AheadEProcess = (PEPROCESS)(((ULONG_PTR)(ListEntry->Blink)) - ActiveLinkOffset);  //SystemµÄÇ°Ò»¸ö½ø³Ì¶ÔÏó
+                AheadEProcess = (PEPROCESS)(((ULONG_PTR)(ListEntry->Blink)) - ActiveLinkOffset);  //Systemçš„å‰ä¸€ä¸ªè¿›ç¨‹å¯¹è±¡
                 ListEntry = NULL;
                 while (v1 != AheadEProcess)
                 {
-                    ImageFileName = (char*)((UINT8*)v1 + ImageNameOffset);   //ÓÎ×ßÓ³ÏñÃû
+                    ImageFileName = (char*)((UINT8*)v1 + ImageNameOffset);   //æ¸¸èµ°æ˜ åƒå
                     ListEntry = (PLIST_ENTRY)((ULONG_PTR)v1 + ActiveLinkOffset);
                     if (strstr(ImageFileName, TargetImageFileName) != NULL)
                     {

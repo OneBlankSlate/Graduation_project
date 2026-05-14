@@ -1,11 +1,11 @@
-#include"ProcMonitor.h"
+ï»¿#include"ProcMonitor.h"
 #include"ProcessPath.h"
 PMONITOR_CONTEXT g_context = NULL;
 NTSTATUS MonitorProcess()
 {
     //__debugbreak();
     NTSTATUS status = STATUS_UNSUCCESSFUL;
-    // ·ÖÅäÇı¶¯ÉÏÏÂÎÄ
+    // åˆ†é…é©±åŠ¨ä¸Šä¸‹æ–‡
     g_context = (PMONITOR_CONTEXT)ExAllocatePoolWithTag(NonPagedPool, sizeof(MONITOR_CONTEXT), CONTEXT_TAG);
     if (!g_context) {
         return STATUS_INSUFFICIENT_RESOURCES;
@@ -14,7 +14,7 @@ NTSTATUS MonitorProcess()
     g_context->IsMonitoring = FALSE;
     g_context->NotifyHandle = NULL;
     if (!g_context->IsMonitoring) {
-        // ×¢²á½ø³Ì»Øµ÷
+        // æ³¨å†Œè¿›ç¨‹å›è°ƒ
         status = PsSetCreateProcessNotifyRoutineEx(ProcessNotifyCallback, FALSE);
         if (NT_SUCCESS(status)) {
             g_context->IsMonitoring = TRUE;
@@ -33,7 +33,7 @@ NTSTATUS StopMonitorProcess()
 {
     NTSTATUS status = STATUS_UNSUCCESSFUL;
     if (g_context->IsMonitoring && g_context->NotifyHandle) {
-        // ×¢Ïú½ø³Ì»Øµ÷
+        // æ³¨é”€è¿›ç¨‹å›è°ƒ
         status = PsSetCreateProcessNotifyRoutineEx(ProcessNotifyCallback, TRUE);
         if (NT_SUCCESS(status)) {
             g_context->IsMonitoring = FALSE;
@@ -59,16 +59,16 @@ NTSTATUS GetProcEvents(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputB
 
     KeAcquireSpinLock(&g_context->EventBuffer.BufferLock, &oldIrql);
 
-    // ¼ÆËãÒª¶ÁÈ¡µÄÊÂ¼şÊıÁ¿
+    // è®¡ç®—è¦è¯»å–çš„äº‹ä»¶æ•°é‡
     eventsToRead = min(packet->EventCount, g_context->EventBuffer.TotalEvents);
     packet->EventCount = eventsToRead;
-    // ¶ÁÈ¡ÊÂ¼ş
+    // è¯»å–äº‹ä»¶
     for (i = 0; i < eventsToRead; i++) {
         ULONG index = (g_context->EventBuffer.ReadIndex + i) % MAX_EVENTS;
         RtlCopyMemory(&packet->Events[i], &g_context->EventBuffer.Events[i], sizeof(PROCESS_EVENT));
     }
     *ReturnValue = eventsToRead * sizeof(PROCESS_EVENT);
-    // ¸üĞÂ¶ÁË÷Òı
+    // æ›´æ–°è¯»ç´¢å¼•
     g_context->EventBuffer.ReadIndex = (g_context->EventBuffer.ReadIndex + eventsToRead) % MAX_EVENTS;
     g_context->EventBuffer.EventCount -= eventsToRead;
 
@@ -76,7 +76,7 @@ NTSTATUS GetProcEvents(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputB
 
     return eventsToRead;
 }
-// ½ø³ÌÍ¨Öª»Øµ÷º¯Êı
+// è¿›ç¨‹é€šçŸ¥å›è°ƒå‡½æ•°
 VOID ProcessNotifyCallback(
     _Inout_ PEPROCESS Process,
     _In_ HANDLE ProcessId,
@@ -89,13 +89,13 @@ VOID ProcessNotifyCallback(
         return;
     }
 
-    // Ìî³äÊÂ¼ş»ù±¾ĞÅÏ¢
+    // å¡«å……äº‹ä»¶åŸºæœ¬ä¿¡æ¯
     if (CreateInfo != NULL) {
-        // ½ø³Ì´´½¨ÊÂ¼ş
+        // è¿›ç¨‹åˆ›å»ºäº‹ä»¶
         event.Type = ProcessCreate;
         event.ProcessId = HandleToULong(ProcessId);
         event.ParentProcessId = HandleToULong(CreateInfo->ParentProcessId);
-        //»ñÈ¡¸¸½ø³ÌÃû
+        //è·å–çˆ¶è¿›ç¨‹å
         PEPROCESS parentProcess=NULL;
         PsLookupProcessByProcessId(event.ParentProcessId, &parentProcess);
         WCHAR parentProcessPath[520] = { 0 };
@@ -109,15 +109,15 @@ VOID ProcessNotifyCallback(
             
         }
         if (parentProcessName) ExFreePool(parentProcessName);
-        // »ñÈ¡µ±Ç°Ê±¼ä
+        // è·å–å½“å‰æ—¶é—´
         LARGE_INTEGER systemTime;
         KeQuerySystemTime(&systemTime);
         event.CreateTime = systemTime.QuadPart;
 
-        // »ñÈ¡½ø³ÌĞÅÏ¢
+        // è·å–è¿›ç¨‹ä¿¡æ¯
         GetProcessInfo(ProcessId, Process, &event, TRUE);
 
-        // Èç¹ûÓĞÃüÁîĞĞĞÅÏ¢
+        // å¦‚æœæœ‰å‘½ä»¤è¡Œä¿¡æ¯
         if (CreateInfo->CommandLine && CreateInfo->CommandLine->Buffer) {
             ULONG copyLength = min(CreateInfo->CommandLine->Length, sizeof(event.CommandLine) - sizeof(WCHAR));
             RtlCopyMemory(event.CommandLine, CreateInfo->CommandLine->Buffer, copyLength);
@@ -126,25 +126,25 @@ VOID ProcessNotifyCallback(
 
     }
     else {
-        // ½ø³ÌÍË³öÊÂ¼ş
+        // è¿›ç¨‹é€€å‡ºäº‹ä»¶
         event.Type = ProcessExit;
         event.ProcessId = HandleToULong(ProcessId);
 
-        // »ñÈ¡µ±Ç°Ê±¼ä
+        // è·å–å½“å‰æ—¶é—´
         LARGE_INTEGER systemTime;
         KeQuerySystemTime(&systemTime);
         event.ExitTime = systemTime.QuadPart;
 
-        // »ñÈ¡½ø³ÌĞÅÏ¢
+        // è·å–è¿›ç¨‹ä¿¡æ¯
         GetProcessInfo(ProcessId, Process, &event, FALSE);
     }
 
-    // Ìí¼Óµ½»º³åÇø
+    // æ·»åŠ åˆ°ç¼“å†²åŒº
     InterlockedIncrement((LONG*)&g_context->EventBuffer.TotalEvents);
     event.EventId = g_context->EventBuffer.TotalEvents;
     AddEventToBuffer(&g_context->EventBuffer, &event);
 }
-// »ñÈ¡½ø³ÌĞÅÏ¢
+// è·å–è¿›ç¨‹ä¿¡æ¯
 NTSTATUS GetProcessInfo(
     _In_ HANDLE ProcessId,
     _In_ PEPROCESS Process,
@@ -166,7 +166,7 @@ NTSTATUS GetProcessInfo(
     else {
         return STATUS_UNSUCCESSFUL;
     }
-    // »ñÈ¡½ø³ÌÓ³ÏñÃû³Æ
+    // è·å–è¿›ç¨‹æ˜ åƒåç§°
     UniImageName = GetNameByPath(&uniPath);
     if (UniImageName) {
         RtlCopyMemory(Event->ImageName, UniImageName->Buffer, UniImageName->Length);
@@ -180,7 +180,7 @@ NTSTATUS GetProcessInfo(
     return STATUS_SUCCESS;
 }
 
-// Ìí¼ÓÊÂ¼şµ½»º³åÇø
+// æ·»åŠ äº‹ä»¶åˆ°ç¼“å†²åŒº
 VOID AddEventToBuffer(PEVENT_BUFFER Buffer, PPROCESS_EVENT Event)
 {
     KIRQL oldIrql;
@@ -191,13 +191,13 @@ VOID AddEventToBuffer(PEVENT_BUFFER Buffer, PPROCESS_EVENT Event)
 
     KeAcquireSpinLock(&Buffer->BufferLock, &oldIrql);
 
-    // ¸´ÖÆÊÂ¼şµ½»º³åÇø
+    // å¤åˆ¶äº‹ä»¶åˆ°ç¼“å†²åŒº
     RtlCopyMemory(&Buffer->Events[Buffer->WriteIndex], Event, sizeof(PROCESS_EVENT));
 
-    // ¸üĞÂĞ´Ë÷Òı
+    // æ›´æ–°å†™ç´¢å¼•
     Buffer->WriteIndex = (Buffer->WriteIndex + 1) % MAX_EVENTS;
 
-    // Èç¹û»º³åÇøÒÑÂú£¬¸²¸Ç×î¾ÉµÄÊÂ¼ş
+    // å¦‚æœç¼“å†²åŒºå·²æ»¡ï¼Œè¦†ç›–æœ€æ—§çš„äº‹ä»¶
     if (Buffer->EventCount >= MAX_EVENTS) {
         Buffer->ReadIndex = (Buffer->ReadIndex + 1) % MAX_EVENTS;
     }
@@ -208,7 +208,7 @@ VOID AddEventToBuffer(PEVENT_BUFFER Buffer, PPROCESS_EVENT Event)
     KeReleaseSpinLock(&Buffer->BufferLock, oldIrql);
 }
 
-// ´Ó»º³åÇø¶ÁÈ¡ÊÂ¼ş
+// ä»ç¼“å†²åŒºè¯»å–äº‹ä»¶
 ULONG ReadEventsFromBuffer(PEVENT_BUFFER Buffer, PPROCESS_EVENT OutputBuffer, ULONG MaxEvents)
 {
     KIRQL oldIrql;
@@ -221,16 +221,16 @@ ULONG ReadEventsFromBuffer(PEVENT_BUFFER Buffer, PPROCESS_EVENT OutputBuffer, UL
 
     KeAcquireSpinLock(&Buffer->BufferLock, &oldIrql);
 
-    // ¼ÆËãÒª¶ÁÈ¡µÄÊÂ¼şÊıÁ¿
+    // è®¡ç®—è¦è¯»å–çš„äº‹ä»¶æ•°é‡
     eventsToRead = min(Buffer->EventCount, MaxEvents);
 
-    // ¶ÁÈ¡ÊÂ¼ş
+    // è¯»å–äº‹ä»¶
     for (i = 0; i < eventsToRead; i++) {
         ULONG index = (Buffer->ReadIndex + i) % MAX_EVENTS;
         RtlCopyMemory(&OutputBuffer[i], &Buffer->Events[index], sizeof(PROCESS_EVENT));
     }
 
-    // ¸üĞÂ¶ÁË÷Òı
+    // æ›´æ–°è¯»ç´¢å¼•
     Buffer->ReadIndex = (Buffer->ReadIndex + eventsToRead) % MAX_EVENTS;
     Buffer->EventCount -= eventsToRead;
 

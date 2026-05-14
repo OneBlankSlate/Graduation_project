@@ -1,4 +1,4 @@
-#include "ReadMemoryWindow.h"
+ï»¿#include "ReadMemoryWindow.h"
 #include"ProcessMemory.h"
 #include"WriteMemoryWindow.h"
 
@@ -23,7 +23,7 @@ BOOL ReadMemoryWindow::ReadVirtualMemory()
 		return IsOk;
 	}
 	ui.AddrValue_LineEdit->setReadOnly(true);
-	// »ñÈ¡ÓÃ»§ÊäÈëµÄÎÄ±¾²¢×ª»»ÎªÕûÊý
+	// èŽ·å–ç”¨æˆ·è¾“å…¥çš„æ–‡æœ¬å¹¶è½¬æ¢ä¸ºæ•´æ•°
 	QString value1 = ui.ReadAddr_LineEdit->text();
 	bool Ok1 = false;
 	unsigned long long  address = value1.toULongLong(&Ok1,16);
@@ -31,7 +31,7 @@ BOOL ReadMemoryWindow::ReadVirtualMemory()
 	QString value2 = ui.ReadSize_LineEdit->text();
 	bool Ok2 = false;
 	unsigned long long  size = value2.toULongLong(&Ok2, 16);
-	// ½«ÕûÊýµÄµØÖ·¸³¸øPVOIDÀàÐÍµÄ±äÁ¿
+	// å°†æ•´æ•°çš„åœ°å€èµ‹ç»™PVOIDç±»åž‹çš„å˜é‡
 	PVOID pValue = (PVOID)address;
 	COMMUNICATE_PROCESS_MEMORY v5;
 	v5.OperateType = READ_PROCESS_MEMORY;
@@ -46,7 +46,7 @@ BOOL ReadMemoryWindow::ReadVirtualMemory()
 	{
 		QByteArray data((char*)BufferData, size);
 		QString hexResult = data.toHex().toUpper();
-		ui.AddrValue_LineEdit->setText(hexResult);       //¸ø¿Ø¼þ¸³Öµ
+		ui.AddrValue_LineEdit->setText(hexResult);       //ç»™æŽ§ä»¶èµ‹å€¼
 	}
 	return IsOk;
 }

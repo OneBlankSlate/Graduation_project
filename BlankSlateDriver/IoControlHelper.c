@@ -8,9 +8,10 @@
 #include"CallbackHelper.h"
 #include"ProcMonitor.h"
 #include"FileMonitor.h"
+#include"ThreadMonitor.h"
 LPFN_SERVICEADDRESS __ServiceArray[] = {
 	NULL,
-	PsEnumProcess,  //枚举进程
+	PsEnumProcess,  //鏋氫妇杩涚▼
 	PsEnumProcessModules,
 	PsEnumProcessHandles,
 	PsEnumProcessMem,
@@ -26,9 +27,12 @@ LPFN_SERVICEADDRESS __ServiceArray[] = {
 	StopMonitorProcess,
 	GetProcEvents,
 	PsCloseHandle,
-	StartFileMonitor,      // 对应 START_FILE_MON
-	StopFileMonitor,       // 对应 STOP_FILE_MON
-	GetFileEvents,        // 对应 GET_EVENTS_FILE_MON
+	StartFileMonitor,      // 瀵瑰簲 START_FILE_MON
+	StopFileMonitor,       // 瀵瑰簲 STOP_FILE_MON
+	GetFileEvents,        // 瀵瑰簲 GET_EVENTS_FILE_MON
+	MonitorThread,           // START_THREAD_MON
+	StopMonitorThread,       // STOP_THREAD_MON
+	GetThreadEvents,         // GET_EVENTS_THREAD_MON
 	NULL
 };
 NTSTATUS CommunicateNeitherControl(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)

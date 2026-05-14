@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include<fltKernel.h>
 #include"IoControlHelper.h"
 
@@ -162,7 +162,7 @@ typedef struct _PEB
     PRTL_USER_PROCESS_PARAMETERS ProcessParameters;
 } PEB, * PPEB;
 #pragma endregion
-//½ø³Ì»ù±¾ĞÅÏ¢
+//è¿›ç¨‹åŸºæœ¬ä¿¡æ¯
 typedef struct _PROCESS_INFORMATION_ENTRY_
 {
     char ImageName[15];
@@ -177,7 +177,7 @@ typedef struct _PROCESS_INFORMATIONS_
     ULONG NumberOfProcess;
     PROCESS_INFORMATION_ENTRY ProcessInfo[1];
 }PROCESS_INFORMATIONS, * PPROCESS_INFORMATIONS;
-//½ø³Ì±£»¤
+//è¿›ç¨‹ä¿æŠ¤
 typedef struct _COMMUNICATE_PROTECT_PROCESS_
 {
     OPERATE_TYPE OperateType;
@@ -191,14 +191,14 @@ typedef struct _PROTECT_PROCESS_INFORMATION
     FAST_MUTEX FastMutex;
 }PROTECT_PROCESS_INFORMATION, * PPROTECT_PROCESS_INFORMATION;
 
-//½ø³ÌÒş²Ø
+//è¿›ç¨‹éšè—
 typedef struct _COMMUNICATE_HIDE_PROCESS_
 {
     OPERATE_TYPE OperateType;
     HANDLE ProcessIdentity;
 }COMMUNICATE_HIDE_PROCESS, * PCOMMUNICATE_HIDE_PROCESS;
 
-//½áÊø½ø³Ì
+//ç»“æŸè¿›ç¨‹
 typedef struct _COMMUNICATE_TERMINATE_PROCESS_
 {
     OPERATE_TYPE OperateType;

@@ -1,4 +1,4 @@
-// ProcMonCommon.h - Çı¶¯ÓëÓ¦ÓÃ²ã¹²Ïí
+ï»¿// ProcMonCommon.h - é©±åŠ¨ä¸åº”ç”¨å±‚å…±äº«
 #pragma once
 
 #include <windows.h>
@@ -18,42 +18,42 @@
 #define IOCTL_PROCMON_GET_STATUS \
     CTL_CODE(FILE_DEVICE_UNKNOWN, 0x803, METHOD_BUFFERED, FILE_ANY_ACCESS)
 
-// ½ø³ÌÊÂ¼şÀàĞÍ
+// è¿›ç¨‹äº‹ä»¶ç±»å‹
 typedef enum _PROCESS_EVENT_TYPE {
     ProcessCreate = 1,
     ProcessExit = 2
 } PROCESS_EVENT_TYPE;
 
-// ½ø³ÌÊÂ¼ş½á¹¹
+// è¿›ç¨‹äº‹ä»¶ç»“æ„
 #pragma pack(push, 1)
 typedef struct _PROCESS_EVENT {
-    ULONG EventId;              // ÊÂ¼şID
-    PROCESS_EVENT_TYPE Type;    // ÊÂ¼şÀàĞÍ
-    ULONG ProcessId;            // ½ø³ÌID
-    ULONG ParentProcessId;      // ¸¸½ø³ÌID
-    ULONG64 CreateTime;         // ´´½¨Ê±¼ä(FILETIME¸ñÊ½)
-    ULONG64 ExitTime;           // ÍË³öÊ±¼ä(FILETIME¸ñÊ½)
-    ULONG ExitStatus;           // ÍË³ö×´Ì¬
-    WCHAR ParentProcessName[200];//¸¸½ø³ÌÃû
-    WCHAR ImageName[200];       // Ó³ÏñÃû³Æ
-    WCHAR ImagePath[520];       // Ó³ÏñÂ·¾¶
-    WCHAR CommandLine[1024];    // ÃüÁîĞĞ
-    WCHAR UserName[128];        // ÓÃ»§Ãû
+    ULONG EventId;              // äº‹ä»¶ID
+    PROCESS_EVENT_TYPE Type;    // äº‹ä»¶ç±»å‹
+    ULONG ProcessId;            // è¿›ç¨‹ID
+    ULONG ParentProcessId;      // çˆ¶è¿›ç¨‹ID
+    ULONG64 CreateTime;         // åˆ›å»ºæ—¶é—´(FILETIMEæ ¼å¼)
+    ULONG64 ExitTime;           // é€€å‡ºæ—¶é—´(FILETIMEæ ¼å¼)
+    ULONG ExitStatus;           // é€€å‡ºçŠ¶æ€
+    WCHAR ParentProcessName[200];//çˆ¶è¿›ç¨‹å
+    WCHAR ImageName[200];       // æ˜ åƒåç§°
+    WCHAR ImagePath[520];       // æ˜ åƒè·¯å¾„
+    WCHAR CommandLine[1024];    // å‘½ä»¤è¡Œ
+    WCHAR UserName[128];        // ç”¨æˆ·å
 } PROCESS_EVENT, * PPROCESS_EVENT;
 #pragma pack(pop)
 
-// ÊÂ¼ş»º³å°ü
+// äº‹ä»¶ç¼“å†²åŒ…
 typedef struct _EVENT_PACKET {
-    ULONG EventCount;           // ÊÂ¼şÊıÁ¿
-    ULONG BufferSize;           // »º³åÇø´óĞ¡
-    PROCESS_EVENT Events[1];    // ÊÂ¼şÊı×é
+    ULONG EventCount;           // äº‹ä»¶æ•°é‡
+    ULONG BufferSize;           // ç¼“å†²åŒºå¤§å°
+    PROCESS_EVENT Events[1];    // äº‹ä»¶æ•°ç»„
 } EVENT_PACKET, * PEVENT_PACKET;
 
-// Çı¶¯×´Ì¬
+// é©±åŠ¨çŠ¶æ€
 typedef struct _DRIVER_STATUS {
-    BOOLEAN IsMonitoring;       // ÊÇ·ñÕıÔÚ¼à¿Ø
-    ULONG TotalEvents;          // ×ÜÊÂ¼şÊı
-    ULONG EventsInBuffer;       // »º³åÇøÖĞÊÂ¼şÊı
-    ULONG64 StartTime;          // ¼à¿Ø¿ªÊ¼Ê±¼ä
-    ULONG BufferCapacity;       // »º³åÇøÈİÁ¿
+    BOOLEAN IsMonitoring;       // æ˜¯å¦æ­£åœ¨ç›‘æ§
+    ULONG TotalEvents;          // æ€»äº‹ä»¶æ•°
+    ULONG EventsInBuffer;       // ç¼“å†²åŒºä¸­äº‹ä»¶æ•°
+    ULONG64 StartTime;          // ç›‘æ§å¼€å§‹æ—¶é—´
+    ULONG BufferCapacity;       // ç¼“å†²åŒºå®¹é‡
 } DRIVER_STATUS, * PDRIVER_STATUS;

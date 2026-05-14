@@ -1,4 +1,4 @@
-#include"IoControlRoutine.h"
+ï»¿#include"IoControlRoutine.h"
 #include"ProcessHelper.h"
 #include"ProcessModule.h"
 #include"MemoryHelper.h"
@@ -7,7 +7,7 @@
 
 LPFN_SERVICEADDRESS __ServiceArray[] = {
 	NULL,
-	PsEnumProcess,  //Ã¶¾Ù½ø³Ì
+	PsEnumProcess,  //æžšä¸¾è¿›ç¨‹
 	PsEnumProcessModules,
 	PsDumpProcessModule,
 	ApcInject,

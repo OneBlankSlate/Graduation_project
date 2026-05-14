@@ -1,4 +1,4 @@
-#include"CallbackHelper.h"
+﻿#include"CallbackHelper.h"
 #include"ProcessHelper.h"
 #include"ObjectHelper.h"
 PVOID __ProcessCallbackHandle = NULL;
@@ -8,7 +8,7 @@ OB_CALLBACK_REGISTRATION  __ObRegistration = { 0 };
 TD_CALLBACK_REGISTRATION __CallbackRegistration = { 0 };
 void InitializeCallbackSource(PDRIVER_OBJECT DriverObject)
 {
-	// ���´������DriverEntry��  �����ƹ� ����ObRegisterCallbackʱ ���е�ǩ��У��
+	// 以下代码放在DriverEntry中  用来绕过 调用ObRegisterCallback时 进行的签名校验
 	ULONG_PTR pDrvSection = (ULONG_PTR)DriverObject->DriverSection;
 	*(PULONG)(pDrvSection + 0x68) |= 0x20;
 	InitializeProcessSource();
@@ -76,7 +76,7 @@ OB_PREOP_CALLBACK_STATUS PreOperationCallback(_In_ PVOID RegistrationContext, _I
 
 		// if (TdProtectedTargetProcess != NULL &&
 		//    TdProtectedTargetProcess != PreInfo->Object)
-		if (!IsProcessIdentityExist(PsGetProcessId(PreInfo->Object)))   // ����Ƿ�Ϊ�Ǳ������̲���
+		if (!IsProcessIdentityExist(PsGetProcessId(PreInfo->Object)))   // 检查是否为非保护进程操作
 		{
 			goto Exit;
 		}
@@ -86,7 +86,7 @@ OB_PREOP_CALLBACK_STATUS PreOperationCallback(_In_ PVOID RegistrationContext, _I
 		// process.
 		//
 
-		if (PreInfo->Object == PsGetCurrentProcess()) {   //����Ƿ�Ϊ���������Ĳ�������ֹ��ǰ����ͨ�����������ƹ�������
+		if (PreInfo->Object == PsGetCurrentProcess()) {   //检查是否为进程自身的操作，禁止当前进程通过自身操作绕过保护。
 			DbgPrintEx(
 				DPFLTR_IHVDRIVER_ID, DPFLTR_TRACE_LEVEL,
 				"ObCallbackTest: CBTdPreOperationCallback: ignore process open/duplicate from the protected process itself\n");
@@ -94,7 +94,7 @@ OB_PREOP_CALLBACK_STATUS PreOperationCallback(_In_ PVOID RegistrationContext, _I
 		}
 
 		ObjectTypeName = L"PsProcessType";
-		AccessBitsToClear = CB_PROCESS_TERMINATE;  //������̵���ֹȨ��
+		AccessBitsToClear = CB_PROCESS_TERMINATE;  //清除进程的终止权限
 		AccessBitsToSet = 0;
 	}
 	else {
@@ -127,25 +127,25 @@ OB_PREOP_CALLBACK_STATUS PreOperationCallback(_In_ PVOID RegistrationContext, _I
 	InitialDesiredAccess = *DesiredAccess;
 
 	// Filter only if request made outside of the kernel
-	if (PreInfo->KernelHandle != 1) {     // ���������ں˾������
-		*DesiredAccess &= ~AccessBitsToClear;   // ���Σ��Ȩ��λ������ֹȨ�ޣ�
-		*DesiredAccess &= ~0x20;                //����ڴ�д��Ȩ��
-		*DesiredAccess &= ~0x10;                //����ڴٶ�Ȩ��
-		//*DesiredAccess &= ~0x80;                //������̴���Ȩ��
-		*DesiredAccess |= AccessBitsToSet;     // ��ѡ��Ȩ�����ӣ��˴�δʹ�ã�
+	if (PreInfo->KernelHandle != 1) {     // 仅处理非内核句柄操作
+		*DesiredAccess &= ~AccessBitsToClear;   // 清除危险权限位（如终止权限）
+		*DesiredAccess &= ~0x20;                //清除内存写的权限
+		*DesiredAccess &= ~0x10;                //清除内促读权限
+		//*DesiredAccess &= ~0x80;                //清除进程创建权限
+		*DesiredAccess |= AccessBitsToSet;     // 可选的权限添加（此处未使用）
 	}
-	//����ͨ���˷���ȥ���·�������̾��Ȩ�ޣ�
-	//#define PROCESS_TERMINATE                  (0x0001)  ��ֹȨ��
-	//#define PROCESS_CREATE_THREAD              (0x0002)  �����߳�Ȩ��
+	//可以通过此方法去除下方任意进程句柄权限！
+	//#define PROCESS_TERMINATE                  (0x0001)  终止权限
+	//#define PROCESS_CREATE_THREAD              (0x0002)  创建线程权限
 	//#define PROCESS_SET_SESSIONID              (0x0004)  
-	//#define PROCESS_VM_OPERATION               (0x0008)  �����ڴ����Ȩ��
-	//#define PROCESS_VM_READ                    (0x0010)  �����ڴ��Ȩ��
-	//#define PROCESS_VM_WRITE                   (0x0020)  �����ڴ�дȨ��
-	//#define PROCESS_DUP_HANDLE                 (0x0040)  ���ƾ��Ȩ��
-	//#define PROCESS_CREATE_PROCESS             (0x0080)  ��������Ȩ��
+	//#define PROCESS_VM_OPERATION               (0x0008)  虚拟内存操作权限
+	//#define PROCESS_VM_READ                    (0x0010)  虚拟内存读权限
+	//#define PROCESS_VM_WRITE                   (0x0020)  虚拟内存写权限
+	//#define PROCESS_DUP_HANDLE                 (0x0040)  复制句柄权限
+	//#define PROCESS_CREATE_PROCESS             (0x0080)  创建进程权限
 	//#define PROCESS_SET_QUOTA                  (0x0100)  
 	//#define PROCESS_SET_INFORMATION            (0x0200)  
-	//#define PROCESS_QUERY_INFORMATION          (0x0400)  QueryInformationȨ��
+	//#define PROCESS_QUERY_INFORMATION          (0x0400)  QueryInformation权限
 	//#define PROCESS_SUSPEND_RESUME             (0x0800)  
 	//#define PROCESS_QUERY_LIMITED_INFORMATION  (0x1000)  
 	//#define PROCESS_SET_LIMITED_INFORMATION    (0x2000) 

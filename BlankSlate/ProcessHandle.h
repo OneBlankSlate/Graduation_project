@@ -1,18 +1,18 @@
-#pragma once
+ï»¿#pragma once
 #include<tchar.h>
 #include<Windows.h>
 #include<iostream>
 #include<vector>
 #include"IoControlHelper.h"
-//½ø³Ì¾ä±ú
+//è¿›ç¨‹å¥æŸ„
 typedef struct _HANDLE_INFORMATION_ENTRY_
 {
 	WCHAR HandleType[0x20];
 	WCHAR HandleName[MAX_PATH];
 	HANDLE Handle;
 	PVOID Object;
-	UCHAR Index;   //¾ä±úÀàĞÍµÄ´úºÅ¡¢Ë÷Òı
-	ULONG64 Count;   //¾ä±úµÄÒıÓÃ¼ÆÊı	
+	UCHAR Index;   //å¥æŸ„ç±»å‹çš„ä»£å·ã€ç´¢å¼•
+	ULONG64 Count;   //å¥æŸ„çš„å¼•ç”¨è®¡æ•°	
 }HANDLE_INFORMATION_ENTRY, * PHANDLE_INFORMATION_ENTRY;
 typedef struct _HANDLES_INFORMATION_
 {
@@ -25,7 +25,7 @@ typedef struct _COMMUNICATE_PROCESS_HANDLE_
 	OPERATE_TYPE OperateType;
 	HANDLE ProcessIdentity;
 }COMMUNICATE_PROCESS_HANDLE, * PCOMMUNICATE_PROCESS_HANDLE;
-//¹Ø±Õ¾ä±ú
+//å…³é—­å¥æŸ„
 typedef struct COMMUNICATE_CLOSE_HANDLE
 {
 	OPERATE_TYPE OperateType;

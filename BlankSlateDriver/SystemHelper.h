@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include<fltKernel.h>
 
 #include <ntimage.h>
@@ -165,14 +165,14 @@ PEPROCESS LookupWin32Process();
 PIMAGE_NT_HEADERS RtlImageNtHeader(PVOID Base);
 VOID InitializeSystemSource();
 VOID UninitializeSystemSource();
-//ÓÎÏ·Çı¶¯ÖĞµÄGetFunc
+//æ¸¸æˆé©±åŠ¨ä¸­çš„GetFunc
 PVOID64 GetSSDTAddre();
-PVOID GetSSDTServiceAddress(IN wchar_t* FuncName);  //ÕâÀïÒª´«Zwº¯Êı£¬È»ºóºóĞøµÃNt
+PVOID GetSSDTServiceAddress(IN wchar_t* FuncName);  //è¿™é‡Œè¦ä¼ Zwå‡½æ•°ï¼Œç„¶ååç»­å¾—Nt
 
 
 
-extern PSYSTEM_SERVICE_DESCRIPTOR_TABLE __SystemServiceDescriptorTable;  //×Ô¼ºµÄÈ«¾Ö
-extern PSYSTEM_SERVICE_DESCRIPTOR_TABLE KeServiceDescriptorTable;   //ÏµÍ³µÄÈ«¾Ö
+extern PSYSTEM_SERVICE_DESCRIPTOR_TABLE __SystemServiceDescriptorTable;  //è‡ªå·±çš„å…¨å±€
+extern PSYSTEM_SERVICE_DESCRIPTOR_TABLE KeServiceDescriptorTable;   //ç³»ç»Ÿçš„å…¨å±€
 extern PVOID PsGetProcessWin32Process(PEPROCESS Process);
 extern PVOID __Ntoskrnl;
 extern PEPROCESS __SystemEProcess;

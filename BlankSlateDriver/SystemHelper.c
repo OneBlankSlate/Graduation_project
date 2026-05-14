@@ -1,4 +1,4 @@
-#include"SystemHelper.h"
+ï»¿#include"SystemHelper.h"
 #include"MemoryHelper.h"
 #include"StringHelper.h"
 #include"ProcessHelper.h"
@@ -23,13 +23,13 @@ PVOID GetNtoskrnlInfo(OUT PUNICODE_STRING NtoskrnlPath, OUT PULONG ImageSize)
 			UnicodeStringCopy2UnicodeString(NtoskrnlPath, &NtoskrnlPath);
 		return __Ntoskrnl;
 	}
-	//´ÓÏµÍ³µÚ1¸öÄ£¿éÖĞµÄµ¼³ö±íÖĞ»ñÈ¡ZwOpenProcess
+	//ä»ç³»ç»Ÿç¬¬1ä¸ªæ¨¡å—ä¸­çš„å¯¼å‡ºè¡¨ä¸­è·å–ZwOpenProcess
 	RtlInitUnicodeString(&ServiceName, L"ZwOpenProcess");
 	v1 = MmGetSystemRoutineAddress(&ServiceName);
 	if (v1 == NULL)
 		return NULL;
 
-	// Ô¤²éÏµÍ³ĞÅÏ¢
+	// é¢„æŸ¥ç³»ç»Ÿä¿¡æ¯
 	Status = ZwQuerySystemInformation(SystemModuleInformation, 0, ReturnLength, &ReturnLength);
 	if(ReturnLength == 0)
 		return NULL;
@@ -47,11 +47,11 @@ PVOID GetNtoskrnlInfo(OUT PUNICODE_STRING NtoskrnlPath, OUT PULONG ImageSize)
 			if (v1 > RtlProcessModuleInfo[i].ImageBase &&
 				v1 < (PVOID)((PUCHAR)RtlProcessModuleInfo[i].ImageBase + RtlProcessModuleInfo[i].ImageSize))
 			{
-				// »ñÈ¡µ½ÁËÏµÍ³µÚ1Ä£¿éĞÅÏ¢
+				// è·å–åˆ°äº†ç³»ç»Ÿç¬¬1æ¨¡å—ä¿¡æ¯
 				__Ntoskrnl = RtlProcessModuleInfo[i].ImageBase;
 				__ImageSize = RtlProcessModuleInfo[i].ImageSize;
 				RtlInitAnsiString(&v2, RtlProcessModuleInfo[i].FullPathName);
-				//µ¥×Ö×ª»»ÎªUnicodeString
+				//å•å­—è½¬æ¢ä¸ºUnicodeString
 				RtlAnsiStringToUnicodeString(&__NtoskrnlPath, &v2, TRUE);
 				if (ImageSize)
 				{
@@ -75,7 +75,7 @@ PVOID GetNtoskrnlInfo(OUT PUNICODE_STRING NtoskrnlPath, OUT PULONG ImageSize)
 	}
 	return __Ntoskrnl;
 }
-//Í¨¹ı±éÀú½ÚÇøÕÒssdt
+//é€šè¿‡éå†èŠ‚åŒºæ‰¾ssdt
 PSYSTEM_SERVICE_DESCRIPTOR_TABLE GetKeServiceDescriptorTable1()
 {
 #ifdef _WIN64
@@ -92,10 +92,10 @@ PSYSTEM_SERVICE_DESCRIPTOR_TABLE GetKeServiceDescriptorTable1()
 		Ntoskrnl = __Ntoskrnl;
 	}
 		PIMAGE_NT_HEADERS64 ImageNtHeaders = RtlImageNtHeader(Ntoskrnl);
-		PIMAGE_SECTION_HEADER ImageSectionHeader = (PIMAGE_SECTION_HEADER)(ImageNtHeaders + 1);  //¿ÉÒÔ
+		PIMAGE_SECTION_HEADER ImageSectionHeader = (PIMAGE_SECTION_HEADER)(ImageNtHeaders + 1);  //å¯ä»¥
 		for (PIMAGE_SECTION_HEADER v1 = ImageSectionHeader; v1 < ImageSectionHeader + ImageNtHeaders->FileHeader.NumberOfSections; v1++)
 		{
-			//Î´·ÖÒ³  ¿ÉÖ´ĞĞ  Î´¶ªÆú
+			//æœªåˆ†é¡µ  å¯æ‰§è¡Œ  æœªä¸¢å¼ƒ
 			if (v1->Characteristics & IMAGE_SCN_MEM_NOT_PAGED &&
 				v1->Characteristics & IMAGE_SCN_MEM_EXECUTE &&
 				!(v1->Characteristics & IMAGE_SCN_MEM_DISCARDABLE) &&
@@ -121,7 +121,7 @@ PSYSTEM_SERVICE_DESCRIPTOR_TABLE GetKeServiceDescriptorTable1()
 					
 		}
 #else
-	extern PSYSTEM_SERVICE_DESCRIPTOR_TABLE KeServiceDescriptorTable;  //ÔÚx86ÖĞÊÇÒ»¸öÈ«¾Ö¿É¼ûµÄ±äÁ¿
+	extern PSYSTEM_SERVICE_DESCRIPTOR_TABLE KeServiceDescriptorTable;  //åœ¨x86ä¸­æ˜¯ä¸€ä¸ªå…¨å±€å¯è§çš„å˜é‡
 	__SystemServiceDescriptorTable = KeServiceDescriptorTable;
 	
 	return __SystemServiceDescriptorTable;
@@ -129,7 +129,7 @@ PSYSTEM_SERVICE_DESCRIPTOR_TABLE GetKeServiceDescriptorTable1()
 
 	return NULL;
 }
-//²»ÓÃ½ÚÇø£¬Ö±½Órdmsr 0xC0000082À´»ñÈ¡KiSystemCall64Èë¿ÚÀ´ÕÒssdt
+//ä¸ç”¨èŠ‚åŒºï¼Œç›´æ¥rdmsr 0xC0000082æ¥è·å–KiSystemCall64å…¥å£æ¥æ‰¾ssdt
 PSYSTEM_SERVICE_DESCRIPTOR_TABLE GetKeServiceDescriptorTable2()
 {
 	PSYSTEM_SERVICE_DESCRIPTOR_TABLE SystemServiceDescriptorTable = NULL;
@@ -144,12 +144,12 @@ PSYSTEM_SERVICE_DESCRIPTOR_TABLE GetKeServiceDescriptorTable2()
 	ULONG OffsetSsdt = 0;
 	INT OffsetUser = 0;
 	DbgPrint(("[zsh]Msr C0000082:%x\n"), v10);
-	if (*(v10 + 0x9) == 0x00) //×ßÕâÀïËµÃ÷Msr C0000082µÃµ½µÄÊÇKiSystemCall64    win7Óë²¿·Öwin10£¨Èç22H2£©
+	if (*(v10 + 0x9) == 0x00) //èµ°è¿™é‡Œè¯´æ˜Msr C0000082å¾—åˆ°çš„æ˜¯KiSystemCall64    win7ä¸éƒ¨åˆ†win10ï¼ˆå¦‚22H2ï¼‰
 	{
 		StartAddress = KiSystemCall64;
 		EndAddress = StartAddress + PAGE_SIZE;
 	}
-	else if (*(v10 + 0x9) == 0x70) //×ßÕâÀïËµÃ÷Msr C0000082µÃµ½µÄÊÇKiSystemCall64Shadow  win10-20H2
+	else if (*(v10 + 0x9) == 0x70) //èµ°è¿™é‡Œè¯´æ˜Msr C0000082å¾—åˆ°çš„æ˜¯KiSystemCall64Shadow  win10-20H2
 	{
 		PUCHAR EndSearchUser = KiSystemCall64Shadow + PAGE_SIZE;
 
@@ -169,7 +169,7 @@ PSYSTEM_SERVICE_DESCRIPTOR_TABLE GetKeServiceDescriptorTable2()
 			}
 		}
 	}
-	//Ó²±àÂëËÑË÷4c 8d 15
+	//ç¡¬ç¼–ç æœç´¢4c 8d 15
 	for (i = StartAddress; i < EndAddress; i++)
 	{
 		if (MmIsAddressValid(i) && MmIsAddressValid(i + 1) && MmIsAddressValid(i + 2))
@@ -187,7 +187,7 @@ PSYSTEM_SERVICE_DESCRIPTOR_TABLE GetKeServiceDescriptorTable2()
 	}
 	return SystemServiceDescriptorTable;
 #else	
-	extern  PSYSTEM_SERVICE_DESCRIPTOR_TABLE KeServiceDescriptorTable;    //À©Õ¹ÉùÃ÷
+	extern  PSYSTEM_SERVICE_DESCRIPTOR_TABLE KeServiceDescriptorTable;    //æ‰©å±•å£°æ˜
 	return KeServiceDescriptorTable;
 #endif //  _WIN64
 }
@@ -230,12 +230,12 @@ BOOLEAN GetNtXXXServiceIndex(CHAR* FunctionName, ULONG32* ServiceIndex)
 					AddressOfNameOrdinals = (UINT16*)((UINT8*)VirtualAddress + ImageExportDirectory->AddressOfNameOrdinals);
 					for (i = 0; i < ImageExportDirectory->NumberOfNames; i++)
 					{
-						v1 = (char*)((ULONG_PTR)VirtualAddress + AddressOfNames[i]);//»ñµÃº¯ÊıÃû³Æ
+						v1 = (char*)((ULONG_PTR)VirtualAddress + AddressOfNames[i]);//è·å¾—å‡½æ•°åç§°
 						if (_stricmp(FunctionName, v1) == 0)
 						{
 							FunctionOrdinal = AddressOfNameOrdinals[i];
 							FunctionAddress = (PVOID)((UINT8*)VirtualAddress + AddressOfFunctions[FunctionOrdinal]);
-							*ServiceIndex = *(ULONG32*)((UINT8*)FunctionAddress + Offset);  //ÕâÀïÓÃ*(ULONG32*)Ã»ÎÊÌâÊÇÒòÎªÎŞÂÛ32Î»»¹ÊÇ64Î»·şÎñË÷Òı¶¼ÊÇ4×Ö½Ú
+							*ServiceIndex = *(ULONG32*)((UINT8*)FunctionAddress + Offset);  //è¿™é‡Œç”¨*(ULONG32*)æ²¡é—®é¢˜æ˜¯å› ä¸ºæ— è®º32ä½è¿˜æ˜¯64ä½æœåŠ¡ç´¢å¼•éƒ½æ˜¯4å­—èŠ‚
 							break;
 						}
 						
@@ -248,7 +248,7 @@ BOOLEAN GetNtXXXServiceIndex(CHAR* FunctionName, ULONG32* ServiceIndex)
 
 			}
 		}
-		ZwUnmapViewOfSection(NtCurrentProcess(), VirtualAddress);  //½â³ıÓ³Éä
+		ZwUnmapViewOfSection(NtCurrentProcess(), VirtualAddress);  //è§£é™¤æ˜ å°„
 		if (*ServiceIndex == -1)
 		{
 			return FALSE;
@@ -286,7 +286,7 @@ NTSTATUS GetNtXXXServiceAddress(ULONG_PTR ServiceIndex, PVOID* ServiceAddress)
 			v2 = (SystemServiceDescriptorTable->ServiceTableBase)[ServiceIndex];
 		}
 #endif
-		//¶Ô¸Ãº¯ÊıµØÖ·½øĞĞĞ£Ñé
+		//å¯¹è¯¥å‡½æ•°åœ°å€è¿›è¡Œæ ¡éªŒ
 		if (MmIsAddressValid(v2))
 		{
 			if (ServiceAddress != NULL)
@@ -316,7 +316,7 @@ PEPROCESS LookupWin32Process()
 	{
 		if (PsLookupProcessByProcessId((HANDLE)ProcessIdentity, &EProcess) == STATUS_SUCCESS)
 		{
-			if (PsGetProcessWin32Process(EProcess))   //Ñ°ÕÒ´øÓĞ½çÃæµÄ½ø³Ì
+			if (PsGetProcessWin32Process(EProcess))   //å¯»æ‰¾å¸¦æœ‰ç•Œé¢çš„è¿›ç¨‹
 			{
 				return EProcess;
 			}
@@ -334,18 +334,18 @@ VOID UninitializeSystemSource()
 {
 	__SystemEProcess = NULL;
 }
-//ÓÎÏ·Çı¶¯ÖĞµÄGetFunc
+//æ¸¸æˆé©±åŠ¨ä¸­çš„GetFunc
 PVOID64 GetSSDTAddre()
 {
 	PUCHAR msr = 0;
-	PUCHAR StartAddre = 0, EndAddre = 0;            // ¿ªÊ¼±éÀúµÄµØ·½,ºÍ±éÀú³¤¶È,»ñÈ¡µ½SSDTµÄÎ»ÖÃ
+	PUCHAR StartAddre = 0, EndAddre = 0;            // å¼€å§‹éå†çš„åœ°æ–¹,å’Œéå†é•¿åº¦,è·å–åˆ°SSDTçš„ä½ç½®
 	UCHAR b0 = 0, b1 = 0, b2 = 0, b7 = 0, b8 = 0, b9 = 0, b14 = 0, b15 = 0;
-	ULONG deviation = 0;      //Æ«²î                              //KiSystemServiceRepeat+7µ½SSDTµÄÆ«ÒÆ
+	ULONG deviation = 0;      //åå·®                              //KiSystemServiceRepeat+7åˆ°SSDTçš„åç§»
 	ULONGLONG SSDTAddre = 0;
 
 	msr = (PUCHAR)__readmsr(0xC0000082);
-	//KiSystemCall64ÍùÏÂ±éÀú  ËÑÌØÕ÷Âë¡¾4C 8D 15 XX XX XX XX 4C 8D 1D XX XX XX XX F7 43¡¿ÕÒµ½KiSystemServiceRepeat
-	// µÚ¶ş¸ö 4C 8D 1D XX XX XX XX ÊÇShadow SSDTµØÖ·
+	//KiSystemCall64å¾€ä¸‹éå†  æœç‰¹å¾ç ã€4C 8D 15 XX XX XX XX 4C 8D 1D XX XX XX XX F7 43ã€‘æ‰¾åˆ°KiSystemServiceRepeat
+	// ç¬¬äºŒä¸ª 4C 8D 1D XX XX XX XX æ˜¯Shadow SSDTåœ°å€
 	StartAddre = msr, EndAddre = msr + 0x500;
 	for (; StartAddre < EndAddre; StartAddre++)
 		if (MmIsAddressValid(StartAddre) && MmIsAddressValid(StartAddre + 1) && MmIsAddressValid(StartAddre + 2))
@@ -371,14 +371,14 @@ PVOID64 GetSSDTAddre()
 	DbgPrint("[dk]: No find SSDT\n");
 	return NULL;
 }
-PVOID GetSSDTServiceAddress(IN wchar_t* FuncName)  //ÕâÀïÒª´«Zwº¯Êı£¬È»ºóºóĞøµÃNt
+PVOID GetSSDTServiceAddress(IN wchar_t* FuncName)  //è¿™é‡Œè¦ä¼ Zwå‡½æ•°ï¼Œç„¶ååç»­å¾—Nt
 {
 	UNICODE_STRING Name = { 0 };
 	RtlInitUnicodeString(&Name, FuncName);
 	ULONG64 Func = (ULONG64)MmGetSystemRoutineAddress(&Name);
 	PVOID FuncAddr;
 
-	ULONG Index = *(PULONG)((ULONG_PTR)Func + 21);  //µÃµ½Ë÷Òı
+	ULONG Index = *(PULONG)((ULONG_PTR)Func + 21);  //å¾—åˆ°ç´¢å¼•
 	PSYSTEM_SERVICE_DESCRIPTOR_TABLE SSDT = GetSSDTAddre();
 	ULONG FakeOffset;
 	ULONG Offset;

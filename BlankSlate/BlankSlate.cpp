@@ -1,9 +1,10 @@
-#include "BlankSlate.h"
+ï»¿#include "BlankSlate.h"
 #include"ProcessWindow.h"
 #include"DriverModuleWindow.h"
 #include"ProcessHelper.h"
 #include"ProcMonWindow.h"
 #include"FileMonWindow.h"
+#include"ThreadMonWindow.h"
 BlankSlate::BlankSlate(QWidget *parent)
     : QMainWindow(parent)
 {
@@ -11,20 +12,21 @@ BlankSlate::BlankSlate(QWidget *parent)
     //m_processWindow = new ProcessWindow(this);
     //m_driverModuleWindow = new DriverModuleWindow(this);
 
-    ////½«Á½¸öwidgetÌí¼ÓÖÁstackedWidget
+    ////å°†ä¸¤ä¸ªwidgetæ·»åŠ è‡³stackedWidget
     //ui.stackedWidget->addWidget(m_processWindow);
     //ui.stackedWidget->addWidget(m_driverModuleWindow);
-    ////ÉèÖÃstackedWidgetµ±Ç°Õ¹Ê¾Ò³Ãæ
+    ////è®¾ç½®stackedWidgetå½“å‰å±•ç¤ºé¡µé¢
     //ui.stackedWidget->setCurrentIndex(2);
-    // ÉèÖÃÖ÷½çÃæÍ¼±ê
+    // è®¾ç½®ä¸»ç•Œé¢å›¾æ ‡
     QIcon icon(":/BlankSlate/resource/blue.png");
     this->setWindowIcon(icon);
 
-    ui.tabWidget->clear();   //Çå¿ÕÄ¬ÈÏµÄtab±êÇ©
-    ui.tabWidget->addTab(new ProcessWindow, QStringLiteral("½ø³Ì"));
-    ui.tabWidget->addTab(new DriverModuleWindow, QStringLiteral("Çý¶¯Ä£¿é"));
-    ui.tabWidget->addTab(new ProcMonWindow, QStringLiteral("½ø³Ì¼à¿Ø"));
-    ui.tabWidget->addTab(new FileMonWindow, QStringLiteral("ÎÄ¼þ¼à¿Ø"));
+    ui.tabWidget->clear();   //æ¸…ç©ºé»˜è®¤çš„tabæ ‡ç­¾
+    ui.tabWidget->addTab(new ProcessWindow, QStringLiteral("è¿›ç¨‹"));
+    ui.tabWidget->addTab(new DriverModuleWindow, QStringLiteral("é©±åŠ¨æ¨¡å—"));
+    ui.tabWidget->addTab(new ProcMonWindow, QStringLiteral("è¿›ç¨‹ç›‘æŽ§"));
+    ui.tabWidget->addTab(new FileMonWindow, QStringLiteral("æ–‡ä»¶ç›‘æŽ§"));
+    ui.tabWidget->addTab(new ThreadMonWindow, QStringLiteral("çº¿ç¨‹ç›‘æŽ§"));
 
 }
 

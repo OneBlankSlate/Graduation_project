@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include<tchar.h>
 #include<Windows.h>
 #include<iostream>
@@ -52,7 +52,7 @@ typedef struct _MEMORYS_INFORMATION_
 }MEMORYS_INFORMATION,*PMEMORYS_INFORMATION;
 
 BOOL EnumProcessMemorys(HANDLE ProcessIdentity, vector<MEMORY_INFORMATION_ENTRY>& MemoryInfo);
-//½«µÃµ½µÄÊýÖµ×ªÎªÕæÕýµÄÊôÐÔ
+//å°†å¾—åˆ°çš„æ•°å€¼è½¬ä¸ºçœŸæ­£çš„å±žæ€§
 const WCHAR* GetProtect(ULONG Protect);
 const WCHAR* GetState(ULONG State);
 const WCHAR* GetType(ULONG Type);

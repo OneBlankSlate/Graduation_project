@@ -1,4 +1,4 @@
-#include"ProcessMemory.h"
+ï»¿#include"ProcessMemory.h"
 #include"ProcessHelper.h"
 #include"SystemHelper.h"
 #include"MemoryHelper.h"
@@ -13,7 +13,7 @@ NTSTATUS PsEnumProcessMem(PVOID InputBuffer, ULONG InputBufferLength, PVOID Outp
 	PEPROCESS EProcess = NULL;
 	ULONG_PTR ProcessIdentity = 0;
 	ULONG NumberOfMemory = (OutputBufferLength - sizeof(MEMORYS_INFORMATION)) / sizeof(MEMORY_INFORMATION_ENTRY);
-	//²ÎÊı¼ì²â
+	//å‚æ•°æ£€æµ‹
 	if (!InputBuffer || InputBufferLength != sizeof(COMMUNICATE_PROCESS_MEMORY) || !OutputBuffer || OutputBufferLength < sizeof(MEMORYS_INFORMATION))
 	{
 		return STATUS_INVALID_PARAMETER;
@@ -127,7 +127,7 @@ NTSTATUS PsReadProcessMem(PVOID InputBuffer, ULONG InputBufferLength, PVOID Outp
 	BOOLEAN IsAttach = FALSE;
 	KAPC_STATE ApcState;
 	PCOMMUNICATE_PROCESS_MEMORY v1 = (PCOMMUNICATE_PROCESS_MEMORY)InputBuffer;
-	//²ÎÊı¼ì²â
+	//å‚æ•°æ£€æµ‹
 	if (!InputBuffer || InputBufferLength != sizeof(COMMUNICATE_PROCESS_MEMORY) || !OutputBuffer || OutputBufferLength < MAX_LENGTH)
 	{
 		return STATUS_INVALID_PARAMETER;
@@ -201,7 +201,7 @@ NTSTATUS PsWriteProcessMem(PVOID InputBuffer, ULONG InputBufferLength, PVOID Out
 	CHAR PreviousMode = 0;
 	ULONG OldProtect = 0;
 	PCOMMUNICATE_PROCESS_MEMORY v1 = (PCOMMUNICATE_PROCESS_MEMORY)InputBuffer;
-	//²ÎÊı¼ì²â
+	//å‚æ•°æ£€æµ‹
 	if (!InputBuffer || InputBufferLength != sizeof(COMMUNICATE_PROCESS_MEMORY)+v1->ul.Write.RegionSize)
 	{
 		return STATUS_INVALID_PARAMETER;
@@ -276,7 +276,7 @@ NTSTATUS PsWriteProcessMem(PVOID InputBuffer, ULONG InputBufferLength, PVOID Out
 						}
 						if (__NtProtectVirtualMemory != NULL)
 						{
-							Status1 = __NtProtectVirtualMemory(ProcessHandle, &v5, &v7, PAGE_READWRITE, &OldProtect); //ÕâÀïÊ¹ÓÃv5Óëv7µÄÔ­ÒòÊÇ¸Ãº¯ÊıµÄÖ´ĞĞ»á¸Ä±äÎÒÃÇµÄBaseAddressÎªÒ³»ùÖ·£¬µ¼ÖÂÏÂ·½¿½±´Ê§°Ü£¬ËùÒÔÊ¹ÓÃÌæÉíÀ´¸Ä±äÊôĞÔ
+							Status1 = __NtProtectVirtualMemory(ProcessHandle, &v5, &v7, PAGE_READWRITE, &OldProtect); //è¿™é‡Œä½¿ç”¨v5ä¸v7çš„åŸå› æ˜¯è¯¥å‡½æ•°çš„æ‰§è¡Œä¼šæ”¹å˜æˆ‘ä»¬çš„BaseAddressä¸ºé¡µåŸºå€ï¼Œå¯¼è‡´ä¸‹æ–¹æ‹·è´å¤±è´¥ï¼Œæ‰€ä»¥ä½¿ç”¨æ›¿èº«æ¥æ”¹å˜å±æ€§
 							if (!NT_SUCCESS(Status1))
 							{
 								RecoverPreviousMode(EThread, PreviousMode);
@@ -363,7 +363,7 @@ NTSTATUS PsModifyProcessMem(PVOID InputBuffer, ULONG InputBufferLength, PVOID Ou
 	ULONG NewProtect = 0;
 	PVOID BaseAddress = NULL;
 	SIZE_T RegionSize = 0;
-	//²ÎÊı¼ì²â
+	//å‚æ•°æ£€æµ‹
 	if (!InputBuffer || InputBufferLength != sizeof(COMMUNICATE_PROCESS_MEMORY))
 	{
 		return STATUS_INVALID_PARAMETER;

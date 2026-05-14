@@ -1,9 +1,9 @@
-#pragma once
+ï»¿#pragma once
 #include<fltKernel.h>
 
-//Éè±¸¶ÔÏóÃû³Æ
+//è®¾å¤‡å¯¹è±¡åç§°
 #define DEVICE_NAME L"\\Device\\KSSDTHook"
-//Éè±¸Á´½ÓÃû
+//è®¾å¤‡é“¾æŽ¥å
 #define SYMBOLIC_LINK L"\\DosDevices\\KSSDTHook"
 #define MAX_PATH 260
 #define CTL_THREAD_INJECT CTL_CODE(FILE_DEIVCE_UNKNOWN,0x830,METHOD_BUFFERED,FILE_ANY_ACCESS)

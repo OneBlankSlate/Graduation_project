@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include<tchar.h>
 #include<Windows.h>
 #include<iostream>
@@ -257,7 +257,7 @@ typedef struct _SYSTEM_PROCESS_INFORMATION
 	SYSTEM_THREAD_INFORMATION Threads[1];
 }SYSTEM_PROCESS_INFORMATION, * PSYSTEM_PROCESS_INFORMATION;
 
-//½ø³Ì»ù±¾ÐÅÏ¢
+//è¿›ç¨‹åŸºæœ¬ä¿¡æ¯
 typedef struct _PROCESS_INFORMATION_ENTRY_
 {
 	char ImageName[15];
@@ -273,7 +273,7 @@ typedef struct _PROCESS_INFORMATIONS_
 	PROCESS_INFORMATION_ENTRY ProcessInfo[1];
 }PROCESS_INFORMATIONS, * PPROCESS_INFORMATIONS;
 
-//±£»¤½ø³Ì
+//ä¿æŠ¤è¿›ç¨‹
 typedef struct _COMMUNICATE_PROTECT_PROCESS_
 {
 	OPERATE_TYPE OperateType;
@@ -281,13 +281,13 @@ typedef struct _COMMUNICATE_PROTECT_PROCESS_
 	HANDLE ProcessIdentitys[MAX_PATH];
 }COMMUNICATE_PROTECT_PROCESS, * PCOMMUNICATE_PROTECT_PROCESS;
 
-//½ø³ÌÒþ²Ø
+//è¿›ç¨‹éšè—
 typedef struct _COMMUNICATE_HIDE_PROCESS_
 {
 	OPERATE_TYPE OperateType;
 	HANDLE ProcessIdentity;
 }COMMUNICATE_HIDE_PROCESS, * PCOMMUNICATE_HIDE_PROCESS;
-//½áÊø½ø³Ì
+//ç»“æŸè¿›ç¨‹
 typedef struct _COMMUNICATE_TERMINATE_PROCESS_
 {
 	OPERATE_TYPE OperateType;

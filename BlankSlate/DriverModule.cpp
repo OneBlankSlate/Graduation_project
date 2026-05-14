@@ -1,4 +1,4 @@
-#include"DriverModule.h"
+ï»¿#include"DriverModule.h"
 BOOL LoadDriver(const char* pDriverPath) {
     SC_HANDLE hSCManager = NULL;
     SC_HANDLE hService = NULL;
@@ -6,52 +6,52 @@ BOOL LoadDriver(const char* pDriverPath) {
     char serviceName[MAX_PATH];
     char displayName[MAX_PATH];
 
-    // ´ÓÂ·¾¶ÖĞÌáÈ¡Çı¶¯ÎÄ¼şÃû×÷Îª·şÎñÃû£¨È¥µôÂ·¾¶ºÍÀ©Õ¹Ãû£©
+    // ä»è·¯å¾„ä¸­æå–é©±åŠ¨æ–‡ä»¶åä½œä¸ºæœåŠ¡åï¼ˆå»æ‰è·¯å¾„å’Œæ‰©å±•åï¼‰
     const char* pFileName = strrchr(pDriverPath, '\\');
     if (pFileName == NULL) {
         pFileName = pDriverPath;
     }
     else {
-        pFileName++; // Ìø¹ı·´Ğ±¸Ü
+        pFileName++; // è·³è¿‡åæ–œæ 
     }
 
-    // ¸´ÖÆÎÄ¼şÃû£¨È¥µô .sys À©Õ¹Ãû£©
+    // å¤åˆ¶æ–‡ä»¶åï¼ˆå»æ‰ .sys æ‰©å±•åï¼‰
     strncpy(serviceName, pFileName, MAX_PATH);
     char* pExt = strstr(serviceName, ".sys");
     if (pExt != NULL) {
-        *pExt = '\0'; // ½Ø¶ÏÀ©Õ¹Ãû
+        *pExt = '\0'; // æˆªæ–­æ‰©å±•å
     }
 
     snprintf(displayName, MAX_PATH, "Driver %s", serviceName);
 
-    // 1. ´ò¿ª·şÎñ¿ØÖÆ¹ÜÀíÆ÷
+    // 1. æ‰“å¼€æœåŠ¡æ§åˆ¶ç®¡ç†å™¨
     hSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (hSCManager == NULL) {
         DWORD dwError = GetLastError();
         goto cleanup;
     }
 
-    // 2. ´´½¨Çı¶¯·şÎñ
+    // 2. åˆ›å»ºé©±åŠ¨æœåŠ¡
     hService = CreateServiceA(
-        hSCManager,           // SCManager Êı¾İ¿â¾ä±ú
-        serviceName,          // ·şÎñÃû³Æ
-        displayName,          // ÏÔÊ¾Ãû³Æ
-        SERVICE_ALL_ACCESS,   // ·ÃÎÊÈ¨ÏŞ
-        SERVICE_KERNEL_DRIVER,// ·şÎñÀàĞÍ£ºÄÚºËÇı¶¯
-        SERVICE_DEMAND_START, // Æô¶¯ÀàĞÍ£º°´ĞèÆô¶¯
-        SERVICE_ERROR_NORMAL, // ´íÎó¿ØÖÆ
-        pDriverPath,          // Çı¶¯ÎÄ¼şÂ·¾¶
-        NULL,                 // ¼ÓÔØË³Ğò×é
-        NULL,                 // ±ê¼Ç ID
-        NULL,                 // ÒÀÀµ¹ØÏµ
-        NULL,                 // ÕË»§Ãû£¨NULL ±íÊ¾ LocalSystem£©
-        NULL                  // ÃÜÂë
+        hSCManager,           // SCManager æ•°æ®åº“å¥æŸ„
+        serviceName,          // æœåŠ¡åç§°
+        displayName,          // æ˜¾ç¤ºåç§°
+        SERVICE_ALL_ACCESS,   // è®¿é—®æƒé™
+        SERVICE_KERNEL_DRIVER,// æœåŠ¡ç±»å‹ï¼šå†…æ ¸é©±åŠ¨
+        SERVICE_DEMAND_START, // å¯åŠ¨ç±»å‹ï¼šæŒ‰éœ€å¯åŠ¨
+        SERVICE_ERROR_NORMAL, // é”™è¯¯æ§åˆ¶
+        pDriverPath,          // é©±åŠ¨æ–‡ä»¶è·¯å¾„
+        NULL,                 // åŠ è½½é¡ºåºç»„
+        NULL,                 // æ ‡è®° ID
+        NULL,                 // ä¾èµ–å…³ç³»
+        NULL,                 // è´¦æˆ·åï¼ˆNULL è¡¨ç¤º LocalSystemï¼‰
+        NULL                  // å¯†ç 
     );
 
     if (hService == NULL) {
         DWORD dwError = GetLastError();
         if (dwError == ERROR_SERVICE_EXISTS) {
-            // ·şÎñÒÑ´æÔÚ£¬³¢ÊÔ´ò¿ª
+            // æœåŠ¡å·²å­˜åœ¨ï¼Œå°è¯•æ‰“å¼€
             hService = OpenServiceA(hSCManager, serviceName, SERVICE_ALL_ACCESS);
             if (hService == NULL) {
                 goto cleanup;
@@ -62,7 +62,7 @@ BOOL LoadDriver(const char* pDriverPath) {
         }
     }
 
-    // 3. Æô¶¯Çı¶¯·şÎñ
+    // 3. å¯åŠ¨é©±åŠ¨æœåŠ¡
     if (!StartServiceA(hService, 0, NULL)) {
         DWORD dwError = GetLastError();
         if (dwError != ERROR_SERVICE_ALREADY_RUNNING) {
@@ -75,7 +75,7 @@ BOOL LoadDriver(const char* pDriverPath) {
     bRet = TRUE;
 
 cleanup:
-    // ÇåÀí×ÊÔ´
+    // æ¸…ç†èµ„æº
     if (hService != NULL) {
         CloseServiceHandle(hService);
     }
@@ -87,9 +87,9 @@ cleanup:
 }
 
 /**
- * @brief Ğ¶ÔØÇı¶¯
- * @param pServiceName ·şÎñÃû³Æ
- * @return TRUE ³É¹¦£¬FALSE Ê§°Ü
+ * @brief å¸è½½é©±åŠ¨
+ * @param pServiceName æœåŠ¡åç§°
+ * @return TRUE æˆåŠŸï¼ŒFALSE å¤±è´¥
  */
 BOOL UnloadDriver(const char* pServiceName) {
     SC_HANDLE hSCManager = NULL;
@@ -107,12 +107,12 @@ BOOL UnloadDriver(const char* pServiceName) {
         goto cleanup;
     }
 
-    // Í£Ö¹·şÎñ
+    // åœæ­¢æœåŠ¡
     if (!ControlService(hService, SERVICE_CONTROL_STOP, &serviceStatus)) {
         DWORD dwError = GetLastError();
     }
 
-    // É¾³ı·şÎñ
+    // åˆ é™¤æœåŠ¡
     if (!DeleteService(hService)) {
         DWORD dwError = GetLastError();
         goto cleanup;

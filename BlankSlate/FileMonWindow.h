@@ -1,10 +1,10 @@
-// FileMonWindow.h
+ï»¿// FileMonWindow.h
 #pragma once
 
 #include <QWidget>
 #include "ui_FileMonWindow.h"
-#include "FileMonCommon.h" // Ê¹ÓÃÎÄ¼şÊÂ¼ş½á¹¹
-#include "IoControlHelper.h" // °üº¬Í¨ĞÅÏà¹Ø¶¨Òå
+#include "FileMonCommon.h" // ä½¿ç”¨æ–‡ä»¶äº‹ä»¶ç»“æ„
+#include "IoControlHelper.h" // åŒ…å«é€šä¿¡ç›¸å…³å®šä¹‰
 #include <QStandardItemModel>
 #include <QTimer>
 #include <windows.h>
@@ -26,11 +26,11 @@ private:
 	void setupTableView();
 	void updateUIState(bool isMonitoring);
 
-	// ¸¨Öúº¯Êı
+	// è¾…åŠ©å‡½æ•°
 	QString fileTimeToString(ULONGLONG fileTime);
 	QString fileEventTypeToString(FILE_EVENT_TYPE type);
 
-	// ×´Ì¬±äÁ¿
+	// çŠ¶æ€å˜é‡
 	bool m_isMonitoring = false;
 
 private slots:

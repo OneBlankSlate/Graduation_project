@@ -1,27 +1,27 @@
-#include"ProcessThread.h"
+ï»¿#include"ProcessThread.h"
 #include"ProcessHelper.h"
 #include"SystemHelper.h"
 
 NTSTATUS PsLookupThreadByEProcess(PEPROCESS EProcess, PETHREAD* EThread)
 {
 	NTSTATUS Status = STATUS_SUCCESS;
-	HANDLE ProcessIdentity = PsGetProcessId(EProcess);//Ä¿±ê½ø³Ì
+	HANDLE ProcessIdentity = PsGetProcessId(EProcess);//ç›®æ ‡è¿›ç¨‹
 	//0x000000000000059c
 	PVOID BufferData = ExAllocatePool(NonPagedPool, 1024*1024);
-	// ÏµÍ³ÏÂµÄËùÓĞ½ø³ÌĞÅÏ¢
+	// ç³»ç»Ÿä¸‹çš„æ‰€æœ‰è¿›ç¨‹ä¿¡æ¯
 	PSYSTEM_PROCESS_INFORMATION SystemProcessInfo = (PSYSTEM_PROCESS_INFORMATION)BufferData;
-	// ·µ»ØÖµ
+	// è¿”å›å€¼
 	if (EThread == NULL)
 	{
 		return STATUS_INVALID_PARAMETER;
 	}
 		
-	//¶¯Ì¬ÄÚ´æÊÇ·ñ³É¹¦
+	//åŠ¨æ€å†…å­˜æ˜¯å¦æˆåŠŸ
 	if (!SystemProcessInfo)
 	{
 		return STATUS_NO_MEMORY;
 	}
-	//»ñµÃ½ø³Ì¶ÓÁĞ
+	//è·å¾—è¿›ç¨‹é˜Ÿåˆ—
 	Status = ZwQuerySystemInformation(SystemProcessInformation, SystemProcessInfo, 1024 * 1024, NULL);
 	if (!NT_SUCCESS(Status))
 	{
@@ -29,13 +29,13 @@ NTSTATUS PsLookupThreadByEProcess(PEPROCESS EProcess, PETHREAD* EThread)
 		return Status;
 	}
 
-	// ²éÕÒÄ¿±ê½ø³Ì
+	// æŸ¥æ‰¾ç›®æ ‡è¿›ç¨‹
 	if (NT_SUCCESS(Status))
 	{
 		Status = STATUS_NOT_FOUND;
 		for (;;)
 		{
-			if (SystemProcessInfo->UniqueProcessId == ProcessIdentity)//Ã¶¾Ù³öÀ´µÄ½ø³ÌÓëÄ¿±ê½ø³ÌÒ»ÖÂ
+			if (SystemProcessInfo->UniqueProcessId == ProcessIdentity)//æšä¸¾å‡ºæ¥çš„è¿›ç¨‹ä¸ç›®æ ‡è¿›ç¨‹ä¸€è‡´
 			{
 				Status = STATUS_SUCCESS;
 				break;
@@ -49,19 +49,19 @@ NTSTATUS PsLookupThreadByEProcess(PEPROCESS EProcess, PETHREAD* EThread)
 		}
 			
 	}
-	// ²éÕÒÄ¿±êÏß³Ì
+	// æŸ¥æ‰¾ç›®æ ‡çº¿ç¨‹
 	if (NT_SUCCESS(Status))
 	{
 
 		Status = STATUS_NOT_FOUND;
-		//»ñµÃµÚÒ»¸öÏß³Ì
+		//è·å¾—ç¬¬ä¸€ä¸ªçº¿ç¨‹
 		for (ULONG i = 0; i < SystemProcessInfo->NumberOfThreads; i++)
 		{
 			if (SystemProcessInfo->TH[i].ClientId.UniqueThread == PsGetCurrentThreadId())
 			{
-				continue; // ³ı¹ıÎÒÃÇ×Ô¼º
+				continue; // é™¤è¿‡æˆ‘ä»¬è‡ªå·±
 			}
-			// »ñÈ¡µÚÒ»¸ö²»ÊÇ×Ô¼ºµÄÏß³Ì
+			// è·å–ç¬¬ä¸€ä¸ªä¸æ˜¯è‡ªå·±çš„çº¿ç¨‹
 			Status = PsLookupThreadByThreadId(SystemProcessInfo->TH[i].ClientId.UniqueThread, EThread);
 			break;
 		}
@@ -75,7 +75,7 @@ NTSTATUS PsLookupThreadByEProcess(PEPROCESS EProcess, PETHREAD* EThread)
 	{
 		ExFreePool(BufferData);
 	}
-	//Ã»ÓĞºÏÊÊµÄÏß³Ì
+	//æ²¡æœ‰åˆé€‚çš„çº¿ç¨‹
 	if (!*EThread)
 	{
 		Status = STATUS_NOT_FOUND;
@@ -87,15 +87,15 @@ NTSTATUS ExecuteInNewThread(IN PVOID BaseAddress, IN PVOID ParameterData, IN ULO
 {
 	HANDLE ThreadHandle = NULL;
 	OBJECT_ATTRIBUTES ObjectAttributes = { 0 };
-	//Ö¸¶¨Ò»¸ö¶ÔÏó¾ä±úµÄÊôĞÔ¾ä±úÖ»ÄÜÔÚÄÚºËÄ£Ê½·ÃÎÊ¡£
+	//æŒ‡å®šä¸€ä¸ªå¯¹è±¡å¥æŸ„çš„å±æ€§å¥æŸ„åªèƒ½åœ¨å†…æ ¸æ¨¡å¼è®¿é—®ã€‚
 	InitializeObjectAttributes(&ObjectAttributes, NULL, OBJ_KERNEL_HANDLE, NULL, NULL);
 
-	//´´½¨Ïß³Ì
+	//åˆ›å»ºçº¿ç¨‹
 	NTSTATUS Status = CreateThreadEx(
 		&ThreadHandle, THREAD_QUERY_LIMITED_INFORMATION, &ObjectAttributes,
 		ZwCurrentProcess(), BaseAddress, ParameterData, Flags,
 		0, 0x1000, 0x100000, NULL);
-	// µÈ´ıÏß³ÌÍê³É
+	// ç­‰å¾…çº¿ç¨‹å®Œæˆ
 	if (NT_SUCCESS(Status) && IsWait != FALSE)
 	{
 		//60s
@@ -104,7 +104,7 @@ NTSTATUS ExecuteInNewThread(IN PVOID BaseAddress, IN PVOID ParameterData, IN ULO
 		Status = ZwWaitForSingleObject(ThreadHandle, TRUE, &Timeout);
 		if (NT_SUCCESS(Status))
 		{
-			//²éÑ¯Ïß³ÌÍË³öÂë
+			//æŸ¥è¯¢çº¿ç¨‹é€€å‡ºç 
 			THREAD_BASIC_INFORMATION ThreadBasicInfo = { 0 };
 			ULONG ReturnLength = 0;
 			Status = ZwQueryInformationThread(ThreadHandle, ThreadBasicInformation, &ThreadBasicInfo, sizeof(ThreadBasicInfo), &ReturnLength);
@@ -142,7 +142,7 @@ NTSTATUS CreateThreadEx(OUT PHANDLE ThreadHandle, IN ACCESS_MASK DesiredAccess, 
 	ULONG_PTR ServiceIndex = 0;
 	if (SystemServiceDescriptorTable)
 	{
-		//¼ì²éË÷Òı·¶Î§
+		//æ£€æŸ¥ç´¢å¼•èŒƒå›´
 		if (!GetNtXXXServiceIndex("NtCreateThreadEx", &ServiceIndex))
 		{
 			return STATUS_UNSUCCESSFUL;
@@ -157,16 +157,16 @@ NTSTATUS CreateThreadEx(OUT PHANDLE ThreadHandle, IN ACCESS_MASK DesiredAccess, 
 		PUCHAR v1 = (PUCHAR)PsGetCurrentThread() + 0x13a;   //+0x13a PreviousMode     : Char
 #endif
 
-		UCHAR PreviousMode = *v1;  //ÏëÒªµ÷ÓÃÄÚºËµÄssdt·şÎñº¯Êı£¬±ØĞëÇĞ»»µ½ÄÚºËÄ£Ê½
+		UCHAR PreviousMode = *v1;  //æƒ³è¦è°ƒç”¨å†…æ ¸çš„ssdtæœåŠ¡å‡½æ•°ï¼Œå¿…é¡»åˆ‡æ¢åˆ°å†…æ ¸æ¨¡å¼
 		*v1 = KernelMode;
-		//´´½¨Ïß³Ì
+		//åˆ›å»ºçº¿ç¨‹
 		Status = NtCreateThreadEx(
 			ThreadHandle, DesiredAccess, ObjectAttributes,
 			ProcessHandle, StartAddress, ParameterData,
 			Flags, StackZeroBits, SizeOfStackCommit,
 			SizeOfStackReserve, AttributeList
 		);
-		//»Ö¸´Ö®Ç°µÄÏß³ÌÄ£Ê½
+		//æ¢å¤ä¹‹å‰çš„çº¿ç¨‹æ¨¡å¼
 		*v1 = PreviousMode;
 	}
 	else

@@ -1,44 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ProcMonWindowClass</class>
- <widget class="QWidget" name="ProcMonWindowClass">
+ <class>ThreadMonWindowClass</class>
+ <widget class="QWidget" name="ThreadMonWindowClass">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>762</width>
-    <height>604</height>
+    <width>755</width>
+    <height>579</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>ProcMonWindow</string>
+   <string>ThreadMonWindow</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QPushButton" name="btnStart">
+      <widget class="QPushButton" name="ThreadMonStartBtn">
        <property name="text">
         <string>Start</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btnStop">
+      <widget class="QPushButton" name="ThreadMonStopBtn">
        <property name="text">
         <string>Stop</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btnRefresh">
+      <widget class="QPushButton" name="ThreadMonRefreshBtn">
        <property name="text">
         <string>Refresh</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btnClear">
+      <widget class="QPushButton" name="ThreadMonClearBtn">
        <property name="text">
         <string>Clear</string>
        </property>
@@ -60,7 +60,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QTableView" name="ProcMon_TableView"/>
+    <widget class="QTableView" name="ThreadMon_TableView"/>
    </item>
   </layout>
  </widget>

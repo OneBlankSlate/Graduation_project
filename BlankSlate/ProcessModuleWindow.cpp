@@ -5,16 +5,16 @@
 ProcessModuleWindow::ProcessModuleWindow(const QString& ImageName, QWidget* parent) : QWidget(parent)
 {
 	ui.setupUi(this);
-	// ½«Ä£ÐÍÉèÖÃµ½ÊÓÍ¼
-	ui.ProcessModule_TableView->setModel(&m_model);  //Ö»ÓÃÉèÖÃÕâÒ»´Î£¬¹ØÁªÉÏÖ®ºó£¬ÒÔºóÖ±½Ó²Ù×÷m_model¾ÍÐÐÁË
+	// å°†æ¨¡åž‹è®¾ç½®åˆ°è§†å›¾
+	ui.ProcessModule_TableView->setModel(&m_model);  //åªç”¨è®¾ç½®è¿™ä¸€æ¬¡ï¼Œå…³è”ä¸Šä¹‹åŽï¼Œä»¥åŽç›´æŽ¥æ“ä½œm_modelå°±è¡Œäº†
 
-	 //ÁÐ±íÊôÐÔ
-	ui.ProcessModule_TableView->setSelectionBehavior(QAbstractItemView::SelectRows);  // ÉèÖÃÑ¡ÔñÐÐÎªÎªÕûÐÐÑ¡ÖÐ
-	ui.ProcessModule_TableView->setContextMenuPolicy(Qt::CustomContextMenu); //¿Éµ¯³öÓÒ¼ü²Ëµ¥  ±ØÐëÉèÖÃ
-	ui.ProcessModule_TableView->setEditTriggers(QAbstractItemView::NoEditTriggers);//²»¿É±à¼­
-	m_model.setColumnCount(3); // ÉèÖÃÁÐÊýÎª3
-	// ÉèÖÃ±íÍ·
-	QStringList headers = { QStringLiteral("Ä£¿éÂ·¾¶"), QStringLiteral("»ùµØÖ·"), QStringLiteral("´óÐ¡")};
+	 //åˆ—è¡¨å±žæ€§
+	ui.ProcessModule_TableView->setSelectionBehavior(QAbstractItemView::SelectRows);  // è®¾ç½®é€‰æ‹©è¡Œä¸ºä¸ºæ•´è¡Œé€‰ä¸­
+	ui.ProcessModule_TableView->setContextMenuPolicy(Qt::CustomContextMenu); //å¯å¼¹å‡ºå³é”®èœå•  å¿…é¡»è®¾ç½®
+	ui.ProcessModule_TableView->setEditTriggers(QAbstractItemView::NoEditTriggers);//ä¸å¯ç¼–è¾‘
+	m_model.setColumnCount(3); // è®¾ç½®åˆ—æ•°ä¸º3
+	// è®¾ç½®è¡¨å¤´
+	QStringList headers = { QStringLiteral("æ¨¡å—è·¯å¾„"), QStringLiteral("åŸºåœ°å€"), QStringLiteral("å¤§å°")};
 	m_model.setHorizontalHeaderLabels(headers);
 
 	//QString->wchar_t
@@ -45,11 +45,11 @@ void ProcessModuleWindow::ListProcessModuleInfo(const wchar_t* ImageName)
 		// ModuleFilePath
 		rowItems.append(new QStandardItem(QString::fromWCharArray(v1->ModulePath)));
 		// BaseAddress
-		rowItems.append(new QStandardItem("0x" + (QString::number(v1->ModuleBase, 16)).toUpper()));  //0xÊ®Áù½øÖÆ
+		rowItems.append(new QStandardItem("0x" + (QString::number(v1->ModuleBase, 16)).toUpper()));  //0xåå…­è¿›åˆ¶
 		// Size
 		rowItems.append(new QStandardItem("0x" + (QString::number(v1->SizeOfImage, 16)).toUpper()));
 
-		// ½«ÕûÐÐÊý¾ÝÌí¼Óµ½Ä£ÐÍÖÐ
+		// å°†æ•´è¡Œæ•°æ®æ·»åŠ åˆ°æ¨¡åž‹ä¸­
 		m_model.appendRow(rowItems);
 	}
 

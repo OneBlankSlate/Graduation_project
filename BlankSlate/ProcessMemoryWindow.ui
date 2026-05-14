@@ -13,42 +13,42 @@
   <property name="windowTitle">
    <string>进程内存</string>
   </property>
-  <widget class="QTableView" name="ProcessMemory_TableView">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>601</width>
-     <height>401</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="ReadMemory_Button">
-   <property name="geometry">
-    <rect>
-     <x>540</x>
-     <y>100</y>
-     <width>41</width>
-     <height>71</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>读</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="WriteMemory_Button">
-   <property name="geometry">
-    <rect>
-     <x>540</x>
-     <y>220</y>
-     <width>41</width>
-     <height>71</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>写</string>
-   </property>
-  </widget>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTableView" name="ProcessMemory_TableView"/>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="ReadMemory_Button">
+       <property name="text">
+        <string>读</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="WriteMemory_Button">
+       <property name="text">
+        <string>写</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

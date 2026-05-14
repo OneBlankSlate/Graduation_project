@@ -1,4 +1,4 @@
-#include"SystemModule.h"
+ï»¿#include"SystemModule.h"
 #include"SystemHelper.h"
 #include"MemoryHelper.h"
 #include"ProcessHelper.h"
@@ -57,8 +57,8 @@ NTSTATUS EnumDriverModule(PVOID InputBuffer, ULONG InputBufferLength, PVOID Outp
 	PDRIVER_MODULES DriverModules = (PDRIVER_MODULES)OutputBuffer;
 	PLDR_DATA_TABLE_ENTRY pLdrTblEntry = (PLDR_DATA_TABLE_ENTRY)__DriverObject->DriverSection;
 	PLIST_ENTRY pListHdr = &pLdrTblEntry->InLoadOrderLinks;
-	PLIST_ENTRY pListNULL = pListHdr->Flink;   //NULL  ÕâÊÇÍ·½áµã£¬Ã»¶«Î÷£¬µ«Õ¼Î»ÖÃ
-	PLIST_ENTRY pListStart = pListNULL->Flink;  //ntoskrnl.exe  ÏµÍ³µÚÒ»Ä£¿é  ´ÓÕâÀï¿ªÊ¼Ã¶¾Ù
+	PLIST_ENTRY pListNULL = pListHdr->Flink;   //NULL  è¿™æ˜¯å¤´ç»“ç‚¹ï¼Œæ²¡ä¸œè¥¿ï¼Œä½†å ä½ç½®
+	PLIST_ENTRY pListStart = pListNULL->Flink;  //ntoskrnl.exe  ç³»ç»Ÿç¬¬ä¸€æ¨¡å—  ä»Žè¿™é‡Œå¼€å§‹æžšä¸¾
 	PLIST_ENTRY pListEntry = pListStart;
 	while (pListEntry->Flink != pListStart)
 	{
@@ -68,11 +68,12 @@ NTSTATUS EnumDriverModule(PVOID InputBuffer, ULONG InputBufferLength, PVOID Outp
 		RtlCopyMemory(v1.DriverName, pLdrTblEntry->ModuleName.Buffer, pLdrTblEntry->ModuleName.Length);
 		v1.ModuleBase = (ULONG_PTR)pLdrTblEntry->ModuleBaseAddress;
 		v1.SizeOfImage = pLdrTblEntry->ModuleSize;
-		v1.EntryPoint = (ULONG_PTR)pLdrTblEntry->EntryPoint;  //Ä£¿éÈë¿ÚEntryPoint  Ô­±¾ÊÇÇý¶¯¶ÔÏóµÄ£¬Ã»Ïëµ½ºÃ°ì·¨»ñÈ¡
+		v1.EntryPoint = (ULONG_PTR)pLdrTblEntry->EntryPoint;  //æ¨¡å—å…¥å£EntryPoint  åŽŸæœ¬æ˜¯é©±åŠ¨å¯¹è±¡çš„ï¼Œæ²¡æƒ³åˆ°å¥½åŠžæ³•èŽ·å–
 		RtlCopyMemory(v1.DriverPath, pLdrTblEntry->FullModuleName.Buffer, pLdrTblEntry->FullModuleName.Length);
 
 		DriverModules->ModuleEntry[DriverModules->NumberOfModules++] = v1;
 
 		pListEntry = pListEntry->Flink;
-	}	
+	}
+	return STATUS_SUCCESS;
 }

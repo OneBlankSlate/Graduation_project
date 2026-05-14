@@ -1,10 +1,10 @@
-// FileMonCommon.h - ÎÄ¼þ¼à¿Ø¹²ÓÃ¶¨Òå
+ï»¿// FileMonCommon.h - æ–‡ä»¶ç›‘æŽ§å…±ç”¨å®šä¹‰
 #pragma once
-// È·±£°üº¬Ë³ÐòÕýÈ·£¬±ÜÃâPEPROCESSÖØ¶¨Òå
+// ç¡®ä¿åŒ…å«é¡ºåºæ­£ç¡®ï¼Œé¿å…PEPROCESSé‡å®šä¹‰
 #include <fltKernel.h>
 
-// ¸´ÓÃ METHOD_NEITHER ·½Ê½µÄ MY_CTL_CODE
-// ÊÂ¼þÀàÐÍÃ¶¾Ù
+// å¤ç”¨ METHOD_NEITHER æ–¹å¼çš„ MY_CTL_CODE
+// äº‹ä»¶ç±»åž‹æžšä¸¾
 typedef enum _FILE_EVENT_TYPE {
     FileCreateOrOpen = 1,
     FileRead = 2,
@@ -14,31 +14,31 @@ typedef enum _FILE_EVENT_TYPE {
     FileSetInfo = 6
 } FILE_EVENT_TYPE;
 
-// ÎÄ¼þÊÂ¼þ½á¹¹
+// æ–‡ä»¶äº‹ä»¶ç»“æž„
 #pragma pack(push, 1)
 typedef struct _FILE_EVENT {
-    ULONG EventId;              // ÊÂ¼þID
-    FILE_EVENT_TYPE Type;        // ÊÂ¼þÀàÐÍ
-    ULONG ProcessId;            // ½ø³ÌID
-    ULONGLONG TimeStamp;        // ÊÂ¼þÊ±¼ä´Á (×ª»»Îª×Ô1601ÄêÒÔÀ´µÄ100ÄÉÃë¼ä¸ôÊý£¬Óë FILETIME ¼æÈÝ)
-    WCHAR ProcessName[256];     // ½ø³ÌÃû
-    WCHAR FilePath[520];         // ÎÄ¼þÂ·¾¶
-    WCHAR ExtraInfo[256];       // ¶îÍâÐÅÏ¢
+    ULONG EventId;              // äº‹ä»¶ID
+    FILE_EVENT_TYPE Type;        // äº‹ä»¶ç±»åž‹
+    ULONG ProcessId;            // è¿›ç¨‹ID
+    ULONGLONG TimeStamp;        // äº‹ä»¶æ—¶é—´æˆ³ (è½¬æ¢ä¸ºè‡ª1601å¹´ä»¥æ¥çš„100çº³ç§’é—´éš”æ•°ï¼Œä¸Ž FILETIME å…¼å®¹)
+    WCHAR ProcessName[256];     // è¿›ç¨‹å
+    WCHAR FilePath[520];         // æ–‡ä»¶è·¯å¾„
+    WCHAR ExtraInfo[256];       // é¢å¤–ä¿¡æ¯
 } FILE_EVENT, * PFILE_EVENT;
 #pragma pack(pop)
 
-// ÊÂ¼þ°ü
+// äº‹ä»¶åŒ…
 typedef struct _FILE_EVENT_PACKET {
-    ULONG EventCount;           // ±¾´Î·µ»ØµÄÊÂ¼þÊýÁ¿
-    ULONG BufferSize;           // »º³åÇø×Ü´óÐ¡
-    FILE_EVENT Events[1];       // ÊÂ¼þÊý×é
+    ULONG EventCount;           // æœ¬æ¬¡è¿”å›žçš„äº‹ä»¶æ•°é‡
+    ULONG BufferSize;           // ç¼“å†²åŒºæ€»å¤§å°
+    FILE_EVENT Events[1];       // äº‹ä»¶æ•°ç»„
 } FILE_EVENT_PACKET, * PFILE_EVENT_PACKET;
 
-// »º³åÇø´óÐ¡¶¨Òå
+// ç¼“å†²åŒºå¤§å°å®šä¹‰
 #define MAX_FILE_EVENTS 1024
 #define FILE_EVENT_PACKET_SIZE (sizeof(FILE_EVENT_PACKET) + (MAX_FILE_EVENTS - 1) * sizeof(FILE_EVENT))
 
-// ÊÂ¼þ»º³åÇø½á¹¹ - ÔÚFileMonCommon.hÖÐ¶¨Òå£¬¹©FileMonitor.hÊ¹ÓÃ
+// äº‹ä»¶ç¼“å†²åŒºç»“æž„ - åœ¨FileMonCommon.hä¸­å®šä¹‰ï¼Œä¾›FileMonitor.hä½¿ç”¨
 typedef struct _FILE_EVENT_BUFFER {
     FILE_EVENT Events[MAX_FILE_EVENTS];
     KSPIN_LOCK BufferLock;

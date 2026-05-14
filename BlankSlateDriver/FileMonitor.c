@@ -1,13 +1,13 @@
-#include "FileMonitor.h"
+ï»¿#include "FileMonitor.h"
 #include "ProcessHelper.h"
 #include "SystemHelper.h"
 
-// È«¾Ö±äÁ¿¶¨Òå
+// å…¨å±€å˜é‡å®šä¹‰
 PFILE_MONITOR_CONTEXT g_FileMonitorContext = NULL;
 PSYSTEM_PROCESS_FILTER g_SystemProcessFilterList = NULL;
 PFLT_FILTER gFilterHandle = NULL;
 
-// Ä¬ÈÏÏµÍ³½ø³Ì¹ıÂËÁĞ±í
+// é»˜è®¤ç³»ç»Ÿè¿›ç¨‹è¿‡æ»¤åˆ—è¡¨
 WCHAR* g_DefaultSystemProcesses[] = {
     L"system",
     L"registry",
@@ -60,10 +60,10 @@ WCHAR* g_DefaultSystemProcesses[] = {
     NULL
 };
 
-// »ñÈ¡Êı×éÔªËØ¸öÊıµÄºê£¨Ìæ´ú _countof£©
+// è·å–æ•°ç»„å…ƒç´ ä¸ªæ•°çš„å®ï¼ˆæ›¿ä»£ _countofï¼‰
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
-// ³õÊ¼»¯ÏµÍ³½ø³Ì¹ıÂËÆ÷
+// åˆå§‹åŒ–ç³»ç»Ÿè¿›ç¨‹è¿‡æ»¤å™¨
 VOID InitializeSystemProcessFilter()
 {
     for (ULONG i = 0; g_DefaultSystemProcesses[i] != NULL; i++) {
@@ -74,7 +74,7 @@ VOID InitializeSystemProcessFilter()
         );
 
         if (filter) {
-            // Ê¹ÓÃ RtlCopyMemory Ìæ´ú RtlStringCchCopyW
+            // ä½¿ç”¨ RtlCopyMemory æ›¿ä»£ RtlStringCchCopyW
             size_t len = 0;
             for (len = 0; len < ARRAY_SIZE(filter->ProcessName) - 1 && g_DefaultSystemProcesses[i][len] != L'\0'; len++) {
                 filter->ProcessName[len] = g_DefaultSystemProcesses[i][len];
@@ -87,18 +87,18 @@ VOID InitializeSystemProcessFilter()
     }
 }
 
-// ¼ì²éÊÇ·ñÎªÏµÍ³½ø³Ì
+// æ£€æŸ¥æ˜¯å¦ä¸ºç³»ç»Ÿè¿›ç¨‹
 BOOLEAN IsSystemProcessByName(PWCHAR ProcessName)
 {
     if (!ProcessName) {
         return FALSE;
     }
 
-    // ×ª»»ÎªĞ¡Ğ´½øĞĞ±È½Ï
+    // è½¬æ¢ä¸ºå°å†™è¿›è¡Œæ¯”è¾ƒ
     WCHAR lowerProcessName[256];
     SIZE_T length = 0;
 
-    // °²È«µØ»ñÈ¡×Ö·û´®³¤¶È
+    // å®‰å…¨åœ°è·å–å­—ç¬¦ä¸²é•¿åº¦
     for (length = 0; length < ARRAY_SIZE(lowerProcessName) - 1 && ProcessName[length] != L'\0'; length++) {
         if (ProcessName[length] >= L'A' && ProcessName[length] <= L'Z') {
             lowerProcessName[length] = ProcessName[length] + (L'a' - L'A');
@@ -109,7 +109,7 @@ BOOLEAN IsSystemProcessByName(PWCHAR ProcessName)
     }
     lowerProcessName[length] = L'\0';
 
-    // ¼ì²éÊÇ·ñÔÚÏµÍ³½ø³ÌÁĞ±íÖĞ
+    // æ£€æŸ¥æ˜¯å¦åœ¨ç³»ç»Ÿè¿›ç¨‹åˆ—è¡¨ä¸­
     PSYSTEM_PROCESS_FILTER filter = g_SystemProcessFilterList;
     while (filter) {
         if (wcscmp(lowerProcessName, filter->ProcessName) == 0) {
@@ -121,12 +121,12 @@ BOOLEAN IsSystemProcessByName(PWCHAR ProcessName)
     return FALSE;
 }
 
-// ³õÊ¼»¯ÎÄ¼ş¼à¿ØÄ£¿é
+// åˆå§‹åŒ–æ–‡ä»¶ç›‘æ§æ¨¡å—
 NTSTATUS InitializeFileMonitor(PDRIVER_OBJECT DriverObject)
 {
     NTSTATUS status = STATUS_SUCCESS;
 
-    // ·ÖÅäÉÏÏÂÎÄÄÚ´æ
+    // åˆ†é…ä¸Šä¸‹æ–‡å†…å­˜
     g_FileMonitorContext = (PFILE_MONITOR_CONTEXT)ExAllocatePoolWithTag(
         NonPagedPool,
         sizeof(FILE_MONITOR_CONTEXT),
@@ -139,7 +139,7 @@ NTSTATUS InitializeFileMonitor(PDRIVER_OBJECT DriverObject)
 
     RtlZeroMemory(g_FileMonitorContext, sizeof(FILE_MONITOR_CONTEXT));
 
-    // ³õÊ¼»¯ÊÂ¼ş»º³åÇø
+    // åˆå§‹åŒ–äº‹ä»¶ç¼“å†²åŒº
     KeInitializeSpinLock(&g_FileMonitorContext->EventBuffer.BufferLock);
     g_FileMonitorContext->EventBuffer.ReadIndex = 0;
     g_FileMonitorContext->EventBuffer.WriteIndex = 0;
@@ -149,16 +149,16 @@ NTSTATUS InitializeFileMonitor(PDRIVER_OBJECT DriverObject)
     g_FileMonitorContext->DeviceObject = DriverObject->DeviceObject;
     g_FileMonitorContext->IsMonitoring = FALSE;
 
-    // ³õÊ¼»¯ÏµÍ³½ø³Ì¹ıÂËÆ÷
+    // åˆå§‹åŒ–ç³»ç»Ÿè¿›ç¨‹è¿‡æ»¤å™¨
     InitializeSystemProcessFilter();
 
     return status;
 }
 
-// ·´³õÊ¼»¯ÎÄ¼ş¼à¿ØÄ£¿é
+// ååˆå§‹åŒ–æ–‡ä»¶ç›‘æ§æ¨¡å—
 VOID UninitializeFileMonitor()
 {
-    // ÇåÀíÏµÍ³½ø³Ì¹ıÂËÆ÷
+    // æ¸…ç†ç³»ç»Ÿè¿›ç¨‹è¿‡æ»¤å™¨
     while (g_SystemProcessFilterList) {
         PSYSTEM_PROCESS_FILTER next = g_SystemProcessFilterList->Next;
         ExFreePoolWithTag(g_SystemProcessFilterList, 'FMon');
@@ -171,7 +171,7 @@ VOID UninitializeFileMonitor()
     }
 }
 
-// Æô¶¯ÎÄ¼ş¼à¿Ø
+// å¯åŠ¨æ–‡ä»¶ç›‘æ§
 NTSTATUS StartFileMonitor(
     PVOID InputBuffer,
     ULONG InputBufferLength,
@@ -193,7 +193,7 @@ NTSTATUS StartFileMonitor(
         g_FileMonitorContext->IsMonitoring = TRUE;
         KeQuerySystemTime(&g_FileMonitorContext->StartTime);
 
-        // Çå¿Õ»º³åÇø
+        // æ¸…ç©ºç¼“å†²åŒº
         KIRQL oldIrql;
         KeAcquireSpinLock(&g_FileMonitorContext->EventBuffer.BufferLock, &oldIrql);
         g_FileMonitorContext->EventBuffer.ReadIndex = 0;
@@ -207,7 +207,7 @@ NTSTATUS StartFileMonitor(
     return STATUS_SUCCESS;
 }
 
-// Í£Ö¹ÎÄ¼ş¼à¿Ø
+// åœæ­¢æ–‡ä»¶ç›‘æ§
 NTSTATUS StopFileMonitor(
     PVOID InputBuffer,
     ULONG InputBufferLength,
@@ -229,7 +229,7 @@ NTSTATUS StopFileMonitor(
     return STATUS_SUCCESS;
 }
 
-// »ñÈ¡ÎÄ¼şÊÂ¼ş
+// è·å–æ–‡ä»¶äº‹ä»¶
 NTSTATUS GetFileEvents(
     PVOID InputBuffer,
     ULONG InputBufferLength,
@@ -255,7 +255,7 @@ NTSTATUS GetFileEvents(
         return STATUS_INVALID_PARAMETER;
     }
 
-    // ¼ÆËã¿ÉÈİÄÉµÄ×î´óÊÂ¼şÊı
+    // è®¡ç®—å¯å®¹çº³çš„æœ€å¤§äº‹ä»¶æ•°
     ULONG maxEventsCanHold = (packet->BufferSize - FIELD_OFFSET(FILE_EVENT_PACKET, Events)) / sizeof(FILE_EVENT);
     ULONG requestedEvents = packet->EventCount;
 
@@ -286,7 +286,7 @@ NTSTATUS GetFileEvents(
     return STATUS_SUCCESS;
 }
 
-// Ìí¼ÓÎÄ¼şÊÂ¼şµ½»º³åÇø
+// æ·»åŠ æ–‡ä»¶äº‹ä»¶åˆ°ç¼“å†²åŒº
 VOID AddFileEventToBuffer(PFILE_EVENT Event)
 {
     if (!g_FileMonitorContext || !g_FileMonitorContext->IsMonitoring) {
@@ -296,14 +296,14 @@ VOID AddFileEventToBuffer(PFILE_EVENT Event)
     KIRQL oldIrql;
     KeAcquireSpinLock(&g_FileMonitorContext->EventBuffer.BufferLock, &oldIrql);
 
-    // Èç¹û»º³åÇøÒÑÂú£¬¸²¸Ç×î¾ÉµÄÊÂ¼ş
+    // å¦‚æœç¼“å†²åŒºå·²æ»¡ï¼Œè¦†ç›–æœ€æ—§çš„äº‹ä»¶
     if (g_FileMonitorContext->EventBuffer.EventCount >= MAX_FILE_EVENTS) {
         g_FileMonitorContext->EventBuffer.ReadIndex =
             (g_FileMonitorContext->EventBuffer.ReadIndex + 1) % MAX_FILE_EVENTS;
         g_FileMonitorContext->EventBuffer.EventCount--;
     }
 
-    // Ìí¼ÓĞÂÊÂ¼ş
+    // æ·»åŠ æ–°äº‹ä»¶
     ULONG writeIndex = g_FileMonitorContext->EventBuffer.WriteIndex;
     RtlCopyMemory(
         &g_FileMonitorContext->EventBuffer.Events[writeIndex],
@@ -319,7 +319,7 @@ VOID AddFileEventToBuffer(PFILE_EVENT Event)
     KeReleaseSpinLock(&g_FileMonitorContext->EventBuffer.BufferLock, oldIrql);
 }
 
-// ¼ÇÂ¼ÎÄ¼ş²Ù×÷
+// è®°å½•æ–‡ä»¶æ“ä½œ
 VOID LogFileOperation(
     PFLT_CALLBACK_DATA Data,
     PCSTR OperationName
@@ -329,13 +329,13 @@ VOID LogFileOperation(
     PFLT_FILE_NAME_INFORMATION fileNameInfo = NULL;
 
     //
-    // »ñÈ¡½ø³ÌĞÅÏ¢
+    // è·å–è¿›ç¨‹ä¿¡æ¯
     //
     HANDLE processId =
         PsGetCurrentProcessId();
 
     //
-    // ´´½¨ÎÄ¼şÊÂ¼ş
+    // åˆ›å»ºæ–‡ä»¶äº‹ä»¶
     //
     FILE_EVENT fileEvent = { 0 };
 
@@ -343,7 +343,7 @@ VOID LogFileOperation(
         (ULONG)(ULONG_PTR)processId;
 
     //
-    // ÉèÖÃÊÂ¼şÀàĞÍ
+    // è®¾ç½®äº‹ä»¶ç±»å‹
     //
     if (strcmp(OperationName, "CREATE/OPEN") == 0)
     {
@@ -377,7 +377,7 @@ VOID LogFileOperation(
     }
 
     //
-    // ÉèÖÃ±¾µØÊ±¼ä
+    // è®¾ç½®æœ¬åœ°æ—¶é—´
     //
     LARGE_INTEGER systemTime;
     LARGE_INTEGER localTime;
@@ -395,7 +395,7 @@ VOID LogFileOperation(
         localTime.QuadPart;
 
     //
-    // »ñÈ¡ÎÄ¼şÃû
+    // è·å–æ–‡ä»¶å
     //
     status = FltGetFileNameInformation(
         Data,
@@ -413,7 +413,7 @@ VOID LogFileOperation(
     }
 
     //
-    // ÉèÖÃÎÄ¼şÂ·¾¶
+    // è®¾ç½®æ–‡ä»¶è·¯å¾„
     //
     if (NT_SUCCESS(status) &&
         fileNameInfo &&
@@ -437,7 +437,7 @@ VOID LogFileOperation(
     }
 
     //
-    // ÉèÖÃÊÂ¼şID
+    // è®¾ç½®äº‹ä»¶ID
     //
     if (g_FileMonitorContext)
     {
@@ -451,14 +451,14 @@ VOID LogFileOperation(
     }
 
     //
-    // Ìí¼Óµ½»º³åÇø
+    // æ·»åŠ åˆ°ç¼“å†²åŒº
     //
     AddFileEventToBuffer(
         &fileEvent
     );
 
     //
-    // ÊÍ·ÅÎÄ¼şÃûĞÅÏ¢
+    // é‡Šæ”¾æ–‡ä»¶åä¿¡æ¯
     //
     if (fileNameInfo)
     {
@@ -468,7 +468,7 @@ VOID LogFileOperation(
     }
 }
 
-// MiniFilter Ô¤²Ù×÷»Øµ÷
+// MiniFilter é¢„æ“ä½œå›è°ƒ
 FLT_PREOP_CALLBACK_STATUS FilePreOperationCallback(
     PFLT_CALLBACK_DATA Data,
     PCFLT_RELATED_OBJECTS FltObjects,
@@ -481,7 +481,7 @@ FLT_PREOP_CALLBACK_STATUS FilePreOperationCallback(
     PFLT_IO_PARAMETER_BLOCK iopb = Data->Iopb;
     PCSTR operationName = NULL;
 
-    // È·¶¨²Ù×÷ÀàĞÍ
+    // ç¡®å®šæ“ä½œç±»å‹
     switch (iopb->MajorFunction) {
     case IRP_MJ_CREATE:
         operationName = "CREATE/OPEN";
@@ -496,7 +496,7 @@ FLT_PREOP_CALLBACK_STATUS FilePreOperationCallback(
         break;
 
     case IRP_MJ_SET_INFORMATION:
-        // ¼ì²éÊÇ·ñÎªÉ¾³ı²Ù×÷
+        // æ£€æŸ¥æ˜¯å¦ä¸ºåˆ é™¤æ“ä½œ
         if (iopb->Parameters.SetFileInformation.FileInformationClass == FileDispositionInformation ||
             iopb->Parameters.SetFileInformation.FileInformationClass == FileDispositionInformationEx) {
             if (iopb->Parameters.SetFileInformation.InfoBuffer != NULL) {
@@ -514,7 +514,7 @@ FLT_PREOP_CALLBACK_STATUS FilePreOperationCallback(
                 operationName = "SET_INFORMATION";
             }
         }
-        // ¼ì²éÊÇ·ñÎªÖØÃüÃû²Ù×÷
+        // æ£€æŸ¥æ˜¯å¦ä¸ºé‡å‘½åæ“ä½œ
         else if (iopb->Parameters.SetFileInformation.FileInformationClass == FileRenameInformation ||
             iopb->Parameters.SetFileInformation.FileInformationClass == FileRenameInformationEx) {
             operationName = "RENAME";
@@ -529,7 +529,7 @@ FLT_PREOP_CALLBACK_STATUS FilePreOperationCallback(
         break;
     }
 
-    // ¼ÇÂ¼ÎÄ¼ş²Ù×÷
+    // è®°å½•æ–‡ä»¶æ“ä½œ
     if (operationName != NULL) {
         LogFileOperation(Data, operationName);
     }
@@ -537,7 +537,7 @@ FLT_PREOP_CALLBACK_STATUS FilePreOperationCallback(
     return FLT_PREOP_SUCCESS_WITH_CALLBACK;
 }
 
-// MiniFilter ºó²Ù×÷»Øµ÷
+// MiniFilter åæ“ä½œå›è°ƒ
 FLT_POSTOP_CALLBACK_STATUS FilePostOperationCallback(
     PFLT_CALLBACK_DATA Data,
     PCFLT_RELATED_OBJECTS FltObjects,
@@ -553,7 +553,7 @@ FLT_POSTOP_CALLBACK_STATUS FilePostOperationCallback(
     return FLT_POSTOP_FINISHED_PROCESSING;
 }
 
-// MiniFilter ²Ù×÷×¢²á±í
+// MiniFilter æ“ä½œæ³¨å†Œè¡¨
 CONST FLT_OPERATION_REGISTRATION FilterCallbacks[] = {
     { IRP_MJ_CREATE, 0, FilePreOperationCallback, FilePostOperationCallback },
     { IRP_MJ_CREATE_NAMED_PIPE, 0, FilePreOperationCallback, FilePostOperationCallback },
@@ -599,7 +599,7 @@ CONST FLT_OPERATION_REGISTRATION FilterCallbacks[] = {
 
 CONST FLT_REGISTRATION FilterRegistration = {
     sizeof(FLT_REGISTRATION),           // Size
-    FLT_REGISTRATION_VERSION,           // Version - ±ØĞëÎª´ËÖµ
+    FLT_REGISTRATION_VERSION,           // Version - å¿…é¡»ä¸ºæ­¤å€¼
     0,                                  // Flags
     NULL,                               // ContextRegistration
     FilterCallbacks,                    // OperationRegistration
@@ -615,7 +615,7 @@ CONST FLT_REGISTRATION FilterRegistration = {
     NULL,                               // NormalizeNameComponentExCallback
     NULL                                // SectionNotificationCallback
 };
-// MiniFilter ÊµÀıÉèÖÃ
+// MiniFilter å®ä¾‹è®¾ç½®
 NTSTATUS PtInstanceSetup(
     PCFLT_RELATED_OBJECTS FltObjects,
     FLT_INSTANCE_SETUP_FLAGS Flags,
@@ -631,7 +631,7 @@ NTSTATUS PtInstanceSetup(
     return STATUS_SUCCESS;
 }
 
-// MiniFilter Ğ¶ÔØ
+// MiniFilter å¸è½½
 NTSTATUS PtUnload(FLT_FILTER_UNLOAD_FLAGS Flags)
 {
     UNREFERENCED_PARAMETER(Flags);

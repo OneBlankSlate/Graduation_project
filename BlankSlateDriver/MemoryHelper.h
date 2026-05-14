@@ -1,11 +1,11 @@
-#pragma once
+ï»¿#pragma once
 #include<fltKernel.h>
 #include<wdm.h>
 
 #define ALIGN_SIZE(Size,Align) (Size+Align-1)/Align*Align
 
 #ifdef _WIN64
-//#define USER_ADDRESS_END 0x000007fffffeffff  ´íÎóµÄ
+//#define USER_ADDRESS_END 0x000007fffffeffff  é”™è¯¯çš„
 #define USER_ADDRESS_END 0x00007FFF'FFFFFFFF
 #define SYSTEM_ADDRESS_START 0xffff080000000000
 #else

@@ -11,57 +11,57 @@ FileMonWindow::FileMonWindow(QWidget* parent)
 {
     ui->setupUi(this);
 
-    // ³õÊ¼»¯Ä£ĞÍ
+    // åˆå§‹åŒ–æ¨¡å‹
     m_model = new QStandardItemModel(this);
     setupTableView();
 
-    // Á¬½Ó°´Å¥ĞÅºÅ
+    // è¿æ¥æŒ‰é’®ä¿¡å·
     connect(ui->StartMonBtn, &QPushButton::clicked, this, &FileMonWindow::onStartClicked);
     connect(ui->StopMonBtn, &QPushButton::clicked, this, &FileMonWindow::onStopClicked);
     connect(ui->RefreshLogBtn, &QPushButton::clicked, this, &FileMonWindow::onRefreshClicked);
     connect(ui->ClearLogBtn, &QPushButton::clicked, this, &FileMonWindow::onClearClicked);
 
-    // ÉèÖÃ¶¨Ê±Æ÷
-    m_updateTimer->setInterval(1000); // 1ÃëË¢ĞÂÒ»´Î
+    // è®¾ç½®å®šæ—¶å™¨
+    m_updateTimer->setInterval(1000); // 1ç§’åˆ·æ–°ä¸€æ¬¡
     connect(m_updateTimer, &QTimer::timeout, this, &FileMonWindow::updateEvents);
 
-    // ³õÊ¼×´Ì¬
+    // åˆå§‹çŠ¶æ€
     updateUIState(false);
 }
 
 FileMonWindow::~FileMonWindow()
 {
     if (m_isMonitoring) {
-        onStopClicked(); // È·±£Í£Ö¹¼à¿Ø
+        onStopClicked(); // ç¡®ä¿åœæ­¢ç›‘æ§
     }
     delete ui;
 }
 
 void FileMonWindow::setupTableView()
 {
-    // ÉèÖÃ±íÍ·
+    // è®¾ç½®è¡¨å¤´
     QStringList headers = {
-        QStringLiteral("Ê±¼ä"),
-        QStringLiteral("²Ù×÷"),
+        QStringLiteral("æ—¶é—´"),
+        QStringLiteral("æ“ä½œ"),
         QStringLiteral("PID"),
-        QStringLiteral("½ø³ÌÃû"),
-        QStringLiteral("ÎÄ¼şÂ·¾¶")
+        QStringLiteral("è¿›ç¨‹å"),
+        QStringLiteral("æ–‡ä»¶è·¯å¾„")
     };
     m_model->setHorizontalHeaderLabels(headers);
 
-    // ÉèÖÃ±í¸ñÊôĞÔ
+    // è®¾ç½®è¡¨æ ¼å±æ€§
     ui->FileMon_TableView->setModel(m_model);
     ui->FileMon_TableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->FileMon_TableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->FileMon_TableView->horizontalHeader()->setStretchLastSection(true);
     ui->FileMon_TableView->setSortingEnabled(true);
 
-    // ÉèÖÃÁĞ¿í
-    ui->FileMon_TableView->setColumnWidth(0, 180);   // Ê±¼ä
-    ui->FileMon_TableView->setColumnWidth(1, 100);   // ²Ù×÷
+    // è®¾ç½®åˆ—å®½
+    ui->FileMon_TableView->setColumnWidth(0, 180);   // æ—¶é—´
+    ui->FileMon_TableView->setColumnWidth(1, 100);   // æ“ä½œ
     ui->FileMon_TableView->setColumnWidth(2, 80);    // PID
-    ui->FileMon_TableView->setColumnWidth(3, 150);   // ½ø³ÌÃû
-    ui->FileMon_TableView->setColumnWidth(4, 400);    // ÎÄ¼şÂ·¾¶
+    ui->FileMon_TableView->setColumnWidth(3, 150);   // è¿›ç¨‹å
+    ui->FileMon_TableView->setColumnWidth(4, 400);    // æ–‡ä»¶è·¯å¾„
 }
 
 void FileMonWindow::updateUIState(bool isMonitoring)
@@ -82,7 +82,7 @@ void FileMonWindow::updateUIState(bool isMonitoring)
 
 QString FileMonWindow::fileTimeToString(ULONGLONG fileTime)
 {
-    // ½« Windows FILETIME ×ª»»Îª QDateTime
+    // å°† Windows FILETIME è½¬æ¢ä¸º QDateTime
     FILETIME ft;
     ft.dwLowDateTime = (DWORD)(fileTime & 0xFFFFFFFF);
     ft.dwHighDateTime = (DWORD)(fileTime >> 32);
@@ -101,19 +101,19 @@ QString FileMonWindow::fileEventTypeToString(FILE_EVENT_TYPE type)
 {
     switch (type) {
     case FileCreateOrOpen:
-        return QStringLiteral("´´½¨/´ò¿ª");
+        return QStringLiteral("åˆ›å»º/æ‰“å¼€");
     case FileRead:
-        return QStringLiteral("¶ÁÈ¡");
+        return QStringLiteral("è¯»å–");
     case FileWrite:
-        return QStringLiteral("Ğ´Èë");
+        return QStringLiteral("å†™å…¥");
     case FileDelete:
-        return QStringLiteral("É¾³ı");
+        return QStringLiteral("åˆ é™¤");
     case FileRename:
-        return QStringLiteral("ÖØÃüÃû");
+        return QStringLiteral("é‡å‘½å");
     case FileSetInfo:
-        return QStringLiteral("ÉèÖÃĞÅÏ¢");
+        return QStringLiteral("è®¾ç½®ä¿¡æ¯");
     default:
-        return QStringLiteral("Î´Öª");
+        return QStringLiteral("æœªçŸ¥");
     }
 }
 
@@ -129,7 +129,7 @@ void FileMonWindow::onStartClicked()
         updateUIState(true);
     }
     else {
-        QMessageBox::warning(this, "´íÎó", "Æô¶¯½ø³Ì¼à¿ØÊ§°Ü");
+        QMessageBox::warning(this, "é”™è¯¯", "å¯åŠ¨è¿›ç¨‹ç›‘æ§å¤±è´¥");
     }
 }
 
@@ -145,7 +145,7 @@ void FileMonWindow::onStopClicked()
         updateUIState(false);
     }
     else {
-        QMessageBox::warning(this, "´íÎó", "Í£Ö¹½ø³Ì¼à¿ØÊ§°Ü");
+        QMessageBox::warning(this, "é”™è¯¯", "åœæ­¢è¿›ç¨‹ç›‘æ§å¤±è´¥");
     }
 }
 
@@ -166,7 +166,7 @@ void FileMonWindow::updateEvents()
     }
 
     //
-    // ·ÖÅä»º³åÇø
+    // åˆ†é…ç¼“å†²åŒº
     //
     DWORD bufferSize =
         FILE_EVENT_PACKET_SIZE;
@@ -179,7 +179,7 @@ void FileMonWindow::updateEvents()
     }
 
     //
-    // ÉèÖÃÊÂ¼ş°ü
+    // è®¾ç½®äº‹ä»¶åŒ…
     //
     PFILE_EVENT_PACKET packet =
         reinterpret_cast<PFILE_EVENT_PACKET>(
@@ -199,7 +199,7 @@ void FileMonWindow::updateEvents()
         GET_EVENTS_FILE_MON;
 
     //
-    // ÓëÇı¶¯Í¨ĞÅ
+    // ä¸é©±åŠ¨é€šä¿¡
     //
     if (CommunicateDevice(
         &input,
@@ -225,7 +225,7 @@ void FileMonWindow::updateEvents()
                 QList<QStandardItem*> rowItems;
 
                 //
-                // Ê±¼ä
+                // æ—¶é—´
                 //
                 QString timeStr =
                     fileTimeToString(
@@ -236,7 +236,7 @@ void FileMonWindow::updateEvents()
                         timeStr));
 
                 //
-                // ²Ù×÷ÀàĞÍ
+                // æ“ä½œç±»å‹
                 //
                 QString operationStr =
                     fileEventTypeToString(
@@ -255,13 +255,13 @@ void FileMonWindow::updateEvents()
                             event.ProcessId)));
 
                 //
-                // ½ø³ÌÃû
+                // è¿›ç¨‹å
                 //
                 QString processName =
                     "Unknown";
 
                 //
-                // PID 4 ÌØÊâ´¦Àí
+                // PID 4 ç‰¹æ®Šå¤„ç†
                 //
                 if (event.ProcessId == 4)
                 {
@@ -305,7 +305,7 @@ void FileMonWindow::updateEvents()
                         processName));
 
                 //
-                // ÎÄ¼şÂ·¾¶
+                // æ–‡ä»¶è·¯å¾„
                 //
                 QString filePath =
                     QString::fromWCharArray(
@@ -315,26 +315,46 @@ void FileMonWindow::updateEvents()
                     new QStandardItem(
                         filePath));
 
-                //
-                // ¶îÍâĞÅÏ¢
-                //
-                QString extraInfo =
-                    QString::fromWCharArray(
-                        event.ExtraInfo);
-
-                rowItems.append(
-                    new QStandardItem(
-                        extraInfo));
 
                 //
-                // Ìí¼Óµ½Ä£ĞÍ
+                // æ·»åŠ åˆ°æ¨¡å‹
                 //
+
+                // è®¾ç½®è¡Œé¢œè‰²ï¼ˆç»Ÿä¸€é…è‰²æ–¹æ¡ˆï¼ŒæŒ‰äº‹ä»¶ç±»å‹åŒºåˆ†ï¼‰
+                QColor bgColor;
+                switch (event.Type) {
+                case FileCreateOrOpen:
+                    bgColor = QColor(204, 239, 206);   // åˆ›å»º/æ‰“å¼€ - æµ…ç»¿
+                    break;
+                case FileRead:
+                    bgColor = QColor(189, 215, 238);   // è¯»å– - æµ…è“
+                    break;
+                case FileWrite:
+                    bgColor = QColor(252, 228, 181);   // å†™å…¥ - æµ…æ©™
+                    break;
+                case FileDelete:
+                    bgColor = QColor(255, 199, 206);   // åˆ é™¤ - æµ…çº¢
+                    break;
+                case FileRename:
+                    bgColor = QColor(217, 210, 233);   // é‡å‘½å - æµ…ç´«
+                    break;
+                case FileSetInfo:
+                    bgColor = QColor(214, 220, 228);   // è®¾ç½®ä¿¡æ¯ - æµ…ç°è“
+                    break;
+                default:
+                    bgColor = QColor(255, 255, 255);   // æœªçŸ¥ - ç™½è‰²
+                    break;
+                }
+                for (QStandardItem* item : rowItems) {
+                    item->setBackground(QBrush(bgColor));
+                }
+
                 m_model->appendRow(
                     rowItems);
             }
 
             //
-            // ×Ô¶¯¹ö¶¯
+            // è‡ªåŠ¨æ»šåŠ¨
             //
             if (eventCount > 0)
             {

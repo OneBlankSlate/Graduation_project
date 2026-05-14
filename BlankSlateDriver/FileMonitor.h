@@ -1,43 +1,42 @@
-// FileMonitor.h
+ï»¿// FileMonitor.h
 #pragma once
 
-// °üº¬ÏîÄ¿Í·ÎÄ¼ş
-#include "FileMonCommon.h" // °üº¬ÎÄ¼şÊÂ¼ş½á¹¹ºÍÊÂ¼ş»º³åÇø½á¹¹
+// åŒ…å«é¡¹ç›®å¤´æ–‡ä»¶
+#include "FileMonCommon.h" // åŒ…å«æ–‡ä»¶äº‹ä»¶ç»“æ„å’Œäº‹ä»¶ç¼“å†²åŒºç»“æ„
 #include "IoControlHelper.h"
-// ÎÄ¼ş¼à¿ØÉÏÏÂÎÄ½á¹¹
+// æ–‡ä»¶ç›‘æ§ä¸Šä¸‹æ–‡ç»“æ„
 typedef struct _FILE_MONITOR_CONTEXT {
     PDEVICE_OBJECT DeviceObject;
-    FILE_EVENT_BUFFER EventBuffer; // ÊÂ¼ş»º³åÇø
+    FILE_EVENT_BUFFER EventBuffer; // äº‹ä»¶ç¼“å†²åŒº
     BOOLEAN IsMonitoring;
-    PFLT_FILTER FilterHandle;     // MiniFilter ¹ıÂËÆ÷¾ä±ú
+    PFLT_FILTER FilterHandle;     // MiniFilter è¿‡æ»¤å™¨å¥æŸ„
     LARGE_INTEGER StartTime;
 } FILE_MONITOR_CONTEXT, * PFILE_MONITOR_CONTEXT;
 
-// ÏµÍ³½ø³Ì¹ıÂËÁĞ±í
+// ç³»ç»Ÿè¿›ç¨‹è¿‡æ»¤åˆ—è¡¨
 typedef struct _SYSTEM_PROCESS_FILTER {
     WCHAR ProcessName[256];
     struct _SYSTEM_PROCESS_FILTER* Next;
 } SYSTEM_PROCESS_FILTER, * PSYSTEM_PROCESS_FILTER;
 
-// È«¾Ö±äÁ¿ÉùÃ÷
+// å…¨å±€å˜é‡å£°æ˜
 extern PFILE_MONITOR_CONTEXT g_FileMonitorContext;
 extern PSYSTEM_PROCESS_FILTER g_SystemProcessFilterList;
 
-// MiniFilter Ïà¹ØÉùÃ÷
+// MiniFilter ç›¸å…³å£°æ˜
 extern CONST FLT_OPERATION_REGISTRATION FilterCallbacks[];
 extern CONST FLT_REGISTRATION FilterRegistration;
 extern PFLT_FILTER gFilterHandle;
 
-// ÎÄ¼ş¼à¿Ø´¦Àíº¯ÊıÉùÃ÷
+// æ–‡ä»¶ç›‘æ§å¤„ç†å‡½æ•°å£°æ˜
 NTSTATUS StartFileMonitor(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, PULONG ReturnValue);
 NTSTATUS StopFileMonitor(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, PULONG ReturnValue);
 NTSTATUS GetFileEvents(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, PULONG ReturnValue);
 
-// »º³åÇø¹ÜÀíº¯Êı
+// ç¼“å†²åŒºç®¡ç†å‡½æ•°
 VOID AddFileEventToBuffer(PFILE_EVENT Event);
-ULONG ReadFileEventsFromBuffer(PFILE_EVENT OutputBuffer, ULONG MaxEvents);
 
-// MiniFilter »Øµ÷º¯Êı
+// MiniFilter å›è°ƒå‡½æ•°
 FLT_PREOP_CALLBACK_STATUS FilePreOperationCallback(
     PFLT_CALLBACK_DATA Data,
     PCFLT_RELATED_OBJECTS FltObjects,
@@ -51,7 +50,7 @@ FLT_POSTOP_CALLBACK_STATUS FilePostOperationCallback(
     FLT_POST_OPERATION_FLAGS Flags
 );
 
-// MiniFilter ¹ÜÀíº¯Êı
+// MiniFilter ç®¡ç†å‡½æ•°
 NTSTATUS InitializeFileMonitor(PDRIVER_OBJECT DriverObject);
 VOID UninitializeFileMonitor();
 NTSTATUS PtUnload(FLT_FILTER_UNLOAD_FLAGS Flags);
@@ -62,7 +61,7 @@ NTSTATUS PtInstanceSetup(
     FLT_FILESYSTEM_TYPE VolumeFilesystemType
 );
 
-// ¸¨Öúº¯Êı
+// è¾…åŠ©å‡½æ•°
 BOOLEAN IsSystemProcessByName(PWCHAR ProcessName);
 VOID LogFileOperation(
     PFLT_CALLBACK_DATA Data,

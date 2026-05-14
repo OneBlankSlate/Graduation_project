@@ -27,9 +27,15 @@ typedef enum _OPERATE_TYPE_
 	STOP_PROC_MON,
 	GET_EVENTS_PROC_MON,
 	CLOSE_HANDLE,
-	START_FILE_MON,     // �����ļ����
-	STOP_FILE_MON,      // ֹͣ�ļ����
-	GET_EVENTS_FILE_MON, // ��ȡ�ļ��¼�
+	START_FILE_MON,     // 启动文件监控
+	STOP_FILE_MON,      // 停止文件监控
+	GET_EVENTS_FILE_MON, // 获取文件事件
+	START_THREAD_MON,      // 开始线程监控
+	STOP_THREAD_MON,       // 停止线程监控
+	GET_EVENTS_THREAD_MON, // 获取线程事件
+	START_MODULE_MON,      // 开始映像加载监控
+	STOP_MODULE_MON,       // 停止映像加载监控
+	GET_EVENTS_MODULE_MON, // 获取映像加载事件
 	SERVICE_MAX
 }OPERATE_TYPE;
 

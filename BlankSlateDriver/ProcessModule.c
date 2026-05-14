@@ -1,4 +1,4 @@
-#include"ProcessModule.h"
+Ôªø#include"ProcessModule.h"
 #include"ProcessHelper.h"
 #include"MemoryHelper.h"
 #include"StringHelper.h"
@@ -27,11 +27,11 @@ PVOID GetUserModuleHandle(IN PEPROCESS EProcess, IN PUNICODE_STRING ModuleName, 
 		{
 			return NULL;
 		}
-		//±È¿˙¡¥±Ì
+		//ÈÅçÂéÜÈìæË°®
 		for (PLIST_ENTRY ListEntry = Peb->Ldr->InLoadOrderModuleList.Flink; ListEntry != &Peb->Ldr->InLoadOrderModuleList; ListEntry = ListEntry->Flink)
 		{
 			PLDR_DATA_TABLE_ENTRY LdrDataTableEntry = CONTAINING_RECORD(ListEntry, LDR_DATA_TABLE_ENTRY, InLoadOrderLinks);
-			if (RtlCompareUnicodeString(&LdrDataTableEntry->ModuleName, ModuleName, TRUE) == 0)  //µ⁄»˝∏ˆ≤Œ ˝Œ™TRUE£¨‘Ú±»Ωœ ±∫ˆ¬‘¥Û–°–¥£¨∑µªÿ0±Ì æœ‡µ»
+			if (RtlCompareUnicodeString(&LdrDataTableEntry->ModuleName, ModuleName, TRUE) == 0)  //Á¨¨‰∏â‰∏™ÂèÇÊï∞‰∏∫TRUEÔºåÂàôÊØîËæÉÊó∂ÂøΩÁï•Â§ßÂ∞èÂÜôÔºåËøîÂõû0Ë°®Á§∫Áõ∏Á≠â
 			{
 				if (SizeOfImage != NULL)
 				{
@@ -57,7 +57,7 @@ NTSTATUS PsEnumProcessModules(PVOID InputBuffer, ULONG InputBufferLength, PVOID 
 	ULONG_PTR ProcessIdentity = v1->ProcessIdentity;
 	PEPROCESS EProcess = NULL;
 	ULONG NumberOfModule = (OutputBufferLength - sizeof(MODULES_INFORMATION)) / sizeof(MODULE_INFORMATION_ENTRY);
-	//≤Œ ˝ºÏ≤È
+	//ÂèÇÊï∞Ê£ÄÊü•
 	if (!InputBuffer || InputBufferLength != sizeof(COMMUNICATE_PROCESS_MODULE) || !OutputBuffer || OutputBufferLength < sizeof(MODULES_INFORMATION))
 	{
 		return STATUS_INVALID_PARAMETER;
@@ -115,9 +115,9 @@ NTSTATUS EnumProcessModulesByPeb(PEPROCESS EProcess, PMODULES_INFORMATION Module
 	{
 		return Status;
 	}
-	if (IoGetCurrentProcess() != EProcess)  //IoGetCurrentProcess”√”⁄ªÒ»°µ±«∞÷¥––µƒΩ¯≥ÃµƒEPROCESSΩ·ππ÷∏’Î
+	if (IoGetCurrentProcess() != EProcess)  //IoGetCurrentProcessÁî®‰∫éËé∑ÂèñÂΩìÂâçÊâßË°åÁöÑËøõÁ®ãÁöÑEPROCESSÁªìÊûÑÊåáÈíà
 	{
-		KeStackAttachProcess(EProcess, &ApcState);  //KeStackAttachProcessΩ´µ±«∞œﬂ≥Ã∏Ωº”µΩ÷∏∂®µƒΩ¯≥Ã…œœ¬Œƒ   ApcState”√”⁄±£¥Êµ±«∞œﬂ≥Ãµƒ…œœ¬Œƒ£¨“‘±„…‘∫Ûø…“‘ª÷∏¥°£
+		KeStackAttachProcess(EProcess, &ApcState);  //KeStackAttachProcessÂ∞ÜÂΩìÂâçÁ∫øÁ®ãÈôÑÂä†Âà∞ÊåáÂÆöÁöÑËøõÁ®ã‰∏ä‰∏ãÊñá   ApcStateÁî®‰∫é‰øùÂ≠òÂΩìÂâçÁ∫øÁ®ãÁöÑ‰∏ä‰∏ãÊñáÔºå‰ª•‰æøÁ®çÂêéÂèØ‰ª•ÊÅ¢Â§ç„ÄÇ
 		IsAttach = TRUE;
 	}
 	__try
@@ -264,7 +264,7 @@ NTSTATUS PsUnloadProcessModule(PVOID InputBuffer, ULONG InputBufferLength, PVOID
 	ULONG_PTR ProcessIdentity = v1->ProcessIdentity;
 	PEPROCESS EProcess = NULL;
 	ULONG_PTR ModuleBase = v1->u1.Unload.ModuleBase;
-	//≤Œ ˝ºÏ≤È
+	//ÂèÇÊï∞Ê£ÄÊü•
 	if (!InputBuffer || InputBufferLength != sizeof(COMMUNICATE_PROCESS_MODULE))
 	{
 		return STATUS_INVALID_PARAMETER;

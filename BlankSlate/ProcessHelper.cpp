@@ -1,11 +1,11 @@
-#include"ProcessHelper.h"
+ï»¿#include"ProcessHelper.h"
 #include"IoControlHelper.h"
 
 HANDLE GetProcessIdentity(const TCHAR* ImageName)
 {
 	ULONG BufferLength = 0x1000;
 	void* BufferData = NULL;
-	NTSTATUS Status = STATUS_INFO_LENGTH_MISMATCH;   //³¤¶È²»Æ¥Åä ÄÚ´æ¶¯Ì¬ÉêÇë
+	NTSTATUS Status = STATUS_INFO_LENGTH_MISMATCH;   //é•¿åº¦ä¸åŒ¹é… å†…å­˜åŠ¨æ€ç”³è¯·
 
 
 	HMODULE ModuleBase = (HMODULE)GetModuleHandle(_T("ntdll.dll"));
@@ -17,7 +17,7 @@ HANDLE GetProcessIdentity(const TCHAR* ImageName)
 	{
 		return NULL;
 	}
-	//»ñµÃµ±Ç°½ø³ÌÄ¬ÈÏ¶Ñ
+	//è·å¾—å½“å‰è¿›ç¨‹é»˜è®¤å †
 	void* HeapHandle = GetProcessHeap();
 
 	HANDLE ProcessIdentity = 0;
@@ -26,8 +26,8 @@ HANDLE GetProcessIdentity(const TCHAR* ImageName)
 	BOOL IsOk = FALSE;
 	while (!IsLoop)
 	{
-		//ÔÚµ±Ç°½ø³ÌµÄÄ¬ÈÏ¶ÑÖĞ
-		BufferData = HeapAlloc(HeapHandle, HEAP_ZERO_MEMORY, BufferLength);  //µ±Ç°½ø³ÌÄ¬ÈÏ¶ÑÉêÇëÄÚ´æ
+		//åœ¨å½“å‰è¿›ç¨‹çš„é»˜è®¤å †ä¸­
+		BufferData = HeapAlloc(HeapHandle, HEAP_ZERO_MEMORY, BufferLength);  //å½“å‰è¿›ç¨‹é»˜è®¤å †ç”³è¯·å†…å­˜
 		if (BufferData == NULL)
 		{
 			return NULL;
@@ -40,7 +40,7 @@ HANDLE GetProcessIdentity(const TCHAR* ImageName)
 			HeapFree(HeapHandle, NULL, BufferData);
 			BufferLength *= 2;
 		}
-		else if (!NT_SUCCESS(Status))   //²»ÊÇÄÚ´æ²»¹»µÄ±¨´í
+		else if (!NT_SUCCESS(Status))   //ä¸æ˜¯å†…å­˜ä¸å¤Ÿçš„æŠ¥é”™
 		{
 			HeapFree(HeapHandle, NULL, BufferData);
 			return 0;

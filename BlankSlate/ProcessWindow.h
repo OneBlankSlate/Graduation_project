@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #include <QWidget>
 #include "ui_ProcessWindow.h"
@@ -23,8 +23,8 @@ public:
 	void hook_NtWriteVirtualMemory();
 	void unhook_NtWriteVirtualMemory();
 private:
-	QMenu* m_TableViewMenu;  //²Ëµ¥£¬ĞèÒªÍ·ÎÄ¼ş<QMenu>
-	QAction* RefreshAct;//²Ëµ¥Ïî£¬ĞèÒªÍ·ÎÄ¼ş<QAction>
+	QMenu* m_TableViewMenu;  //èœå•ï¼Œéœ€è¦å¤´æ–‡ä»¶<QMenu>
+	QAction* RefreshAct;//èœå•é¡¹ï¼Œéœ€è¦å¤´æ–‡ä»¶<QAction>
 	QAction* ModuleAct;
 	QAction* HandleAct;
 	QAction* MemoryAct;
@@ -38,14 +38,14 @@ private:
 	QAction* Unhook_NtWriteVirtualMemoryAct;
 
 	Ui::ProcessWindowClass ui;
-	QStandardItemModel m_model;  // ÓÃÓÚ¹ÜÀíQTableViewµÄÊı¾İÄ£ĞÍ
+	QStandardItemModel m_model;  // ç”¨äºç®¡ç†QTableViewçš„æ•°æ®æ¨¡å‹
 public slots:
-	//²Ëµ¥Ïî²Ûº¯Êı
-	void Menu_Slot(QPoint p);//ÓÒ¼ü²Ëµ¥²Ûº¯Êı
-	void RefreshProcess();   //Ë¢ĞÂ
-	void OpenProcessModuleWindow();  //²é¿´½ø³ÌÄ£¿é
-	void OpenProcessHandleWindow();  //²é¿´½ø³Ì¾ä±ú
-	void OpenProcessMemoryWindow();  //²é¿´½ø³ÌÄÚ´æ
+	//èœå•é¡¹æ§½å‡½æ•°
+	void Menu_Slot(QPoint p);//å³é”®èœå•æ§½å‡½æ•°
+	void RefreshProcess();   //åˆ·æ–°
+	void OpenProcessModuleWindow();  //æŸ¥çœ‹è¿›ç¨‹æ¨¡å—
+	void OpenProcessHandleWindow();  //æŸ¥çœ‹è¿›ç¨‹å¥æŸ„
+	void OpenProcessMemoryWindow();  //æŸ¥çœ‹è¿›ç¨‹å†…å­˜
 	
 };
 

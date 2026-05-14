@@ -1,4 +1,4 @@
-#include"ProcessPath.h"
+ï»¿#include"ProcessPath.h"
 #include"ProcessHelper.h"
 
 NTSTATUS PsGetProcessPath(PPROCESS_PATH_REQUEST ProcessPathRequest)
@@ -10,13 +10,13 @@ NTSTATUS PsGetProcessPath(PPROCESS_PATH_REQUEST ProcessPathRequest)
 		Status = STATUS_UNSUCCESSFUL;
 		return Status;
 	}
-	//IdµÃEProcess
+	//Idå¾—EProcess
 	Status = PsLookupProcessByProcessId(ProcessPathRequest->ProcessIdentity, &EProcess);
 	if (Status != STATUS_SUCCESS)
 	{
 		return STATUS_UNSUCCESSFUL;
 	}
-	//»ñÈ¡ÍêÕûÂ·¾¶
+	//èŽ·å–å®Œæ•´è·¯å¾„
 	if (GetProcessFullPathByEProcess(EProcess, ProcessPathRequest->ProcessPath, MAX_PATH) == TRUE)
 	{
 		return STATUS_SUCCESS;
@@ -31,13 +31,13 @@ BOOLEAN GetProcessFullPathByEProcess(PVOID EProcess, WCHAR* ProcessFullPath, ULO
 	ULONG HandleAttributes = 0;
 	if (PsIsRealProcess(EProcess) == TRUE)
 	{
-		//µ±Ç°Ïß³ÌµÄÄ£Ê½
+		//å½“å‰çº¿ç¨‹çš„æ¨¡å¼
 		PreviousMode = PsGetCurrentThreadPreviousMode();
-		//¾ä±ú¶¼ÊÇ4µÄ±¶Êý   ÇÒring0µÄ¾ä±úÖµ¾ùÒÔ8¿ªÍ·   0x80000004    0x00000004
+		//å¥æŸ„éƒ½æ˜¯4çš„å€æ•°   ä¸”ring0çš„å¥æŸ„å€¼å‡ä»¥8å¼€å¤´   0x80000004    0x00000004
 		//x86  0x800007d8
 		//x64  0xffffffff80000868
 		HandleAttributes = (PreviousMode == KernelMode ? OBJ_KERNEL_HANDLE : 0);
-		//Í¨¹ý¶ÔÏóÌå»ñµÃ¶ÔÏó¾ä±ú
+		//é€šè¿‡å¯¹è±¡ä½“èŽ·å¾—å¯¹è±¡å¥æŸ„
 		if (NT_SUCCESS(ObOpenObjectByPointer(EProcess, HandleAttributes, NULL, PROCESS_QUERY_INFORMATION, *PsProcessType, PreviousMode, &ProcessHandle)))
 		{
 			PVOID BufferData = NULL;
@@ -55,11 +55,11 @@ BOOLEAN GetProcessFullPathByEProcess(PVOID EProcess, WCHAR* ProcessFullPath, ULO
 						if (NT_SUCCESS(ZwOpenFile(&FileHandle, FILE_READ_ATTRIBUTES | SYNCHRONIZE, &ObjectAttributes, &IoStatusBlock, FILE_SHARE_READ, FILE_SYNCHRONOUS_IO_NONALERT)))
 						{
 							PFILE_OBJECT FileObject;
-							//Í¨¹ý¾ä±ú»ñµÃ¶ÔÏó
+							//é€šè¿‡å¥æŸ„èŽ·å¾—å¯¹è±¡
 							if (NT_SUCCESS(ObReferenceObjectByHandle(FileHandle, FILE_READ_ATTRIBUTES, *IoFileObjectType, PreviousMode, (PVOID*)&FileObject, NULL)))
 							{
 								POBJECT_NAME_INFORMATION ObjectNameInfo;
-								//Í¨¹ýÎÄ¼þ¶ÔÏó»ñµÃÎÄ¼þ¾ø¶ÔÂ·¾¶
+								//é€šè¿‡æ–‡ä»¶å¯¹è±¡èŽ·å¾—æ–‡ä»¶ç»å¯¹è·¯å¾„
 								if (NT_SUCCESS(IoQueryFileDosDeviceName(FileObject, &ObjectNameInfo)))
 								{
 									if (((UNICODE_STRING*)ObjectNameInfo)->MaximumLength < ProcessFullPathLength)
@@ -98,7 +98,7 @@ BOOLEAN GetProcessFullPathByPeb(PVOID EProcess, WCHAR* ProcessFullPath, ULONG Pr
 	{
 		return FALSE;
 	}
-	//½øÐÐÉÏÏÂ±³¾°ÎÄµÄÇÐ»»
+	//è¿›è¡Œä¸Šä¸‹èƒŒæ™¯æ–‡çš„åˆ‡æ¢
 	KeStackAttachProcess(EProcess, &ApcState);
 	__try
 	{
@@ -120,17 +120,17 @@ BOOLEAN GetProcessFullPathByPeb(PVOID EProcess, WCHAR* ProcessFullPath, ULONG Pr
 }
 PUNICODE_STRING GetNameByPath(PUNICODE_STRING ImagePath)
 {
-	// ²ÎÊýÑéÖ¤
+	// å‚æ•°éªŒè¯
 	if (!ImagePath || !ImagePath->Buffer || ImagePath->Length == 0) {
 		return NULL;
 	}
 
-	// ²éÕÒ×îºóÒ»¸öÂ·¾¶·Ö¸ô·ûµÄÎ»ÖÃ
+	// æŸ¥æ‰¾æœ€åŽä¸€ä¸ªè·¯å¾„åˆ†éš”ç¬¦çš„ä½ç½®
 	PWCHAR pFileNameStart = NULL;
 	PWCHAR pCurrent = ImagePath->Buffer;
 	PWCHAR pEnd = (PWCHAR)((PUCHAR)ImagePath->Buffer + ImagePath->Length);
 
-	// ´Ó×Ö·û´®Ä©Î²ÏòÇ°²éÕÒ×îºóÒ»¸ö·Ö¸ô·û
+	// ä»Žå­—ç¬¦ä¸²æœ«å°¾å‘å‰æŸ¥æ‰¾æœ€åŽä¸€ä¸ªåˆ†éš”ç¬¦
 	for (PWCHAR p = pEnd - 1; p >= pCurrent; p--) {
 		if (*p == L'\\' || *p == L'/') {
 			pFileNameStart = p + 1;
@@ -138,12 +138,12 @@ PUNICODE_STRING GetNameByPath(PUNICODE_STRING ImagePath)
 		}
 	}
 
-	// Èç¹ûÃ»ÓÐÕÒµ½·Ö¸ô·û£¬Õû¸ö×Ö·û´®¾ÍÊÇÎÄ¼þÃû
+	// å¦‚æžœæ²¡æœ‰æ‰¾åˆ°åˆ†éš”ç¬¦ï¼Œæ•´ä¸ªå­—ç¬¦ä¸²å°±æ˜¯æ–‡ä»¶å
 	if (!pFileNameStart) {
 		pFileNameStart = pCurrent;
 	}
 
-	// ¼ÆËãÎÄ¼þÃû³¤¶È£¨ÒÔ×Ö·û¼Æ£©
+	// è®¡ç®—æ–‡ä»¶åé•¿åº¦ï¼ˆä»¥å­—ç¬¦è®¡ï¼‰
 	ULONG nameLengthInChars = 0;
 	PWCHAR pTemp = pFileNameStart;
 
@@ -156,10 +156,10 @@ PUNICODE_STRING GetNameByPath(PUNICODE_STRING ImagePath)
 		return NULL;
 	}
 
-	// ¼ÆËãÎÄ¼þÃû³¤¶È£¨ÒÔ×Ö½Ú¼Æ£©
+	// è®¡ç®—æ–‡ä»¶åé•¿åº¦ï¼ˆä»¥å­—èŠ‚è®¡ï¼‰
 	ULONG nameLengthInBytes = nameLengthInChars * sizeof(WCHAR);
 
-	// ·ÖÅäUNICODE_STRING½á¹¹¼°Æä»º³åÇø
+	// åˆ†é…UNICODE_STRINGç»“æž„åŠå…¶ç¼“å†²åŒº
 	ULONG totalAllocSize = sizeof(UNICODE_STRING) + nameLengthInBytes + sizeof(WCHAR);
 	PUNICODE_STRING pResult = (PUNICODE_STRING)ExAllocatePoolWithTag(
 		NonPagedPoolNx,
@@ -170,18 +170,18 @@ PUNICODE_STRING GetNameByPath(PUNICODE_STRING ImagePath)
 		return NULL;
 	}
 
-	// ³õÊ¼»¯UNICODE_STRING½á¹¹
+	// åˆå§‹åŒ–UNICODE_STRINGç»“æž„
 	RtlZeroMemory(pResult, totalAllocSize);
 
-	// ÉèÖÃUNICODE_STRING×Ö¶Î
+	// è®¾ç½®UNICODE_STRINGå­—æ®µ
 	pResult->Buffer = (PWCHAR)((PUCHAR)pResult + sizeof(UNICODE_STRING));
 	pResult->Length = (USHORT)nameLengthInBytes;
 	pResult->MaximumLength = (USHORT)(nameLengthInBytes + sizeof(WCHAR));
 
-	// ¸´ÖÆÎÄ¼þÃû
+	// å¤åˆ¶æ–‡ä»¶å
 	RtlCopyMemory(pResult->Buffer, pFileNameStart, nameLengthInBytes);
 
-	// È·±£ÒÔ¿Õ×Ö·û½áÎ²
+	// ç¡®ä¿ä»¥ç©ºå­—ç¬¦ç»“å°¾
 	pResult->Buffer[nameLengthInChars] = L'\0';
 
 
