@@ -85,11 +85,11 @@ void ThreadMonWindow::setupTableView()
 
     // 设置列宽
     ui->ThreadMon_TableView->setColumnWidth(0, 60);    // 事件类型
-    ui->ThreadMon_TableView->setColumnWidth(1, 140);   // 时间
+    ui->ThreadMon_TableView->setColumnWidth(1, 200);   // 时间
     ui->ThreadMon_TableView->setColumnWidth(2, 60);    // 线程ID
     ui->ThreadMon_TableView->setColumnWidth(3, 60);    // 进程ID
-    ui->ThreadMon_TableView->setColumnWidth(4, 100);   // 进程名
-    ui->ThreadMon_TableView->setColumnWidth(5, 150);   // 映像路径
+    ui->ThreadMon_TableView->setColumnWidth(4, 200);   // 进程名
+    ui->ThreadMon_TableView->setColumnWidth(5, 600);   // 映像路径
     ui->ThreadMon_TableView->setColumnWidth(6, 100);   // 模块名
     ui->ThreadMon_TableView->setColumnWidth(7, 55);    // 优先级
     ui->ThreadMon_TableView->setColumnWidth(8, 70);    // 基本优先级
