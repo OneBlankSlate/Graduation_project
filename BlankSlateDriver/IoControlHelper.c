@@ -9,6 +9,7 @@
 #include"ProcMonitor.h"
 #include"FileMonitor.h"
 #include"ThreadMonitor.h"
+#include"ModuleMonitor.h"
 LPFN_SERVICEADDRESS __ServiceArray[] = {
 	NULL,
 	PsEnumProcess,  //枚举进程
@@ -33,6 +34,9 @@ LPFN_SERVICEADDRESS __ServiceArray[] = {
 	MonitorThread,           // START_THREAD_MON
 	StopMonitorThread,       // STOP_THREAD_MON
 	GetThreadEvents,         // GET_EVENTS_THREAD_MON
+	MonitorModule,           // START_MODULE_MON
+	StopMonitorModule,       // STOP_MODULE_MON
+	GetModuleEvents,         // GET_EVENTS_MODULE_MON
 	NULL
 };
 NTSTATUS CommunicateNeitherControl(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)

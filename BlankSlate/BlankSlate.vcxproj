@@ -109,6 +109,8 @@
     <ClCompile Include="FileMonitor.c" />
     <ClCompile Include="FileMonWindow.cpp" />
     <ClCompile Include="IoControlHelper.cpp" />
+    <ClCompile Include="ModuleMonitor.cpp" />
+    <ClCompile Include="ModuleMonWindow.cpp" />
     <ClCompile Include="ProcessHandle.cpp" />
     <ClCompile Include="ProcessHandleWindow.cpp" />
     <ClCompile Include="ProcessHelper.cpp" />
@@ -133,6 +135,7 @@
     <ClCompile Include="main.cpp" />
     <QtUic Include="DriverModuleWindow.ui" />
     <QtUic Include="FileMonWindow.ui" />
+    <QtUic Include="ModuleMonWindow.ui" />
     <QtUic Include="ProcessHandleWindow.ui" />
     <QtUic Include="ProcessMemoryWindow.ui" />
     <QtUic Include="ProcessModuleWindow.ui" />
@@ -150,6 +153,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DriverModule.h" />
+    <QtMoc Include="ModuleMonWindow.h" />
+    <ClInclude Include="ModuleMonitor.h" />
     <ClInclude Include="ThreadMonCommon.h" />
     <ClInclude Include="ThreadMonitor.h" />
     <QtMoc Include="ThreadMonWindow.h" />

@@ -6,6 +6,7 @@
 #include"ProcessHelper.h"
 #include"ProcMonitor.h"
 #include "FileMonitor.h"
+#include"ModuleMonitor.h"
 //注册表回调使用的Cookie
 LARGE_INTEGER g_liRegCookie;
 //   bu BlankSlateDriver!DriverEntry
@@ -107,6 +108,15 @@ VOID DriverUnload(IN PDRIVER_OBJECT DriverObject)
 		// 释放上下文
 		ExFreePoolWithTag(g_context, CONTEXT_TAG);
 		g_context = NULL;
+	}
+
+	// 停止映像加载监控
+	if (g_ModuleContext) {
+		if (g_ModuleContext->IsMonitoring && g_ModuleContext->NotifyHandle) {
+			PsRemoveLoadImageNotifyRoutine(LoadImageNotifyCallback);
+		}
+		ExFreePoolWithTag(g_ModuleContext, MODULE_CONTEXT_TAG);
+		g_ModuleContext = NULL;
 	}
 
 	// 停止和反初始化文件监控

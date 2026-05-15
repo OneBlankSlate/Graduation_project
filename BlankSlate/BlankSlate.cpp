@@ -5,6 +5,7 @@
 #include"ProcMonWindow.h"
 #include"FileMonWindow.h"
 #include"ThreadMonWindow.h"
+#include"ModuleMonWindow.h"
 BlankSlate::BlankSlate(QWidget *parent)
     : QMainWindow(parent)
 {
@@ -27,7 +28,7 @@ BlankSlate::BlankSlate(QWidget *parent)
     ui.tabWidget->addTab(new ProcMonWindow, QStringLiteral("进程监控"));
     ui.tabWidget->addTab(new FileMonWindow, QStringLiteral("文件监控"));
     ui.tabWidget->addTab(new ThreadMonWindow, QStringLiteral("线程监控"));
-
+    ui.tabWidget->addTab(new ModuleMonWindow, QStringLiteral("映像监控"));
 }
 
 BlankSlate::~BlankSlate()

@@ -84,6 +84,12 @@
     <Filter Include="帮助\进程帮助\线程监控">
       <UniqueIdentifier>{5a6f4f28-c06d-4226-b026-ace12357aa26}</UniqueIdentifier>
     </Filter>
+    <Filter Include="窗口\模块监控窗口">
+      <UniqueIdentifier>{e9781129-33cc-45f4-9df8-ea29a0d757db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\进程帮助\模块监控">
+      <UniqueIdentifier>{91dd0395-38dd-4142-9d9b-5372b318bf55}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="BlankSlate.ui">
@@ -135,6 +141,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="ThreadMonWindow.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="ModuleMonWindow.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>
@@ -208,6 +217,12 @@
     <ClCompile Include="ThreadMonitor.cpp">
       <Filter>帮助\进程帮助\线程监控</Filter>
     </ClCompile>
+    <ClCompile Include="ModuleMonWindow.cpp">
+      <Filter>窗口\模块监控窗口</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleMonitor.cpp">
+      <Filter>帮助\进程帮助\模块监控</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="BlankSlate.h">
@@ -242,6 +257,9 @@
     </QtMoc>
     <QtMoc Include="ThreadMonWindow.h">
       <Filter>窗口\线程监控窗口</Filter>
+    </QtMoc>
+    <QtMoc Include="ModuleMonWindow.h">
+      <Filter>窗口\模块监控窗口</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
@@ -295,6 +313,9 @@
     </ClInclude>
     <ClInclude Include="ThreadMonCommon.h">
       <Filter>窗口\线程监控窗口</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleMonitor.h">
+      <Filter>帮助\进程帮助\模块监控</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
