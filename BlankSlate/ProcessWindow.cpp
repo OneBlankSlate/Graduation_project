@@ -6,6 +6,7 @@
 #include"ProcessHandleWindow.h"
 #include"ProcessMemoryWindow.h"
 #include"DriverModule.h"
+#include"InjectDialog.h"
 ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
 {
 	ui.setupUi(this);
@@ -48,6 +49,7 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     Unhook_NtTerminateProAct = new QAction(QStringLiteral("unhook类型-进程防关闭"), ui.Process_TableView);
     Hook_NtWriteVirtualMemoryAct = new QAction(QStringLiteral("hook类型-进程防写入"), ui.Process_TableView);
     Unhook_NtWriteVirtualMemoryAct = new QAction(QStringLiteral("unhook类型-进程防写入"), ui.Process_TableView);
+    InjectAct = new QAction(QStringLiteral("DLL注入"), ui.Process_TableView);
     m_TableViewMenu->addAction(RefreshAct);
     m_TableViewMenu->addAction(ModuleAct);
     m_TableViewMenu->addAction(HandleAct);
@@ -60,6 +62,7 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     m_TableViewMenu->addAction(Unhook_NtTerminateProAct);
     m_TableViewMenu->addAction(Hook_NtWriteVirtualMemoryAct);
     m_TableViewMenu->addAction(Unhook_NtWriteVirtualMemoryAct);
+    m_TableViewMenu->addAction(InjectAct);
 
     //消息关联
     connect(ui.Process_TableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(Menu_Slot(QPoint)));  //菜单初始化
@@ -75,6 +78,7 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     connect(Unhook_NtTerminateProAct, &QAction::triggered, this, &ProcessWindow::unhook_NtTerminateProcess);
     connect(Hook_NtWriteVirtualMemoryAct, &QAction::triggered, this, &ProcessWindow::hook_NtWriteVirtualMemory);
     connect(Unhook_NtWriteVirtualMemoryAct, &QAction::triggered, this, &ProcessWindow::unhook_NtWriteVirtualMemory);
+    connect(InjectAct, &QAction::triggered, this, &ProcessWindow::OpenInjectDialog);
     
 }
 
@@ -327,6 +331,20 @@ void ProcessWindow::OpenProcessMemoryWindow()
         // 得到了目标进程id   作为参数传递给模块窗口
         ProcessMemoryWindow* ProcessModuleWind = new ProcessMemoryWindow(value);
         ProcessModuleWind->show();
+    }
+}
+
+void ProcessWindow::OpenInjectDialog()
+{
+    QModelIndexList selectedRows = ui.Process_TableView->selectionModel()->selectedRows();
+    if (!selectedRows.isEmpty()) {
+        QModelIndex index = selectedRows.first();
+        QModelIndex targetIndex = index.sibling(index.row(), 1); // 获取第 1 列的索引-PID
+        QString value = targetIndex.data().toString();
+        DWORD pid = (DWORD)value.toULongLong();
+        InjectDialog* dlg = new InjectDialog(pid, this);
+        dlg->setAttribute(Qt::WA_DeleteOnClose);
+        dlg->show();
     }
 }
 

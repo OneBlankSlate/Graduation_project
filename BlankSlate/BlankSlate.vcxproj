@@ -120,6 +120,7 @@
     <ClCompile Include="ProcessModuleWindow.cpp" />
     <ClCompile Include="ProcessPath.cpp" />
     <ClCompile Include="ProcessWindow.cpp" />
+    <ClCompile Include="InjectDialog.cpp" />
     <ClCompile Include="ProcMonitor.cpp" />
     <ClCompile Include="ProcMonWindow.cpp" />
     <ClCompile Include="ReadMemoryWindow.cpp" />
@@ -140,6 +141,7 @@
     <QtUic Include="ProcessMemoryWindow.ui" />
     <QtUic Include="ProcessModuleWindow.ui" />
     <QtUic Include="ProcessWindow.ui" />
+    <QtUic Include="InjectDialog.ui" />
     <QtUic Include="ProcMonWindow.ui" />
     <QtUic Include="ReadMemoryWindow.ui" />
     <QtUic Include="ThreadMonWindow.ui" />
@@ -147,6 +149,9 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="ProcessWindow.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="InjectDialog.h" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="DriverModuleWindow.h" />
@@ -178,6 +183,7 @@
     <ClInclude Include="ProcessModule.h" />
     <QtMoc Include="ProcessModuleWindow.h" />
     <ClInclude Include="ProcessPath.h" />
+    <ClInclude Include="InjectHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BlankSlate.rc" />

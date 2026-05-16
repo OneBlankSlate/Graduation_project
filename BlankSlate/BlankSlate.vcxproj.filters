@@ -27,6 +27,12 @@
     <Filter Include="窗口\进程窗口">
       <UniqueIdentifier>{63463b62-2c82-4a74-91f9-15f4b7f9e091}</UniqueIdentifier>
     </Filter>
+    <Filter Include="窗口\注入窗口">
+      <UniqueIdentifier>{a1b2c3d4-e5f6-7890-abcd-ef1234567890}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\注入帮助">
+      <UniqueIdentifier>{b2c3d4e5-f6a7-8901-bcde-f12345678901}</UniqueIdentifier>
+    </Filter>
     <Filter Include="窗口\驱动模块窗口">
       <UniqueIdentifier>{5220302d-9a37-41f0-8fb2-1bc6f1674df3}</UniqueIdentifier>
     </Filter>
@@ -146,6 +152,9 @@
     <QtUic Include="ModuleMonWindow.ui">
       <Filter>Form Files</Filter>
     </QtUic>
+    <QtUic Include="InjectDialog.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -153,6 +162,9 @@
     </ClCompile>
     <ClCompile Include="ProcessWindow.cpp">
       <Filter>窗口\进程窗口</Filter>
+    </ClCompile>
+    <ClCompile Include="InjectDialog.cpp">
+      <Filter>窗口\注入窗口</Filter>
     </ClCompile>
     <ClCompile Include="DriverModuleWindow.cpp">
       <Filter>窗口\驱动模块窗口</Filter>
@@ -246,6 +258,9 @@
     <QtMoc Include="ProcessWindow.h">
       <Filter>窗口\进程窗口</Filter>
     </QtMoc>
+    <QtMoc Include="InjectDialog.h">
+      <Filter>窗口\注入窗口</Filter>
+    </QtMoc>
     <QtMoc Include="WriteMemoryWindow.h">
       <Filter>窗口\进程内存窗口\写内存窗口</Filter>
     </QtMoc>
@@ -276,6 +291,9 @@
     </ClInclude>
     <ClInclude Include="ProcessPath.h">
       <Filter>帮助\进程帮助\进程路径</Filter>
+    </ClInclude>
+    <ClInclude Include="InjectHelper.h">
+      <Filter>帮助\注入帮助</Filter>
     </ClInclude>
     <ClInclude Include="ProcessModule.h">
       <Filter>帮助\进程帮助\进程模块</Filter>

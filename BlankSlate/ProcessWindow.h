@@ -22,6 +22,7 @@ public:
 	void unhook_NtTerminateProcess();
 	void hook_NtWriteVirtualMemory();
 	void unhook_NtWriteVirtualMemory();
+	void OpenInjectDialog();  // DLL注入
 private:
 	QMenu* m_TableViewMenu;  //菜单，需要头文件<QMenu>
 	QAction* RefreshAct;//菜单项，需要头文件<QAction>
@@ -36,6 +37,7 @@ private:
 	QAction* Unhook_NtTerminateProAct;
 	QAction* Hook_NtWriteVirtualMemoryAct;
 	QAction* Unhook_NtWriteVirtualMemoryAct;
+	QAction* InjectAct;  // DLL注入菜单项
 
 	Ui::ProcessWindowClass ui;
 	QStandardItemModel m_model;  // 用于管理QTableView的数据模型

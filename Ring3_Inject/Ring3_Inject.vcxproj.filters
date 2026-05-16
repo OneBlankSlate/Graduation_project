@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="资源文件">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="帮助">
+      <UniqueIdentifier>{7007c173-4fa4-4c4c-9a84-12aa1f799e96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\线程帮助">
+      <UniqueIdentifier>{81ee00b8-8628-4aaf-a3c2-882a4b77bb2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\进程帮助">
+      <UniqueIdentifier>{f85fd5d2-ce94-4fc7-bbba-16d9e76c1b28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\模块帮助">
+      <UniqueIdentifier>{8e7f5a2a-732a-4e75-9873-6fe059751900}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\PE帮助">
+      <UniqueIdentifier>{2f3ceb8c-9165-4288-b203-abc2ac47918d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\内存帮助">
+      <UniqueIdentifier>{0c8a195f-b01e-4903-b51b-0b5873b73cca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="帮助\注册表帮助">
+      <UniqueIdentifier>{7cd50838-929a-4ac0-921b-0978e77dd6cd}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="_tmain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="_tmain.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessHelper.h">
+      <Filter>帮助\进程帮助</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadHelper.h">
+      <Filter>帮助\线程帮助</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleHelper.h">
+      <Filter>帮助\模块帮助</Filter>
+    </ClInclude>
+    <ClInclude Include="PeHelper.h">
+      <Filter>帮助\PE帮助</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryHelper.h">
+      <Filter>帮助\内存帮助</Filter>
+    </ClInclude>
+    <ClInclude Include="RegisterHelper.h">
+      <Filter>帮助\注册表帮助</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
