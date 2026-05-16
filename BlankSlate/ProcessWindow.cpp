@@ -298,11 +298,13 @@ void ProcessWindow::OpenProcessModuleWindow()
 {
     QModelIndexList selectedRows = ui.Process_TableView->selectionModel()->selectedRows();
     if (!selectedRows.isEmpty()) {
-        QModelIndex index = selectedRows.first(); // 获取选中行的第一个索引
-        QModelIndex targetIndex = index.sibling(index.row(), 0); // 获取第 0 列的索引
-        QString value = targetIndex.data().toString(); // 获取该列的值
-        // 得到了目标进程名   作为参数传递给模块窗口
-        ProcessModuleWindow* ProcessModuleWind = new ProcessModuleWindow(value);
+        QModelIndex index = selectedRows.first();
+        QModelIndex nameIndex = index.sibling(index.row(), 0); // 第0列 - 进程名
+        QModelIndex pidIndex = index.sibling(index.row(), 1);  // 第1列 - PID
+        QString imageName = nameIndex.data().toString();
+        DWORD pid = (DWORD)pidIndex.data().toULongLong();
+        ProcessModuleWindow* ProcessModuleWind = new ProcessModuleWindow(pid, imageName);
+        ProcessModuleWind->setAttribute(Qt::WA_DeleteOnClose);
         ProcessModuleWind->show();
     }
 }
