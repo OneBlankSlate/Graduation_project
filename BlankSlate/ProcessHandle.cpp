@@ -22,13 +22,18 @@ BOOL EnumProcessHandles(HANDLE ProcessIdentity, vector<HANDLE_INFORMATION_ENTRY>
 			break;
 		}
 		IsOk = CommunicateDevice(&CommunicateProcessHandle, sizeof(COMMUNICATE_PROCESS_HANDLE), (PVOID)v5, Size, NULL);
-		NumberOfHandle = v5->NumberOfHandle + 100;
+		if (!IsOk && GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+		{
+			NumberOfHandle = v5->NumberOfHandle + 100;
+			free(v5);
+			v5 = NULL;
+		}
 	} while (!IsOk && GetLastError() == ERROR_INSUFFICIENT_BUFFER);
 	if (IsOk && v5->NumberOfHandle > 0)
 	{
 		for (ULONG i = 0; i < v5->NumberOfHandle; i++)
 		{
-			HANDLE_INFORMATION_ENTRY Entry;
+			HANDLE_INFORMATION_ENTRY Entry = {};
 			Entry.Handle = v5->HandleInfo[i].Handle;
 			Entry.Object = v5->HandleInfo[i].Object;
 			Entry.Index = v5->HandleInfo[i].Index;

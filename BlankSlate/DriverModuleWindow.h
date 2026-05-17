@@ -17,9 +17,11 @@ private:
 	QMenu* m_TableViewMenu;  //菜单，需要头文件<QMenu>
 	QAction* RefreshAct;
 	QAction* UnloadAct;
+	QAction* ExportAct;  // 导出菜单项
 public slots:
 	//菜单项槽函数
 	void Menu_Slot(QPoint p);//右键菜单槽函数
 	void RefreshDriverModule();   //刷新
 	void UnloadDriverModule();
+	void ExportSelected();  //导出选中内容
 };

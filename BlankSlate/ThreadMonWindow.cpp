@@ -8,6 +8,7 @@
 #include <QTimer>
 #include <QFile>
 #include <QTextStream>
+#include <QStandardPaths>
 #include"ThreadMonCommon.h"
 #include"ThreadMonitor.h"
 #include <psapi.h>
@@ -30,6 +31,11 @@ ThreadMonWindow::ThreadMonWindow(QWidget* parent)
     connect(ui->ThreadMonStopBtn, &QPushButton::clicked, this, &ThreadMonWindow::onStopClicked);
     connect(ui->ThreadMonRefreshBtn, &QPushButton::clicked, this, &ThreadMonWindow::onRefreshClicked);
     connect(ui->ThreadMonClearBtn, &QPushButton::clicked, this, &ThreadMonWindow::onClearClicked);
+
+    // 导出按钮
+    btnExport = new QPushButton(QStringLiteral("导出"));
+    ui->horizontalLayout_2->insertWidget(4, btnExport);
+    connect(btnExport, &QPushButton::clicked, this, &ThreadMonWindow::onExportClicked);
 
     // 设置定时器
     m_updateTimer->setInterval(1000); // 1秒更新一次事件
@@ -340,4 +346,58 @@ void ThreadMonWindow::updateUIState(bool isMonitoring)
     ui->ThreadMonRefreshBtn->setEnabled(true);
     ui->ThreadMonClearBtn->setEnabled(true);
 
+}
+
+void ThreadMonWindow::onExportClicked()
+{
+    QModelIndexList selectedRows = ui->ThreadMon_TableView->selectionModel()->selectedRows();
+    QList<int> rowsToExport;
+
+    if (!selectedRows.isEmpty()) {
+        for (const auto& index : selectedRows) {
+            if (!rowsToExport.contains(index.row())) {
+                rowsToExport.append(index.row());
+            }
+        }
+    } else {
+        for (int i = 0; i < m_model->rowCount(); i++) {
+            rowsToExport.append(i);
+        }
+    }
+
+    if (rowsToExport.isEmpty()) {
+        QMessageBox::warning(this, QStringLiteral("提示"), QStringLiteral("没有可导出的数据！"));
+        return;
+    }
+
+    QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+    QString filePath = desktopPath + "/ThreadMon.txt";
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::critical(this, QStringLiteral("错误"), QStringLiteral("无法创建文件: %1").arg(filePath));
+        return;
+    }
+
+    QTextStream out(&file);
+    out.setCodec("UTF-8");
+    out << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") << "\n\n";
+
+    for (int col = 0; col < m_model->columnCount(); col++) {
+        if (col > 0) out << "\t";
+        out << m_model->horizontalHeaderItem(col)->text();
+    }
+    out << "\n";
+
+    for (int row : rowsToExport) {
+        for (int col = 0; col < m_model->columnCount(); col++) {
+            if (col > 0) out << "\t";
+            out << m_model->item(row, col)->text();
+        }
+        out << "\n";
+    }
+
+    file.close();
+    QMessageBox::information(this, QStringLiteral("成功"),
+        QStringLiteral("已导出 %1 条记录到 %2").arg(rowsToExport.size()).arg(filePath));
 }

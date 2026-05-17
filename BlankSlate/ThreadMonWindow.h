@@ -24,6 +24,7 @@ private:
     QStandardItemModel* m_model;
     QTimer* m_updateTimer;
     QTimer* m_statusTimer;
+    QPushButton* btnExport;
 
     qint64 m_totalEvents = 0;
     qint64 m_currentEvents = 0;
@@ -42,4 +43,5 @@ private slots:
     void onClearClicked();
     void updateEvents();
     void updateStatus();
+    void onExportClicked();  //导出选中内容
 };

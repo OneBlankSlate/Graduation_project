@@ -22,9 +22,11 @@ private:
 	QMenu* m_TableViewMenu;
 	QAction* RefreshAct;
 	QAction* UnloadAct;
+	QAction* ExportAct;  // 导出菜单项
 
 private slots:
 	void Menu_Slot(QPoint p);
 	void RefreshModules();
 	void UnloadModule();
+	void ExportSelected();  //导出选中内容
 };

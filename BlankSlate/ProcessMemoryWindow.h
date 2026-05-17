@@ -26,6 +26,7 @@ public:
 	QAction* ReadExecuteAct; //执行读
 	QAction* ReadWriteGuardAct; //读写保护
 	QAction* RecoverProtectAct; //保护属性恢复
+	QAction* ExportAct;  // 导出菜单项
 
 	HANDLE m_ProcessId;
 	ULONG m_OldProtect;   //直接存字符串，便于直接恢复
@@ -42,4 +43,5 @@ private slots:
 	void SetReadExecute();
 	void SetReadWriteGuard();
 	void RecoverProtect();
+	void ExportSelected();  //导出选中内容
 };

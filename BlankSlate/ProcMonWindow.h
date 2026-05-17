@@ -16,6 +16,7 @@ private:
     QStandardItemModel* m_model;
     QTimer* m_updateTimer;
     QTimer* m_statusTimer;
+    QPushButton* btnExport;
 
     void setupTableView();
     void addEventToTable(const PROCESS_EVENT& event);
@@ -27,5 +28,6 @@ private slots:
     void onRefreshClicked();
     void onClearClicked();
     void updateEvents();
+    void onExportClicked();  //导出选中内容
 };
 

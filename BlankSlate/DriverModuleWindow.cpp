@@ -2,6 +2,11 @@
 #include"SystemModule.h"
 #include"DriverModule.h"
 #include<vector>
+#include<QMessageBox>
+#include<QDateTime>
+#include<QFile>
+#include<QTextStream>
+#include<QStandardPaths>
 DriverModuleWindow::DriverModuleWindow(QWidget *parent)
 	: QWidget(parent)
 {
@@ -35,10 +40,13 @@ DriverModuleWindow::DriverModuleWindow(QWidget *parent)
     UnloadAct= new QAction(QStringLiteral("卸载"), ui.DriverModule_TableView);
     m_TableViewMenu->addAction(RefreshAct);
     m_TableViewMenu->addAction(UnloadAct);
+    ExportAct = new QAction(QStringLiteral("导出"), ui.DriverModule_TableView);
+    m_TableViewMenu->addAction(ExportAct);
     //消息关联
     connect(ui.DriverModule_TableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(Menu_Slot(QPoint)));  //菜单初始化
     connect(RefreshAct, &QAction::triggered, this, &DriverModuleWindow::RefreshDriverModule);
     connect(UnloadAct, &QAction::triggered, this, &DriverModuleWindow::UnloadDriverModule);
+    connect(ExportAct, &QAction::triggered, this, &DriverModuleWindow::ExportSelected);
     
 }
 
@@ -124,4 +132,58 @@ void DriverModuleWindow::Menu_Slot(QPoint p)
         m_TableViewMenu->exec(QCursor::pos());//数据项有效才显示菜单
     }
 
+}
+
+void DriverModuleWindow::ExportSelected()
+{
+    QModelIndexList selectedRows = ui.DriverModule_TableView->selectionModel()->selectedRows();
+    QList<int> rowsToExport;
+
+    if (!selectedRows.isEmpty()) {
+        for (const auto& index : selectedRows) {
+            if (!rowsToExport.contains(index.row())) {
+                rowsToExport.append(index.row());
+            }
+        }
+    } else {
+        for (int i = 0; i < m_model.rowCount(); i++) {
+            rowsToExport.append(i);
+        }
+    }
+
+    if (rowsToExport.isEmpty()) {
+        QMessageBox::warning(this, QStringLiteral("提示"), QStringLiteral("没有可导出的数据！"));
+        return;
+    }
+
+    QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+    QString filePath = desktopPath + "/DriverModule.txt";
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::critical(this, QStringLiteral("错误"), QStringLiteral("无法创建文件: %1").arg(filePath));
+        return;
+    }
+
+    QTextStream out(&file);
+    out.setCodec("UTF-8");
+    out << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") << "\n\n";
+
+    for (int col = 0; col < m_model.columnCount(); col++) {
+        if (col > 0) out << "\t";
+        out << m_model.horizontalHeaderItem(col)->text();
+    }
+    out << "\n";
+
+    for (int row : rowsToExport) {
+        for (int col = 0; col < m_model.columnCount(); col++) {
+            if (col > 0) out << "\t";
+            out << m_model.item(row, col)->text();
+        }
+        out << "\n";
+    }
+
+    file.close();
+    QMessageBox::information(this, QStringLiteral("成功"),
+        QStringLiteral("已导出 %1 条记录到 %2").arg(rowsToExport.size()).arg(filePath));
 }

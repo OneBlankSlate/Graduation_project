@@ -22,6 +22,7 @@ private:
 	QStandardItemModel* m_model;
 	Ui::FileMonWindowClass* ui;
 	QTimer* m_updateTimer;
+	QPushButton* btnExport;
 
 	void setupTableView();
 	void updateUIState(bool isMonitoring);
@@ -39,4 +40,5 @@ private slots:
 	void onRefreshClicked();
 	void onClearClicked();
 	void updateEvents();
+	void onExportClicked();  //导出选中内容
 };

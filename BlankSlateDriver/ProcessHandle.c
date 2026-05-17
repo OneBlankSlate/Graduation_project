@@ -164,121 +164,167 @@ NTSTATUS EnumProcessHandlesByService(HANDLE ProcessIdentity, PEPROCESS EProcess,
         (PFN_ZW_QUERY_SYSTEM_INFORMATION)MmGetSystemRoutineAddress(&(UNICODE_STRING)RTL_CONSTANT_STRING(L"ZwQuerySystemInformation"));
 
     if (!ZwQuerySystemInformation) {
-        // 错误处理
         return STATUS_UNSUCCESSFUL;
     }
 
-    // 3. 第一次调用，获取所需的缓冲区大小
-    ULONG bufferSize = 0x200000;  // ✅ 必须是 ULONG
-    /*NTSTATUS status = ZwQuerySystemInformation(SystemHandleInformation, NULL, 0, &bufferSize);
-    if (status != STATUS_INFO_LENGTH_MISMATCH) {
-        return status;
-    }*/
+    ULONG bufferSize = 0x200000;
+    ULONG returnLength = 0;
 
-    // 分配内存
     PSYSTEM_HANDLE_INFORMATION handleInfo =
         (PSYSTEM_HANDLE_INFORMATION)ExAllocatePool2(POOL_FLAG_NON_PAGED, bufferSize, 'tag1');
     if (!handleInfo) return STATUS_INSUFFICIENT_RESOURCES;
 
-    // 第二次调用
-    NTSTATUS status = ZwQuerySystemInformation(SystemHandleInformation, handleInfo, bufferSize, NULL);
-    if (NT_SUCCESS(status)) {
-        // 6. 遍历所有句柄，寻找目标进程的句柄
-        for (ULONG i = 0; i < handleInfo->NumberOfHandles; i++) {
-            PSYSTEM_HANDLE_TABLE_ENTRY_INFO entry = &handleInfo->Handles[i];
+    NTSTATUS status = ZwQuerySystemInformation(SystemHandleInformation, handleInfo, bufferSize, &returnLength);
+    if (!NT_SUCCESS(status)) {
+        ExFreePool(handleInfo);
+        return status;
+    }
 
-            // 过滤出属于目标进程 (比如你的进程A) 的句柄
-            if (entry->UniqueProcessId == ProcessIdentity) {
-                HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Index = entry->ObjectTypeIndex;
-                HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Handle = entry->HandleValue;
-                HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Object = entry->Object;
-                POBJECT_TYPE Type = __ObGetObjectType(entry->Object);
-   /* kd > dt _object_type
-        nt!_OBJECT_TYPE
-        + 0x000 TypeList         : _LIST_ENTRY
-        + 0x010 Name : _UNICODE_STRING*/
+    for (ULONG i = 0; i < handleInfo->NumberOfHandles; i++) {
+        PSYSTEM_HANDLE_TABLE_ENTRY_INFO entry = &handleInfo->Handles[i];
+
+        // 检查缓冲区是否已满
+        if (HandlesInfo->NumberOfHandle >= NumberOfHandle) {
+            status = STATUS_BUFFER_TOO_SMALL;
+            break;
+        }
+
+        // 过滤出属于目标进程的句柄
+        if (entry->UniqueProcessId != (ULONG)(ULONG_PTR)ProcessIdentity) {
+            continue;
+        }
+
+        // 初始化当前条目
+        RtlZeroMemory(&HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle], sizeof(HANDLE_INFORMATION_ENTRY));
+        HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Index = entry->ObjectTypeIndex;
+        HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Handle = entry->HandleValue;
+        HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Object = entry->Object;
+
+        __try {
+            // 验证对象指针有效性
+            if (!MmIsAddressValid(entry->Object)) {
+                HandlesInfo->NumberOfHandle++;
+                continue;
+            }
+
+            // 获取对象类型名
+            POBJECT_TYPE Type = __ObGetObjectType(entry->Object);
+            if (Type && MmIsAddressValid(Type)) {
 #ifdef _WIN64
                 PUNICODE_STRING Name = (PUNICODE_STRING)((ULONG_PTR)Type + 0x10);
 #else
                 PUNICODE_STRING Name = (PUNICODE_STRING)((ULONG_PTR)Type + 0x08);
 #endif
-
-                //RtlCopyMemory(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleType, Name->Buffer, (wcslen(Name->Buffer) + 1) * 2);
-                RtlCopyMemory(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleType, Name->Buffer, Name->Length);
-
-                //对象名  ObQueryNameString
-                POBJECT_NAME_INFORMATION NameInfo = NULL;
-                ULONG RequiredLength = 0;
-                // 第一次调用获取所需缓冲区大小
-                status = ObQueryNameString(entry->Object, NULL, 0, &RequiredLength);
-                // 分配缓冲区
-                NameInfo = (POBJECT_NAME_INFORMATION)ExAllocatePool(PagedPool, RequiredLength);
-                // 第二次调用获取对象名称
-                status = ObQueryNameString(entry->Object, NameInfo, RequiredLength, &RequiredLength);
-                if (NT_SUCCESS(status))
-                {
-                    RtlCopyMemory(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleName, NameInfo->Name.Buffer, NameInfo->Name.Length);
-
+                if (MmIsAddressValid(Name) && Name->Length > 0 && Name->Buffer && MmIsAddressValid(Name->Buffer)) {
+                    ULONG copyLen = Name->Length;
+                    if (copyLen > sizeof(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleType) - sizeof(WCHAR))
+                        copyLen = sizeof(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleType) - sizeof(WCHAR);
+                    RtlCopyMemory(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleType, Name->Buffer, copyLen);
                 }
-                else
-                {
-                    ExFreePool(NameInfo);
-                }
-                HandlesInfo->NumberOfHandle++;
-
             }
+
+            // 获取对象名
+            POBJECT_NAME_INFORMATION NameInfo = NULL;
+            ULONG RequiredLength = 0;
+            status = ObQueryNameString(entry->Object, NULL, 0, &RequiredLength);
+            if (RequiredLength == 0) {
+                HandlesInfo->NumberOfHandle++;
+                continue;
+            }
+            if (RequiredLength > 0x10000) {
+                HandlesInfo->NumberOfHandle++;
+                continue;
+            }
+            NameInfo = (POBJECT_NAME_INFORMATION)ExAllocatePool2(POOL_FLAG_PAGED, RequiredLength, 'tag2');
+            if (!NameInfo) {
+                HandlesInfo->NumberOfHandle++;
+                continue;
+            }
+            status = ObQueryNameString(entry->Object, NameInfo, RequiredLength, &RequiredLength);
+            if (NT_SUCCESS(status) && NameInfo->Name.Buffer != NULL && MmIsAddressValid(NameInfo->Name.Buffer)) {
+                ULONG nameCopyLen = NameInfo->Name.Length;
+                if (nameCopyLen > sizeof(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleName) - sizeof(WCHAR))
+                    nameCopyLen = sizeof(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleName) - sizeof(WCHAR);
+                RtlCopyMemory(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleName, NameInfo->Name.Buffer, nameCopyLen);
+            }
+            ExFreePool(NameInfo);
         }
+        __except (EXCEPTION_EXECUTE_HANDLER) {
+            // 访问无效对象时跳过，继续处理下一个句柄
+        }
+
+        HandlesInfo->NumberOfHandle++;
     }
 
-    // 7. 释放内存
     ExFreePool(handleInfo);
     return status;
 }
 NTSTATUS InsertHandleToList(PEPROCESS EProcess, HANDLE HandleValue, ULONG_PTR ObjectHeader, PHANDLES_INFORMATION HandlesInfo)
 {
-    PVOID ObjectBody = (PVOID)(ObjectHeader + _OBJECT_BODY_);
-    //句柄类型代号
-    HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Index = *(UCHAR*)((ULONG_PTR)ObjectHeader + 0x18);
-    //引用计数
-    HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Count = *(ULONG_PTR*)((ULONG_PTR)ObjectHeader + 0);
-    //句柄值
-    HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Handle = HandleValue;
-    //句柄对象
-    HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Object = ObjectBody;
-    //对象类型
-    POBJECT_TYPE Type = __ObGetObjectType(ObjectBody);  //传入对象体指针，EProcess是进程对象的对象体，传入则返回的类型是Process
-   /* kd > dt _object_type
-        nt!_OBJECT_TYPE
-        + 0x000 TypeList         : _LIST_ENTRY
-        + 0x010 Name : _UNICODE_STRING*/
+    __try {
+        PVOID ObjectBody = (PVOID)(ObjectHeader + _OBJECT_BODY_);
+        if (!MmIsAddressValid((PVOID)ObjectHeader)) {
+            return STATUS_UNSUCCESSFUL;
+        }
+        //句柄类型代号
+        HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Index = *(UCHAR*)((ULONG_PTR)ObjectHeader + 0x18);
+        //引用计数
+        HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Count = *(ULONG_PTR*)((ULONG_PTR)ObjectHeader + 0);
+        //句柄值
+        HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Handle = HandleValue;
+        //句柄对象
+        HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].Object = ObjectBody;
+
+        // 清零字符串缓冲区
+        RtlZeroMemory(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleType, sizeof(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleType));
+        RtlZeroMemory(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleName, sizeof(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleName));
+
+        //对象类型
+        if (!MmIsAddressValid(ObjectBody)) {
+            return STATUS_SUCCESS;
+        }
+        POBJECT_TYPE Type = __ObGetObjectType(ObjectBody);
+        if (Type && MmIsAddressValid(Type)) {
 #ifdef _WIN64
-    PUNICODE_STRING Name = (PUNICODE_STRING)((ULONG_PTR)Type + 0x10);
+            PUNICODE_STRING Name = (PUNICODE_STRING)((ULONG_PTR)Type + 0x10);
 #else
-    PUNICODE_STRING Name = (PUNICODE_STRING)((ULONG_PTR)Type + 0x08);
+            PUNICODE_STRING Name = (PUNICODE_STRING)((ULONG_PTR)Type + 0x08);
 #endif
+            if (MmIsAddressValid(Name) && Name->Length > 0 && Name->Buffer && MmIsAddressValid(Name->Buffer)) {
+                ULONG copyLen = Name->Length;
+                if (copyLen > sizeof(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleType) - sizeof(WCHAR))
+                    copyLen = sizeof(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleType) - sizeof(WCHAR);
+                RtlCopyMemory(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleType, Name->Buffer, copyLen);
+            }
+        }
 
-    //RtlCopyMemory(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleType, Name->Buffer, (wcslen(Name->Buffer) + 1) * 2);
-    RtlCopyMemory(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleType, Name->Buffer, Name->Length);
-
-    //对象名  ObQueryNameString
-    POBJECT_NAME_INFORMATION NameInfo = NULL;
-    ULONG RequiredLength = 0;
-    // 第一次调用获取所需缓冲区大小
-    NTSTATUS Status = ObQueryNameString(ObjectBody, NULL, 0, &RequiredLength);
-    // 分配缓冲区
-    NameInfo = (POBJECT_NAME_INFORMATION)ExAllocatePool(PagedPool, RequiredLength);
-    // 第二次调用获取对象名称
-    Status = ObQueryNameString(ObjectBody, NameInfo, RequiredLength, &RequiredLength);
-    if (NT_SUCCESS(Status))
-    {
-        RtlCopyMemory(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleName, NameInfo->Name.Buffer, NameInfo->Name.Length);
-    }
-    else
-    {
+        //对象名
+        POBJECT_NAME_INFORMATION NameInfo = NULL;
+        ULONG RequiredLength = 0;
+        NTSTATUS Status = ObQueryNameString(ObjectBody, NULL, 0, &RequiredLength);
+        if (RequiredLength == 0) {
+            return STATUS_SUCCESS;
+        }
+        if (RequiredLength > 0x10000) {
+            return STATUS_SUCCESS;
+        }
+        NameInfo = (POBJECT_NAME_INFORMATION)ExAllocatePool2(POOL_FLAG_PAGED, RequiredLength, 'tag3');
+        if (!NameInfo) {
+            return STATUS_INSUFFICIENT_RESOURCES;
+        }
+        Status = ObQueryNameString(ObjectBody, NameInfo, RequiredLength, &RequiredLength);
+        if (NT_SUCCESS(Status) && NameInfo->Name.Buffer != NULL && MmIsAddressValid(NameInfo->Name.Buffer)) {
+            ULONG nameCopyLen = NameInfo->Name.Length;
+            if (nameCopyLen > sizeof(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleName) - sizeof(WCHAR))
+                nameCopyLen = sizeof(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleName) - sizeof(WCHAR);
+            RtlCopyMemory(HandlesInfo->HandleInfo[HandlesInfo->NumberOfHandle].HandleName, NameInfo->Name.Buffer, nameCopyLen);
+        }
         ExFreePool(NameInfo);
+        return Status;
     }
-
-    return Status;
+    __except (EXCEPTION_EXECUTE_HANDLER) {
+        return STATUS_UNSUCCESSFUL;
+    }
 }
 
 NTSTATUS PsCloseHandle(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)

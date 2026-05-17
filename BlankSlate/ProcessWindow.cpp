@@ -7,6 +7,11 @@
 #include"ProcessMemoryWindow.h"
 #include"DriverModule.h"
 #include"InjectDialog.h"
+#include<QFile>
+#include<QTextStream>
+#include<QStandardPaths>
+#include<QMessageBox>
+#include<QDateTime>
 ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
 {
 	ui.setupUi(this);
@@ -50,6 +55,7 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     Hook_NtWriteVirtualMemoryAct = new QAction(QStringLiteral("hook类型-进程防写入"), ui.Process_TableView);
     Unhook_NtWriteVirtualMemoryAct = new QAction(QStringLiteral("unhook类型-进程防写入"), ui.Process_TableView);
     InjectAct = new QAction(QStringLiteral("DLL注入"), ui.Process_TableView);
+    ExportAct = new QAction(QStringLiteral("导出选中内容"), ui.Process_TableView);
     m_TableViewMenu->addAction(RefreshAct);
     m_TableViewMenu->addAction(ModuleAct);
     m_TableViewMenu->addAction(HandleAct);
@@ -63,6 +69,7 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     m_TableViewMenu->addAction(Hook_NtWriteVirtualMemoryAct);
     m_TableViewMenu->addAction(Unhook_NtWriteVirtualMemoryAct);
     m_TableViewMenu->addAction(InjectAct);
+    m_TableViewMenu->addAction(ExportAct);
 
     //消息关联
     connect(ui.Process_TableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(Menu_Slot(QPoint)));  //菜单初始化
@@ -79,6 +86,7 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     connect(Hook_NtWriteVirtualMemoryAct, &QAction::triggered, this, &ProcessWindow::hook_NtWriteVirtualMemory);
     connect(Unhook_NtWriteVirtualMemoryAct, &QAction::triggered, this, &ProcessWindow::unhook_NtWriteVirtualMemory);
     connect(InjectAct, &QAction::triggered, this, &ProcessWindow::OpenInjectDialog);
+    connect(ExportAct, &QAction::triggered, this, &ProcessWindow::ExportSelected);
     
 }
 
@@ -378,4 +386,60 @@ void ProcessWindow::RefreshProcess()
     //只清理数据行，不清理表头
     m_model.removeRows(0, m_model.rowCount());
     ListProcessInfo();
+}
+
+void ProcessWindow::ExportSelected()
+{
+    QModelIndexList selectedRows = ui.Process_TableView->selectionModel()->selectedRows();
+    QList<int> rowsToExport;
+    if (!selectedRows.isEmpty()) {
+        QSet<int> rowSet;
+        for (const QModelIndex& idx : selectedRows) {
+            rowSet.insert(idx.row());
+        }
+        rowsToExport = rowSet.values();
+        std::sort(rowsToExport.begin(), rowsToExport.end());
+    } else {
+        for (int i = 0; i < m_model.rowCount(); i++) {
+            rowsToExport.append(i);
+        }
+    }
+
+    if (rowsToExport.isEmpty()) {
+        QMessageBox::warning(this, QStringLiteral("提示"), QStringLiteral("没有可导出的数据！"));
+        return;
+    }
+
+    QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+    QString filePath = desktopPath + "/BlankSlate.txt";
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::critical(this, QStringLiteral("错误"), QStringLiteral("无法创建文件: %1").arg(filePath));
+        return;
+    }
+
+    QTextStream out(&file);
+    out.setCodec("UTF-8");
+    out << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss") << "\n\n";
+
+    // 写入表头
+    for (int col = 0; col < m_model.columnCount(); col++) {
+        if (col > 0) out << "\t";
+        out << m_model.horizontalHeaderItem(col)->text();
+    }
+    out << "\n";
+
+    // 写入数据行
+    for (int row : rowsToExport) {
+        for (int col = 0; col < m_model.columnCount(); col++) {
+            if (col > 0) out << "\t";
+            out << m_model.item(row, col)->text();
+        }
+        out << "\n";
+    }
+
+    file.close();
+    QMessageBox::information(this, QStringLiteral("成功"),
+        QStringLiteral("已导出 %1 条记录到 %2").arg(rowsToExport.size()).arg(filePath));
 }

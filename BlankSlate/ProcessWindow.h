@@ -38,6 +38,7 @@ private:
 	QAction* Hook_NtWriteVirtualMemoryAct;
 	QAction* Unhook_NtWriteVirtualMemoryAct;
 	QAction* InjectAct;  // DLL注入菜单项
+	QAction* ExportAct;  // 导出菜单项
 
 	Ui::ProcessWindowClass ui;
 	QStandardItemModel m_model;  // 用于管理QTableView的数据模型
@@ -48,6 +49,7 @@ public slots:
 	void OpenProcessModuleWindow();  //查看进程模块
 	void OpenProcessHandleWindow();  //查看进程句柄
 	void OpenProcessMemoryWindow();  //查看进程内存
+	void ExportSelected();  //导出选中内容
 	
 };
 

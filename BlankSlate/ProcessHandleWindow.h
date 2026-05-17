@@ -18,9 +18,11 @@ private:
 	QStandardItemModel m_model;
 	QMenu* m_TableViewMenu;  //菜单，需要头文件<QMenu>
 	QAction* CloseHandleAct;
+	QAction* ExportAct;  // 导出菜单项
 	HANDLE m_ProcessId;
 public slots:
 	void Menu_Slot(QPoint p);//右键菜单槽函数
 	void CloseHandle();
+	void ExportSelected();  //导出选中内容
 
 };
