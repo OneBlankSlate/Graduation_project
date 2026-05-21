@@ -40,6 +40,12 @@ LPFN_SERVICEADDRESS __ServiceArray[] = {
 	GetModuleEvents,         // GET_EVENTS_MODULE_MON
 	PsPreventMultiOpen,      // PREVENT_MULTI_OPEN
 	PsCancelMultiOpen,       // CANCEL_MULTI_OPEN
+	PsProtectFileDelete,     // PROTECT_FILE_DELETE
+	PsUnprotectFileDelete,   // UNPROTECT_FILE_DELETE
+	PsProtectFileModify,     // PROTECT_FILE_MODIFY
+	PsUnprotectFileModify,   // UNPROTECT_FILE_MODIFY
+	PsProtectFileCopy,       // PROTECT_FILE_COPY
+	PsUnprotectFileCopy,     // UNPROTECT_FILE_COPY
 	NULL
 };
 NTSTATUS CommunicateNeitherControl(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)

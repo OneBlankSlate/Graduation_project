@@ -75,3 +75,32 @@ QString PathConverter::ntPathToDosPath(const QString& ntPath)
     // 无法转换，原样返回
     return ntPath;
 }
+
+QString PathConverter::dosPathToNtPath(const QString& dosPath)
+{
+    QMutexLocker locker(&m_mutex);
+
+    // DOS路径格式: C:\Windows\System32\ntdll.dll
+    // 需要匹配最长前缀
+    QString bestMatch;
+    int bestLen = 0;
+
+    for (auto it = m_ntToDosMap.constBegin(); it != m_ntToDosMap.constEnd(); ++it)
+    {
+        if (dosPath.startsWith(it.value(), Qt::CaseInsensitive) && it.value().length() > bestLen)
+        {
+            bestMatch = it.key();
+            bestLen = it.value().length();
+        }
+    }
+
+    if (!bestMatch.isEmpty())
+    {
+        // 替换DOS盘符为NT设备名
+        // C:\Windows\... → \Device\HarddiskVolume1\Windows\...
+        return bestMatch + dosPath.mid(bestLen);
+    }
+
+    // 无法转换，原样返回
+    return dosPath;
+}

@@ -47,3 +47,8 @@ typedef struct _FILE_EVENT_BUFFER {
     ULONG EventCount;
     ULONG TotalEvents;
 } FILE_EVENT_BUFFER, * PFILE_EVENT_BUFFER;
+
+// 文件保护标志
+#define FILE_PROTECT_DELETE  0x01
+#define FILE_PROTECT_MODIFY  0x02
+#define FILE_PROTECT_COPY    0x04

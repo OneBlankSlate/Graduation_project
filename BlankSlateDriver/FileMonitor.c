@@ -6,6 +6,8 @@
 PFILE_MONITOR_CONTEXT g_FileMonitorContext = NULL;
 PSYSTEM_PROCESS_FILTER g_SystemProcessFilterList = NULL;
 PFLT_FILTER gFilterHandle = NULL;
+PPROTECTED_FILE_ENTRY g_ProtectedFileList = NULL;
+FAST_MUTEX g_ProtectedFileListMutex;
 
 // 默认系统进程过滤列表
 WCHAR* g_DefaultSystemProcesses[] = {
@@ -152,12 +154,19 @@ NTSTATUS InitializeFileMonitor(PDRIVER_OBJECT DriverObject)
     // 初始化系统进程过滤器
     InitializeSystemProcessFilter();
 
+    // 初始化文件保护互斥锁
+    ExInitializeFastMutex(&g_ProtectedFileListMutex);
+    g_ProtectedFileList = NULL;
+
     return status;
 }
 
 // 反初始化文件监控模块
 VOID UninitializeFileMonitor()
 {
+    // 清理文件保护列表
+    CleanupFileProtectionList();
+
     // 清理系统进程过滤器
     while (g_SystemProcessFilterList) {
         PSYSTEM_PROCESS_FILTER next = g_SystemProcessFilterList->Next;
@@ -468,6 +477,215 @@ VOID LogFileOperation(
     }
 }
 
+// 大小写不敏感的宽字符串比较
+BOOLEAN WcsEqualIgnoreCase(WCHAR* str1, WCHAR* str2)
+{
+    if (!str1 || !str2) return FALSE;
+    while (*str1 && *str2) {
+        WCHAR c1 = (*str1 >= L'A' && *str1 <= L'Z') ? *str1 + (L'a' - L'A') : *str1;
+        WCHAR c2 = (*str2 >= L'A' && *str2 <= L'Z') ? *str2 + (L'a' - L'A') : *str2;
+        if (c1 != c2) return FALSE;
+        str1++;
+        str2++;
+    }
+    return *str1 == *str2;
+}
+
+// 添加文件保护
+VOID AddFileProtection(WCHAR* FilePath, ULONG ProtectFlag)
+{
+    ExAcquireFastMutex(&g_ProtectedFileListMutex);
+
+    // 搜索是否已存在该文件的保护条目
+    PPROTECTED_FILE_ENTRY entry = g_ProtectedFileList;
+    while (entry) {
+        if (WcsEqualIgnoreCase(entry->FilePath, FilePath)) {
+            entry->ProtectFlags |= ProtectFlag;
+            ExReleaseFastMutex(&g_ProtectedFileListMutex);
+            return;
+        }
+        entry = entry->Next;
+    }
+
+    // 创建新条目
+    entry = (PPROTECTED_FILE_ENTRY)ExAllocatePoolWithTag(
+        NonPagedPool, sizeof(PROTECTED_FILE_ENTRY), 'FPro');
+
+    if (entry) {
+        ULONG copyLen = 0;
+        for (copyLen = 0; copyLen < 519 && FilePath[copyLen] != L'\0'; copyLen++) {
+            entry->FilePath[copyLen] = FilePath[copyLen];
+        }
+        entry->FilePath[copyLen] = L'\0';
+        entry->ProtectFlags = ProtectFlag;
+        entry->Next = g_ProtectedFileList;
+        g_ProtectedFileList = entry;
+    }
+
+    ExReleaseFastMutex(&g_ProtectedFileListMutex);
+}
+
+// 移除文件保护
+VOID RemoveFileProtection(WCHAR* FilePath, ULONG ProtectFlag)
+{
+    ExAcquireFastMutex(&g_ProtectedFileListMutex);
+
+    PPROTECTED_FILE_ENTRY entry = g_ProtectedFileList;
+    PPROTECTED_FILE_ENTRY prev = NULL;
+
+    while (entry) {
+        if (WcsEqualIgnoreCase(entry->FilePath, FilePath)) {
+            entry->ProtectFlags &= ~ProtectFlag;
+            if (entry->ProtectFlags == 0) {
+                // 所有保护已移除，删除该条目
+                if (prev) {
+                    prev->Next = entry->Next;
+                }
+                else {
+                    g_ProtectedFileList = entry->Next;
+                }
+                ExFreePoolWithTag(entry, 'FPro');
+            }
+            ExReleaseFastMutex(&g_ProtectedFileListMutex);
+            return;
+        }
+        prev = entry;
+        entry = entry->Next;
+    }
+
+    ExReleaseFastMutex(&g_ProtectedFileListMutex);
+}
+
+// 检查文件是否受指定保护
+BOOLEAN IsFileProtected(WCHAR* FilePath, ULONG ProtectFlag)
+{
+    ExAcquireFastMutex(&g_ProtectedFileListMutex);
+
+    PPROTECTED_FILE_ENTRY entry = g_ProtectedFileList;
+    while (entry) {
+        if (WcsEqualIgnoreCase(entry->FilePath, FilePath) &&
+            (entry->ProtectFlags & ProtectFlag)) {
+            ExReleaseFastMutex(&g_ProtectedFileListMutex);
+            return TRUE;
+        }
+        entry = entry->Next;
+    }
+
+    ExReleaseFastMutex(&g_ProtectedFileListMutex);
+    return FALSE;
+}
+
+// 清理文件保护列表
+VOID CleanupFileProtectionList()
+{
+    ExAcquireFastMutex(&g_ProtectedFileListMutex);
+
+    while (g_ProtectedFileList) {
+        PPROTECTED_FILE_ENTRY next = g_ProtectedFileList->Next;
+        ExFreePoolWithTag(g_ProtectedFileList, 'FPro');
+        g_ProtectedFileList = next;
+    }
+
+    ExReleaseFastMutex(&g_ProtectedFileListMutex);
+}
+
+// 文件保护IOCTL处理函数
+NTSTATUS PsProtectFileDelete(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, PULONG ReturnValue)
+{
+    UNREFERENCED_PARAMETER(OutputBuffer);
+    UNREFERENCED_PARAMETER(OutputBufferLength);
+
+    if (InputBufferLength < sizeof(COMMUNICATE_FILE_PROTECT)) {
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    PCOMMUNICATE_FILE_PROTECT input = (PCOMMUNICATE_FILE_PROTECT)InputBuffer;
+    AddFileProtection(input->FilePath, FILE_PROTECT_DELETE);
+
+    *ReturnValue = 0;
+    return STATUS_SUCCESS;
+}
+
+NTSTATUS PsUnprotectFileDelete(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, PULONG ReturnValue)
+{
+    UNREFERENCED_PARAMETER(OutputBuffer);
+    UNREFERENCED_PARAMETER(OutputBufferLength);
+
+    if (InputBufferLength < sizeof(COMMUNICATE_FILE_PROTECT)) {
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    PCOMMUNICATE_FILE_PROTECT input = (PCOMMUNICATE_FILE_PROTECT)InputBuffer;
+    RemoveFileProtection(input->FilePath, FILE_PROTECT_DELETE);
+
+    *ReturnValue = 0;
+    return STATUS_SUCCESS;
+}
+
+NTSTATUS PsProtectFileModify(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, PULONG ReturnValue)
+{
+    UNREFERENCED_PARAMETER(OutputBuffer);
+    UNREFERENCED_PARAMETER(OutputBufferLength);
+
+    if (InputBufferLength < sizeof(COMMUNICATE_FILE_PROTECT)) {
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    PCOMMUNICATE_FILE_PROTECT input = (PCOMMUNICATE_FILE_PROTECT)InputBuffer;
+    AddFileProtection(input->FilePath, FILE_PROTECT_MODIFY);
+
+    *ReturnValue = 0;
+    return STATUS_SUCCESS;
+}
+
+NTSTATUS PsUnprotectFileModify(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, PULONG ReturnValue)
+{
+    UNREFERENCED_PARAMETER(OutputBuffer);
+    UNREFERENCED_PARAMETER(OutputBufferLength);
+
+    if (InputBufferLength < sizeof(COMMUNICATE_FILE_PROTECT)) {
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    PCOMMUNICATE_FILE_PROTECT input = (PCOMMUNICATE_FILE_PROTECT)InputBuffer;
+    RemoveFileProtection(input->FilePath, FILE_PROTECT_MODIFY);
+
+    *ReturnValue = 0;
+    return STATUS_SUCCESS;
+}
+
+NTSTATUS PsProtectFileCopy(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, PULONG ReturnValue)
+{
+    UNREFERENCED_PARAMETER(OutputBuffer);
+    UNREFERENCED_PARAMETER(OutputBufferLength);
+
+    if (InputBufferLength < sizeof(COMMUNICATE_FILE_PROTECT)) {
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    PCOMMUNICATE_FILE_PROTECT input = (PCOMMUNICATE_FILE_PROTECT)InputBuffer;
+    AddFileProtection(input->FilePath, FILE_PROTECT_COPY);
+
+    *ReturnValue = 0;
+    return STATUS_SUCCESS;
+}
+
+NTSTATUS PsUnprotectFileCopy(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, PULONG ReturnValue)
+{
+    UNREFERENCED_PARAMETER(OutputBuffer);
+    UNREFERENCED_PARAMETER(OutputBufferLength);
+
+    if (InputBufferLength < sizeof(COMMUNICATE_FILE_PROTECT)) {
+        return STATUS_INVALID_PARAMETER;
+    }
+
+    PCOMMUNICATE_FILE_PROTECT input = (PCOMMUNICATE_FILE_PROTECT)InputBuffer;
+    RemoveFileProtection(input->FilePath, FILE_PROTECT_COPY);
+
+    *ReturnValue = 0;
+    return STATUS_SUCCESS;
+}
+
 // MiniFilter 预操作回调
 FLT_PREOP_CALLBACK_STATUS FilePreOperationCallback(
     PFLT_CALLBACK_DATA Data,
@@ -480,19 +698,39 @@ FLT_PREOP_CALLBACK_STATUS FilePreOperationCallback(
 
     PFLT_IO_PARAMETER_BLOCK iopb = Data->Iopb;
     PCSTR operationName = NULL;
+    ULONG protectFlag = 0;  // 需要检查的保护标志
 
-    // 确定操作类型
+    // 确定操作类型及对应保护标志
     switch (iopb->MajorFunction) {
     case IRP_MJ_CREATE:
         operationName = "CREATE/OPEN";
+        {
+            ACCESS_MASK desiredAccess = iopb->Parameters.Create.SecurityContext->DesiredAccess;
+            ULONG createOptions = iopb->Parameters.Create.Options;
+
+            // 防删除：检查 DELETE 访问权限和 FILE_DELETE_ON_CLOSE 标志
+            if ((desiredAccess & DELETE) || (createOptions & FILE_DELETE_ON_CLOSE)) {
+                protectFlag |= FILE_PROTECT_DELETE;
+            }
+            // 防修改：检查写访问权限（GENERIC_WRITE 包含 FILE_WRITE_DATA 等）
+            if (desiredAccess & (GENERIC_WRITE | FILE_WRITE_DATA | FILE_APPEND_DATA)) {
+                protectFlag |= FILE_PROTECT_MODIFY;
+            }
+            // 防复制：检查读访问权限（GENERIC_READ 包含 FILE_READ_DATA）
+            if (desiredAccess & (GENERIC_READ | FILE_READ_DATA)) {
+                protectFlag |= FILE_PROTECT_COPY;
+            }
+        }
         break;
 
     case IRP_MJ_READ:
         operationName = "READ";
+        protectFlag = FILE_PROTECT_COPY;  // 防复制：阻止读取
         break;
 
     case IRP_MJ_WRITE:
         operationName = "WRITE";
+        protectFlag = FILE_PROTECT_MODIFY;  // 防修改：阻止写入
         break;
 
     case IRP_MJ_SET_INFORMATION:
@@ -505,22 +743,27 @@ FLT_PREOP_CALLBACK_STATUS FilePreOperationCallback(
 
                 if (dispositionInfo->DeleteFile) {
                     operationName = "DELETE";
+                    protectFlag = FILE_PROTECT_DELETE;  // 防删除：阻止删除操作
                 }
                 else {
                     operationName = "SET_INFORMATION";
+                    protectFlag = FILE_PROTECT_MODIFY;
                 }
             }
             else {
                 operationName = "SET_INFORMATION";
+                protectFlag = FILE_PROTECT_MODIFY;
             }
         }
         // 检查是否为重命名操作
         else if (iopb->Parameters.SetFileInformation.FileInformationClass == FileRenameInformation ||
             iopb->Parameters.SetFileInformation.FileInformationClass == FileRenameInformationEx) {
             operationName = "RENAME";
+            protectFlag = FILE_PROTECT_MODIFY;  // 重命名也是修改
         }
         else {
             operationName = "SET_INFORMATION";
+            protectFlag = FILE_PROTECT_MODIFY;
         }
         break;
 
@@ -529,9 +772,58 @@ FLT_PREOP_CALLBACK_STATUS FilePreOperationCallback(
         break;
     }
 
-    // 记录文件操作
-    if (operationName != NULL) {
+    // 记录文件操作（仅监控状态下）
+    if (operationName != NULL && g_FileMonitorContext && g_FileMonitorContext->IsMonitoring) {
         LogFileOperation(Data, operationName);
+    }
+
+    // 检查文件保护
+    if (protectFlag != 0 && g_ProtectedFileList != NULL) {
+        PFLT_FILE_NAME_INFORMATION fileNameInfo = NULL;
+        NTSTATUS status = FltGetFileNameInformation(
+            Data,
+            FLT_FILE_NAME_NORMALIZED | FLT_FILE_NAME_QUERY_DEFAULT,
+            &fileNameInfo
+        );
+
+        if (NT_SUCCESS(status)) {
+            status = FltParseFileNameInformation(fileNameInfo);
+        }
+
+        if (NT_SUCCESS(status) && fileNameInfo && fileNameInfo->Name.Buffer) {
+            WCHAR filePath[520] = { 0 };
+            ULONG copyLength = min(
+                fileNameInfo->Name.Length,
+                sizeof(filePath) - sizeof(WCHAR)
+            );
+
+            RtlCopyMemory(filePath, fileNameInfo->Name.Buffer, copyLength);
+            filePath[copyLength / sizeof(WCHAR)] = L'\0';
+
+            // 检查该文件是否受保护
+            ULONG matchedFlags = 0;
+            ExAcquireFastMutex(&g_ProtectedFileListMutex);
+            PPROTECTED_FILE_ENTRY entry = g_ProtectedFileList;
+            while (entry) {
+                if (WcsEqualIgnoreCase(entry->FilePath, filePath)) {
+                    matchedFlags = entry->ProtectFlags;
+                    break;
+                }
+                entry = entry->Next;
+            }
+            ExReleaseFastMutex(&g_ProtectedFileListMutex);
+
+            FltReleaseFileNameInformation(fileNameInfo);
+
+            if (matchedFlags & protectFlag) {
+                Data->IoStatus.Status = STATUS_ACCESS_DENIED;
+                Data->IoStatus.Information = 0;
+                return FLT_PREOP_COMPLETE;
+            }
+        }
+        else if (fileNameInfo) {
+            FltReleaseFileNameInformation(fileNameInfo);
+        }
     }
 
     return FLT_PREOP_SUCCESS_WITH_CALLBACK;

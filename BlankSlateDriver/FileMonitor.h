@@ -2,8 +2,21 @@
 #pragma once
 
 // 包含项目头文件
-#include "FileMonCommon.h" // 包含文件事件结构和事件缓冲区结构
-#include "IoControlHelper.h"
+#include "IoControlHelper.h"      // 包含 OPERATE_TYPE 定义（必须在 FileMonCommon.h 之前）
+#include "FileMonCommon.h"        // 包含文件事件结构和事件缓冲区结构
+
+// 文件保护通信结构（应用层与驱动层共用）
+typedef struct _COMMUNICATE_FILE_PROTECT {
+    OPERATE_TYPE OperateType;
+    WCHAR FilePath[520];     // NT格式的文件路径
+} COMMUNICATE_FILE_PROTECT, * PCOMMUNICATE_FILE_PROTECT;
+
+// 文件保护条目（驱动内部使用）
+typedef struct _PROTECTED_FILE_ENTRY {
+    WCHAR FilePath[520];     // NT路径
+    ULONG ProtectFlags;      // 保护标志位（FILE_PROTECT_DELETE | FILE_PROTECT_MODIFY | FILE_PROTECT_COPY）
+    struct _PROTECTED_FILE_ENTRY* Next;
+} PROTECTED_FILE_ENTRY, * PPROTECTED_FILE_ENTRY;
 // 文件监控上下文结构
 typedef struct _FILE_MONITOR_CONTEXT {
     PDEVICE_OBJECT DeviceObject;
@@ -72,3 +85,19 @@ NTKERNELAPI
 LPSTR
 NTAPI
 PsGetProcessImageFileName(PEPROCESS Process);
+
+// 文件保护相关声明
+extern PPROTECTED_FILE_ENTRY g_ProtectedFileList;
+extern FAST_MUTEX g_ProtectedFileListMutex;
+
+NTSTATUS PsProtectFileDelete(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, PULONG ReturnValue);
+NTSTATUS PsUnprotectFileDelete(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, PULONG ReturnValue);
+NTSTATUS PsProtectFileModify(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, PULONG ReturnValue);
+NTSTATUS PsUnprotectFileModify(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, PULONG ReturnValue);
+NTSTATUS PsProtectFileCopy(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, PULONG ReturnValue);
+NTSTATUS PsUnprotectFileCopy(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, PULONG ReturnValue);
+
+BOOLEAN IsFileProtected(WCHAR* FilePath, ULONG ProtectFlag);
+VOID AddFileProtection(WCHAR* FilePath, ULONG ProtectFlag);
+VOID RemoveFileProtection(WCHAR* FilePath, ULONG ProtectFlag);
+VOID CleanupFileProtectionList();

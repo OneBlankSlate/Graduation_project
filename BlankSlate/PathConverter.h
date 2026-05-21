@@ -14,6 +14,9 @@ public:
     // 将NT设备路径转换为DOS路径，如转换失败则原样返回
     QString ntPathToDosPath(const QString& ntPath);
 
+    // 将DOS路径转换为NT设备路径，如转换失败则原样返回
+    QString dosPathToNtPath(const QString& dosPath);
+
     // 刷新设备映射表（可定期调用以识别新挂载的卷）
     void refreshMapping();
 

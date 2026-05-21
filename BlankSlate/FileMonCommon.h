@@ -37,3 +37,8 @@ typedef struct _FILE_EVENT_PACKET {
 // 缓冲区大小定义
 #define MAX_FILE_EVENTS 1024
 #define FILE_EVENT_PACKET_SIZE (sizeof(FILE_EVENT_PACKET) + (MAX_FILE_EVENTS - 1) * sizeof(FILE_EVENT))
+
+// 文件保护标志
+#define FILE_PROTECT_DELETE  0x01
+#define FILE_PROTECT_MODIFY  0x02
+#define FILE_PROTECT_COPY    0x04

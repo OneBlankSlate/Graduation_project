@@ -38,6 +38,12 @@ typedef enum _OPERATE_TYPE_
 	GET_EVENTS_MODULE_MON, // 获取映像加载事件
 	PREVENT_MULTI_OPEN,    // 防止多开
 	CANCEL_MULTI_OPEN,     // 取消防多开
+	PROTECT_FILE_DELETE,   // 保护文件防删除
+	UNPROTECT_FILE_DELETE, // 取消文件防删除保护
+	PROTECT_FILE_MODIFY,   // 保护文件防修改
+	UNPROTECT_FILE_MODIFY, // 取消文件防修改保护
+	PROTECT_FILE_COPY,     // 保护文件防复制
+	UNPROTECT_FILE_COPY,   // 取消文件防复制保护
 	SERVICE_MAX
 }OPERATE_TYPE;
 
