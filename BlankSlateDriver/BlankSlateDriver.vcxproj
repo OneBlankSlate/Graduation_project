@@ -228,6 +228,7 @@
     <ClCompile Include="IoControlHelper.c" />
     <ClCompile Include="MemoryHelper.c" />
     <ClCompile Include="ModuleMonitor.c" />
+    <ClCompile Include="MultiOpenPrevent.c" />
     <ClCompile Include="ObjectHelper.c" />
     <ClCompile Include="ProcessHandle.c" />
     <ClCompile Include="ProcessHelper.c" />
@@ -249,6 +250,7 @@
     <ClInclude Include="IoControlHelper.h" />
     <ClInclude Include="MemoryHelper.h" />
     <ClInclude Include="ModuleMonitor.h" />
+    <ClInclude Include="MultiOpenPrevent.h" />
     <ClInclude Include="ObjectHelper.h" />
     <ClInclude Include="ProcessHandle.h" />
     <ClInclude Include="ProcessHelper.h" />

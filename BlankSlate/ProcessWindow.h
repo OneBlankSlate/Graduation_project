@@ -22,6 +22,8 @@ public:
 	void unhook_NtTerminateProcess();
 	void hook_NtWriteVirtualMemory();
 	void unhook_NtWriteVirtualMemory();
+	void PreventMultiOpen();
+	void CancelMultiOpen();
 	void OpenInjectDialog();  // DLL注入
 private:
 	QMenu* m_TableViewMenu;  //菜单，需要头文件<QMenu>
@@ -37,6 +39,8 @@ private:
 	QAction* Unhook_NtTerminateProAct;
 	QAction* Hook_NtWriteVirtualMemoryAct;
 	QAction* Unhook_NtWriteVirtualMemoryAct;
+	QAction* PreventMultiOpenAct;       // 防止多开
+	QAction* CancelMultiOpenAct;        // 取消防多开
 	QAction* InjectAct;  // DLL注入菜单项
 	QAction* ExportAct;  // 导出菜单项
 

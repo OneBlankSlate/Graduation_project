@@ -7,6 +7,7 @@
 #include"ProcMonitor.h"
 #include "FileMonitor.h"
 #include"ModuleMonitor.h"
+#include"MultiOpenPrevent.h"
 //注册表回调使用的Cookie
 LARGE_INTEGER g_liRegCookie;
 //   bu BlankSlateDriver!DriverEntry
@@ -56,6 +57,7 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 	InitializeSystemSource();
 	InitializeCallbackSource(DriverObject);
 	GetDriverObject(DriverObject);
+	InitializeMultiOpenPrevent();
 	// 初始化文件监控模块
 	Status = InitializeFileMonitor(DriverObject);
 	if (!NT_SUCCESS(Status)) {
@@ -99,6 +101,7 @@ VOID DriverUnload(IN PDRIVER_OBJECT DriverObject)
 	//必要的Uninitialize
 	UninitializeSystemSource();
 	UninitializeCallbackSource();
+	UninitializeMultiOpenPrevent();
 
 	if (g_context) {
 		// 停止监控

@@ -10,6 +10,7 @@
 #include"FileMonitor.h"
 #include"ThreadMonitor.h"
 #include"ModuleMonitor.h"
+#include"MultiOpenPrevent.h"
 LPFN_SERVICEADDRESS __ServiceArray[] = {
 	NULL,
 	PsEnumProcess,  //枚举进程
@@ -37,6 +38,8 @@ LPFN_SERVICEADDRESS __ServiceArray[] = {
 	MonitorModule,           // START_MODULE_MON
 	StopMonitorModule,       // STOP_MODULE_MON
 	GetModuleEvents,         // GET_EVENTS_MODULE_MON
+	PsPreventMultiOpen,      // PREVENT_MULTI_OPEN
+	PsCancelMultiOpen,       // CANCEL_MULTI_OPEN
 	NULL
 };
 NTSTATUS CommunicateNeitherControl(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)

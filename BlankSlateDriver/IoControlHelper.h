@@ -42,6 +42,8 @@ typedef enum _OPERATE_TYPE_
 	START_MODULE_MON,      // 开始映像加载监控
 	STOP_MODULE_MON,       // 停止映像加载监控
 	GET_EVENTS_MODULE_MON, // 获取映像加载事件
+	PREVENT_MULTI_OPEN,    // 防止多开
+	CANCEL_MULTI_OPEN,     // 取消防多开
 	SERVICE_MAX
 }OPERATE_TYPE;
 

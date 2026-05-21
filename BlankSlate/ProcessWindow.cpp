@@ -14,6 +14,7 @@
 #include<QDateTime>
 #include<QBrush>
 #include<QColor>
+#include<algorithm>
 ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
 {
 	ui.setupUi(this);
@@ -56,6 +57,8 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     Unhook_NtTerminateProAct = new QAction(QStringLiteral("unhook类型-进程防关闭"), ui.Process_TableView);
     Hook_NtWriteVirtualMemoryAct = new QAction(QStringLiteral("hook类型-进程防写入"), ui.Process_TableView);
     Unhook_NtWriteVirtualMemoryAct = new QAction(QStringLiteral("unhook类型-进程防写入"), ui.Process_TableView);
+    PreventMultiOpenAct = new QAction(QStringLiteral("防止多开"), ui.Process_TableView);
+    CancelMultiOpenAct = new QAction(QStringLiteral("取消防多开"), ui.Process_TableView);
     InjectAct = new QAction(QStringLiteral("DLL注入"), ui.Process_TableView);
     ExportAct = new QAction(QStringLiteral("导出选中内容"), ui.Process_TableView);
     m_TableViewMenu->addAction(RefreshAct);
@@ -70,6 +73,8 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     m_TableViewMenu->addAction(Unhook_NtTerminateProAct);
     m_TableViewMenu->addAction(Hook_NtWriteVirtualMemoryAct);
     m_TableViewMenu->addAction(Unhook_NtWriteVirtualMemoryAct);
+    m_TableViewMenu->addAction(PreventMultiOpenAct);
+    m_TableViewMenu->addAction(CancelMultiOpenAct);
     m_TableViewMenu->addAction(InjectAct);
     m_TableViewMenu->addAction(ExportAct);
 
@@ -87,6 +92,8 @@ ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
     connect(Unhook_NtTerminateProAct, &QAction::triggered, this, &ProcessWindow::unhook_NtTerminateProcess);
     connect(Hook_NtWriteVirtualMemoryAct, &QAction::triggered, this, &ProcessWindow::hook_NtWriteVirtualMemory);
     connect(Unhook_NtWriteVirtualMemoryAct, &QAction::triggered, this, &ProcessWindow::unhook_NtWriteVirtualMemory);
+    connect(PreventMultiOpenAct, &QAction::triggered, this, &ProcessWindow::PreventMultiOpen);
+    connect(CancelMultiOpenAct, &QAction::triggered, this, &ProcessWindow::CancelMultiOpen);
     connect(InjectAct, &QAction::triggered, this, &ProcessWindow::OpenInjectDialog);
     connect(ExportAct, &QAction::triggered, this, &ProcessWindow::ExportSelected);
     
@@ -319,6 +326,73 @@ void ProcessWindow::hook_NtWriteVirtualMemory()
 
 void ProcessWindow::unhook_NtWriteVirtualMemory()
 {
+}
+
+void ProcessWindow::PreventMultiOpen()
+{
+    QModelIndexList selectedRows = ui.Process_TableView->selectionModel()->selectedRows();
+    if (!selectedRows.isEmpty()) {
+        QModelIndex index = selectedRows.first();
+        QModelIndex nameIndex = index.sibling(index.row(), 0); // 第0列 - 映像名称
+        QString imageName = nameIndex.data().toString();
+
+        if (imageName.isEmpty()) {
+            QMessageBox::warning(this, QStringLiteral("提示"), QStringLiteral("无法获取进程名称！"));
+            return;
+        }
+
+        COMMUNICATE_MULTI_OPEN_PREVENT v1;
+        RtlZeroMemory(&v1, sizeof(COMMUNICATE_MULTI_OPEN_PREVENT));
+        v1.OperateType = PREVENT_MULTI_OPEN;
+        // 将QString转换为WCHAR数组
+        std::wstring wstr = imageName.toStdWString();
+        ULONG copyLen = (ULONG)min(wstr.length(), (size_t)(MULTI_OPEN_IMAGE_NAME_LEN - 1));
+        wcsncpy_s(v1.ImageName, MULTI_OPEN_IMAGE_NAME_LEN, wstr.c_str(), copyLen);
+        v1.ImageName[copyLen] = L'\0';
+
+        BOOL IsOk = CommunicateDevice(&v1, sizeof(COMMUNICATE_MULTI_OPEN_PREVENT), NULL, 0, NULL);
+        if (IsOk) {
+            QMessageBox::information(this, QStringLiteral("成功"),
+                QStringLiteral("已启用\"%1\"的防止多开保护").arg(imageName));
+        }
+        else {
+            QMessageBox::warning(this, QStringLiteral("失败"),
+                QStringLiteral("启用\"%1\"的防止多开保护失败").arg(imageName));
+        }
+    }
+}
+
+void ProcessWindow::CancelMultiOpen()
+{
+    QModelIndexList selectedRows = ui.Process_TableView->selectionModel()->selectedRows();
+    if (!selectedRows.isEmpty()) {
+        QModelIndex index = selectedRows.first();
+        QModelIndex nameIndex = index.sibling(index.row(), 0); // 第0列 - 映像名称
+        QString imageName = nameIndex.data().toString();
+
+        if (imageName.isEmpty()) {
+            QMessageBox::warning(this, QStringLiteral("提示"), QStringLiteral("无法获取进程名称！"));
+            return;
+        }
+
+        COMMUNICATE_MULTI_OPEN_PREVENT v1;
+        RtlZeroMemory(&v1, sizeof(COMMUNICATE_MULTI_OPEN_PREVENT));
+        v1.OperateType = CANCEL_MULTI_OPEN;
+        std::wstring wstr = imageName.toStdWString();
+        ULONG copyLen = (ULONG)min(wstr.length(), (size_t)(MULTI_OPEN_IMAGE_NAME_LEN - 1));
+        wcsncpy_s(v1.ImageName, MULTI_OPEN_IMAGE_NAME_LEN, wstr.c_str(), copyLen);
+        v1.ImageName[copyLen] = L'\0';
+
+        BOOL IsOk = CommunicateDevice(&v1, sizeof(COMMUNICATE_MULTI_OPEN_PREVENT), NULL, 0, NULL);
+        if (IsOk) {
+            QMessageBox::information(this, QStringLiteral("成功"),
+                QStringLiteral("已取消\"%1\"的防止多开保护").arg(imageName));
+        }
+        else {
+            QMessageBox::warning(this, QStringLiteral("失败"),
+                QStringLiteral("取消\"%1\"的防止多开保护失败").arg(imageName));
+        }
+    }
 }
 
 
