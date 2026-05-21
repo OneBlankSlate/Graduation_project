@@ -6,6 +6,7 @@
 #include <QTextStream>
 #include <QStandardPaths>
 #include"FileMonitor.h"
+#include"PathConverter.h"
 #pragma comment(lib, "Psapi.lib")
 FileMonWindow::FileMonWindow(QWidget* parent)
     : QWidget(parent)
@@ -313,11 +314,12 @@ void FileMonWindow::updateEvents()
                         processName));
 
                 //
-                // 文件路径
+                // 文件路径（NT路径转DOS路径）
                 //
                 QString filePath =
-                    QString::fromWCharArray(
-                        event.FilePath);
+                    PathConverter::instance().ntPathToDosPath(
+                        QString::fromWCharArray(
+                            event.FilePath));
 
                 rowItems.append(
                     new QStandardItem(

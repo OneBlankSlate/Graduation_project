@@ -96,6 +96,9 @@
     <Filter Include="帮助\进程帮助\模块监控">
       <UniqueIdentifier>{91dd0395-38dd-4142-9d9b-5372b318bf55}</UniqueIdentifier>
     </Filter>
+    <Filter Include="路径转换类">
+      <UniqueIdentifier>{b0f85b9b-f85f-4697-b937-afbb4ed6d913}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="BlankSlate.ui">
@@ -235,6 +238,9 @@
     <ClCompile Include="ModuleMonitor.cpp">
       <Filter>帮助\进程帮助\模块监控</Filter>
     </ClCompile>
+    <ClCompile Include="PathConverter.cpp">
+      <Filter>路径转换类</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="BlankSlate.h">
@@ -334,6 +340,9 @@
     </ClInclude>
     <ClInclude Include="ModuleMonitor.h">
       <Filter>帮助\进程帮助\模块监控</Filter>
+    </ClInclude>
+    <ClInclude Include="PathConverter.h">
+      <Filter>路径转换类</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

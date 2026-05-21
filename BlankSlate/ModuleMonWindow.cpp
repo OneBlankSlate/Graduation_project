@@ -11,6 +11,7 @@
 #include <QStandardPaths>
 #include "ModuleMonCommon.h"
 #include "ModuleMonitor.h"
+#include "PathConverter.h"
 #include <psapi.h>
 
 ModuleMonWindow::ModuleMonWindow(QWidget* parent)
@@ -238,8 +239,9 @@ void ModuleMonWindow::addEventToTable(const MODULE_EVENT& event)
     QString processName = getProcessNameFromPid(event.ProcessId);
     rowItems << new QStandardItem(processName);
 
-    // 映像路径
-    QString imagePath = QString::fromWCharArray(event.ImagePath);
+    // 映像路径（NT路径转DOS路径）
+    QString imagePath = PathConverter::instance().ntPathToDosPath(
+        QString::fromWCharArray(event.ImagePath));
     rowItems << new QStandardItem(imagePath);
 
     // 映像名

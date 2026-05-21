@@ -111,6 +111,7 @@
     <ClCompile Include="IoControlHelper.cpp" />
     <ClCompile Include="ModuleMonitor.cpp" />
     <ClCompile Include="ModuleMonWindow.cpp" />
+    <ClCompile Include="PathConverter.cpp" />
     <ClCompile Include="ProcessHandle.cpp" />
     <ClCompile Include="ProcessHandleWindow.cpp" />
     <ClCompile Include="ProcessHelper.cpp" />
@@ -184,6 +185,7 @@
     <QtMoc Include="ProcessModuleWindow.h" />
     <ClInclude Include="ProcessPath.h" />
     <ClInclude Include="InjectHelper.h" />
+    <ClInclude Include="PathConverter.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BlankSlate.rc" />
