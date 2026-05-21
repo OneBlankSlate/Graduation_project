@@ -2,6 +2,7 @@
 #include"MemoryHelper.h"
 #include"StringHelper.h"
 #include"ProcessHelper.h"
+#include"ProcessHandle.h"
 PEPROCESS __SystemEProcess = NULL;
 PVOID __Ntoskrnl = NULL;
 ULONG __ImageSize = 0;
@@ -392,4 +393,29 @@ PVOID GetSSDTServiceAddress(IN wchar_t* FuncName)  //这里要传Zw函数，然�
 	DbgPrint("[wdk]:No find SSDT Function [%d]", Index);
 	return 0;
 }
+static PVOID ExpGetHandleObject(
+	PHANDLE_TABLE_ENTRY Entry
+)
+{
+	//
+	// Win10 x64:
+	//
+	// ObjectPointerBits 位于低值中
+	// 对象地址右移了4位存储
+	//
 
+	ULONGLONG value =(ULONGLONG)
+		Entry->Value;
+
+	//
+	// 去掉RefCnt属性位
+	//
+	value >>= 4;
+
+	//
+	// 恢复对象地址
+	//
+	value <<= 4;
+
+	return (PVOID)value;
+}

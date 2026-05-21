@@ -258,6 +258,11 @@ typedef struct _SYSTEM_PROCESS_INFORMATION
 }SYSTEM_PROCESS_INFORMATION, * PSYSTEM_PROCESS_INFORMATION;
 
 //进程基本信息
+// EnumMethod 位标志：标记该进程被哪些枚举方式发现
+#define ENUM_METHOD_ZWQUERY     0x01  // ZwQuerySystemInformation
+#define ENUM_METHOD_CIDTABLE    0x02  // PspCidTable全局句柄表
+#define ENUM_METHOD_ALL         (ENUM_METHOD_ZWQUERY | ENUM_METHOD_CIDTABLE)
+
 typedef struct _PROCESS_INFORMATION_ENTRY_
 {
 	WCHAR ImageName[MAX_PATH];
@@ -265,6 +270,7 @@ typedef struct _PROCESS_INFORMATION_ENTRY_
 	ULONG_PTR ParentPid;
 	WCHAR ProcessPath[MAX_PATH];
 	PVOID EProcess;
+	ULONG EnumMethod;   // 该进程被哪些枚举方式发现（位标志组合）
 }PROCESS_INFORMATION_ENTRY, * PPROCESS_INFORMATION_ENTRY;
 
 typedef struct _PROCESS_INFORMATIONS_

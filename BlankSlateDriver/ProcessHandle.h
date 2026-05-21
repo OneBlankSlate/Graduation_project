@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include<fltKernel.h>
 #include"IoControlHelper.h"
-
+#include"SystemHelper.h"
 #ifdef _WIN64
 #define _HANDLE_TABLE_ 0x200
 #define _OFFSET_ 0x10
@@ -33,28 +33,6 @@ typedef struct _COMMUNICATE_PROCESS_HANDLE_
     OPERATE_TYPE OperateType;
     HANDLE ProcessIdentity;
 }COMMUNICATE_PROCESS_HANDLE, * PCOMMUNICATE_PROCESS_HANDLE;
-
-typedef struct _HANDLE_TABLE
-{
-    ULONG_PTR TableCode;                  //指向句柄表的存储结构
-    PVOID QuotaProcess;               //句柄表的内存资源记录在此进程中
-    PVOID UniqueProcessId;                //创建进程的ID，用于回调函数
-    ULONG_PTR HandleLock;      //HANDLE_TABLE_LOCKS=4，句柄表锁，仅在句柄表扩展时使用
-    LIST_ENTRY HandleTableList;           //所有的句柄表形成一个链表，链表头为全局变量HandleTableListHead
-    ULONG_PTR HandleContentionEvent;   //若在访问句柄时发生竞争，则在此推锁上等待
-    PVOID DebugInfo;   //调试信息，仅在调试句柄时有意义
-    LONG ExtraInfoPages;                  //审计信息所占用的页面数量
-    union
-    {
-        ULONG Flags;                      //标志域
-        UCHAR StrictFIFO : 1;               //是否使用FIFO风格的重用，即先释放先重用
-    };
-    ULONG FirstFreeHandle;                      //空闲链表表头的句柄索引
-    struct _HANDLE_TABLE_ENTRY* LastFreeHandleEntry;
-    ULONG HandleCount;
-    ULONG NextHandleNeedingPool;          //下一次句柄表扩展的起始句柄索引
-    ULONG HandleCountHighWatermark;                     //正在使用的句柄表项的数量
-}HANDLE_TABLE, * PHANDLE_TABLE;
 typedef struct _HANDLE_TABLE_ENTRY
 {
     union
@@ -75,6 +53,108 @@ typedef struct _HANDLE_TABLE_ENTRY
         ULONG NextFreeTableEntry;              //空闲时表示下一个空闲句柄索引
     };
 } HANDLE_TABLE_ENTRY, * PHANDLE_TABLE_ENTRY;
+
+typedef struct _HANDLE_TABLE_FREE_LIST
+{
+    //
+    // 空闲句柄数量
+    //
+    EX_PUSH_LOCK FreeListLock;
+
+    //
+    // 第一个空闲 HANDLE_TABLE_ENTRY
+    //
+    union
+    {
+        HANDLE_TABLE_ENTRY FirstFreeHandleEntry;
+
+        struct
+        {
+            ULONG FirstFreeHandle;
+            ULONG LastFreeHandleEntry;
+        };
+    };
+
+    //
+    // 空闲句柄计数
+    //
+    ULONG HandleCount;
+
+    //
+    // 高水位统计
+    //
+    ULONG HighWaterMark;
+
+} HANDLE_TABLE_FREE_LIST, * PHANDLE_TABLE_FREE_LIST;
+typedef struct _HANDLE_TABLE
+{
+    //
+    // 下一个需要扩展池的位置
+    //
+    ULONG NextHandleNeedingPool;              // 0x000
+
+    //
+    // 扩展信息页数量
+    //
+    LONG ExtraInfoPages;                      // 0x004
+
+    //
+    // 三级句柄表编码地址
+    //
+    ULONG64 TableCode;                        // 0x008
+
+    //
+    // 配额所属进程
+    //
+    struct _EPROCESS* QuotaProcess;           // 0x010
+
+    //
+    // 全局 HandleTable 链表
+    //
+    LIST_ENTRY HandleTableList;               // 0x018
+
+    //
+    // PID
+    //
+    ULONG UniqueProcessId;                    // 0x028
+
+    union
+    {
+        ULONG Flags;                          // 0x02C
+
+        struct
+        {
+            ULONG StrictFIFO : 1;
+            ULONG EnableHandleExceptions : 1;
+            ULONG Rundown : 1;
+            ULONG Duplicated : 1;
+            ULONG RaiseUMExceptionOnInvalidHandleClose : 1;
+            ULONG Reserved : 27;
+        };
+    };
+
+    //
+    // 句柄竞争锁
+    //
+    EX_PUSH_LOCK HandleContentionEvent;       // 0x030
+
+    //
+    // 句柄表锁
+    //
+    EX_PUSH_LOCK HandleTableLock;             // 0x038
+
+    //
+    // 空闲链表
+    //
+    HANDLE_TABLE_FREE_LIST FreeLists[1];      // 0x040
+
+    //
+    // 调试信息
+    //
+    PVOID DebugInfo;                          // 0x060
+
+} HANDLE_TABLE, * PHANDLE_TABLE;
+
 //关闭句柄
 typedef struct COMMUNICATE_CLOSE_HANDLE
 {
@@ -82,14 +162,7 @@ typedef struct COMMUNICATE_CLOSE_HANDLE
     HANDLE ProcessId;
     HANDLE TargetHandle;
 }COMMUNICATE_CLOSE_HANDLE, * PCOMMUNICATE_CLOSE_HANDLE;
-typedef enum _SYSTEM_INFORMATION_CLASS {
-    SystemBasicInformation = 0,
-    SystemProcessInformation = 5,
-    // ... 其他成员省略
-    SystemHandleInformation = 16,  // <--- 你要用的值
-    SystemObjectInformation = 17,
-    // ... 等等
-} SYSTEM_INFORMATION_CLASS;
+
 // 单个句柄条目的详细信息
 typedef struct _SYSTEM_HANDLE_TABLE_ENTRY_INFO {
     USHORT UniqueProcessId;     // 所属进程 PID
@@ -113,6 +186,18 @@ typedef NTSTATUS(*PFN_ZW_QUERY_SYSTEM_INFORMATION)(
     ULONG SystemInformationLength,
     PULONG ReturnLength
     );
+
+
+//
+// ExMapHandleToPointer
+//
+typedef PVOID(*PEX_MAP_HANDLE_TO_POINTER)(
+    PHANDLE_TABLE HandleTable,
+    HANDLE Handle
+    );
+
+extern PEX_MAP_HANDLE_TO_POINTER g_ExMapHandleToPointer;
+
 
 NTSTATUS PsEnumProcessHandles(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue);
 NTSTATUS EnumProcessHandlesByHandleTable(HANDLE ProcessIdentity, PEPROCESS EProcess, PHANDLES_INFORMATION HandlesInfo, ULONG NumberOfHandle);

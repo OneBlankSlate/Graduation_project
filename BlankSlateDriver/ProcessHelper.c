@@ -6,6 +6,7 @@
 #include"SystemHelper.h"
 #include"ProcessThread.h"
 #include"CallbackHelper.h"
+#include"ProcessHandle.h"
 #ifdef _WIN64
 PROTECT_PROCESS_INFORMATION __ProtectProcessInfo = { 0 };
 
@@ -94,7 +95,10 @@ NTSTATUS PsEnumProcessInternal(PPROCESS_INFORMATIONS ProcessInfos, ULONG OutputB
     {
         return STATUS_INVALID_PARAMETER;
     }
+    // 两种枚举方式依次调用，每个方式会合并结果到同一个列表中
     EnumProcessByService(ProcessInfos, NumberOfProcess);
+    EnumProcessByPspCidTable(ProcessInfos, NumberOfProcess);
+
     if (NumberOfProcess >= ProcessInfos->NumberOfProcess)
     {
         Status = STATUS_SUCCESS;
@@ -127,7 +131,7 @@ VOID EnumProcessByService(PPROCESS_INFORMATIONS ProcessInfos, ULONG NumberOfProc
                     PEPROCESS EProcess = NULL;
                     if (NT_SUCCESS(PsLookupProcessByProcessId((HANDLE)(v1->UniqueProcessId), &EProcess)))
                     {
-                        SetProcessInfoToList(ProcessInfos, NumberOfProcess, EProcess);
+                        SetProcessInfoToList(ProcessInfos, NumberOfProcess, EProcess, ENUM_METHOD_ZWQUERY);
                         ObfDereferenceObject(EProcess);
                     }
 
@@ -154,42 +158,72 @@ VOID EnumProcessByService(PPROCESS_INFORMATIONS ProcessInfos, ULONG NumberOfProc
        
 }
 
-VOID SetProcessInfoToList(PPROCESS_INFORMATIONS ProcessInfos, ULONG NumberOfProcess, PEPROCESS EProcess)
+VOID SetProcessInfoToList(PPROCESS_INFORMATIONS ProcessInfos, ULONG NumberOfProcess, PEPROCESS EProcess, ULONG EnumMethodFlag)
 {
+    // 获取进程PID
+#ifdef _WIN64
+    ULONG_PTR ProcessIdentity = *(PULONG_PTR)((ULONG_PTR)EProcess + 0x440);
+#else
+    ULONG_PTR ProcessIdentity = *(PULONG_PTR)((ULONG_PTR)EProcess + 0xb4);
+#endif
+    if (!ProcessIdentity)
+    {
+        ProcessIdentity = (ULONG_PTR)PsGetProcessId(EProcess);
+    }
+
+    // 检查是否已存在（按PID去重），如果存在则合并EnumMethod标志
+    for (ULONG i = 0; i < ProcessInfos->NumberOfProcess; i++)
+    {
+        if (ProcessInfos->ProcessInfo[i].ProcessIdentity == ProcessIdentity)
+        {
+            ProcessInfos->ProcessInfo[i].EnumMethod |= EnumMethodFlag;
+            return;
+        }
+    }
+    // 新进程，添加到列表
     ULONG v1 = ProcessInfos->NumberOfProcess;
     if (NumberOfProcess > v1)
-    { 
-#ifdef _WIN64
-        ULONG_PTR ProcessIdentity = *(PULONG_PTR)((ULONG_PTR)EProcess + 0x440);
-#else
-        ULONG_PTR ProcessIdentity = *(PULONG_PTR)((ULONG_PTR)EProcess + 0xb4);
-#endif 
-
-        if (ProcessIdentity)
-        {
-            ProcessInfos->ProcessInfo[v1].ProcessIdentity = ProcessIdentity;
-        }
-        else
-        {
-            ProcessInfos->ProcessInfo[v1].ProcessIdentity = PsGetProcessId(EProcess);
-        }
-
+    {
+        ProcessInfos->ProcessInfo[v1].ProcessIdentity = ProcessIdentity;
         ProcessInfos->ProcessInfo[v1].ParentPid = (ULONG_PTR)PsGetProcessInheritedFromUniqueProcessId(EProcess);
         ProcessInfos->ProcessInfo[v1].EProcess = EProcess;
+        ProcessInfos->ProcessInfo[v1].EnumMethod = EnumMethodFlag;
         // 先获取完整路径
         wchar_t ProcessPath[MAX_PATH] = { 0 };
-        GetProcessFullPathByPeb(EProcess, ProcessPath, MAX_PATH);
+        GetProcessFullPathByEProcess(EProcess, ProcessPath, MAX_PATH);
         RtlCopyMemory(ProcessInfos->ProcessInfo[v1].ProcessPath, ProcessPath, MAX_PATH);
-        // 从完整路径中提取进程名，避免EPROCESS ImageFileName的15字节截断问题
-        UNICODE_STRING uniPath = { 0 };
-        RtlInitUnicodeString(&uniPath, ProcessPath);
-        PUNICODE_STRING pImageName = GetNameByPath(&uniPath);
-        if (pImageName && pImageName->Buffer && pImageName->Length > 0)
+        // 从完整路径中提取进程名
+        if (ProcessPath[0] != L'\0')
         {
-            ULONG copyLen = min(pImageName->Length, sizeof(ProcessInfos->ProcessInfo[v1].ImageName) - sizeof(WCHAR));
-            RtlCopyMemory(ProcessInfos->ProcessInfo[v1].ImageName, pImageName->Buffer, copyLen);
-            ProcessInfos->ProcessInfo[v1].ImageName[copyLen / sizeof(WCHAR)] = L'\0';
-            ExFreePool(pImageName);
+            UNICODE_STRING uniPath = { 0 };
+            RtlInitUnicodeString(&uniPath, ProcessPath);
+            PUNICODE_STRING pImageName = GetNameByPath(&uniPath);
+            if (pImageName && pImageName->Buffer && pImageName->Length > 0)
+            {
+                ULONG copyLen = min(pImageName->Length, sizeof(ProcessInfos->ProcessInfo[v1].ImageName) - sizeof(WCHAR));
+                RtlCopyMemory(ProcessInfos->ProcessInfo[v1].ImageName, pImageName->Buffer, copyLen);
+                ProcessInfos->ProcessInfo[v1].ImageName[copyLen / sizeof(WCHAR)] = L'\0';
+                ExFreePool(pImageName);
+            }
+        }
+        // 路径获取失败时，使用PsGetProcessImageFileName作为兜底获取进程名
+        if (ProcessInfos->ProcessInfo[v1].ImageName[0] == L'\0')
+        {
+            PSTR shortName = PsGetProcessImageFileName(EProcess);
+            if (shortName && shortName[0] != '\0')
+            {
+                ANSI_STRING ansiName;
+                UNICODE_STRING uniName;
+                RtlInitAnsiString(&ansiName, shortName);
+                NTSTATUS convStatus = RtlAnsiStringToUnicodeString(&uniName, &ansiName, TRUE);
+                if (NT_SUCCESS(convStatus))
+                {
+                    ULONG copyLen = min(uniName.Length, sizeof(ProcessInfos->ProcessInfo[v1].ImageName) - sizeof(WCHAR));
+                    RtlCopyMemory(ProcessInfos->ProcessInfo[v1].ImageName, uniName.Buffer, copyLen);
+                    ProcessInfos->ProcessInfo[v1].ImageName[copyLen / sizeof(WCHAR)] = L'\0';
+                    RtlFreeUnicodeString(&uniName);
+                }
+            }
         }
     }
     ProcessInfos->NumberOfProcess++;
@@ -437,4 +471,193 @@ NTSTATUS PsClearProtectProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID
     }
     ClearProcessIdentity();
 
+}
+//
+// 定位 PspCidTable
+//
+PVOID LocatePspCidTable()
+{
+    UNICODE_STRING routineName;
+
+    RtlInitUnicodeString(
+        &routineName,
+        L"PsLookupProcessByProcessId");
+
+    PUCHAR addr =
+        (PUCHAR)MmGetSystemRoutineAddress(
+            &routineName);
+
+    if (!addr)
+        return NULL;
+
+    //
+    // Win10 x64:
+    //
+    // 48 8B 05 xx xx xx xx
+    // mov rax, [PspCidTable]
+    //
+
+    for (ULONG i = 0; i < 0x200; i++)
+    {
+        if (addr[i] == 0x48 &&
+            addr[i + 1] == 0x8B &&
+            addr[i + 2] == 0x05)
+        {
+            LONG offset =
+                *(PLONG)&addr[i + 3];
+
+            PVOID* pspCidTable =
+                (PVOID*)(&addr[i + 7] + offset);
+
+            return pspCidTable;
+        }
+    }
+
+    return NULL;
+}
+PVOID LocateExpLookupHandleTableEntry()
+{
+    UNICODE_STRING routineName;
+
+    RtlInitUnicodeString(
+        &routineName,
+        L"PsLookupProcessByProcessId");
+
+    PUCHAR addr =
+        (PUCHAR)MmGetSystemRoutineAddress(
+            &routineName);
+
+    if (!addr)
+        return NULL;
+
+    //
+    // Win10 x64:
+    //
+    // 48 8B 05 xx xx xx xx
+    // mov rax, cs:PspCidTable
+    //
+
+    for (ULONG i = 0; i < 0x200; i++)
+    {
+        if (addr[i] == 0x48 &&
+            addr[i + 1] == 0x8B &&
+            addr[i + 2] == 0x05)
+        {
+            //
+            // 在后面搜索:
+            //
+            // E8 xx xx xx xx
+            // call ExpLookupHandleTableEntry
+            //
+
+            for (ULONG j = i; j < i + 0x30; j++)
+            {
+                if (addr[j] == 0xE8)
+                {
+                    //
+                    // 解析相对CALL
+                    //
+
+                    LONG rel =
+                        *(PLONG)&addr[j + 1];
+
+                    PVOID ExpLookupHandleTableEntry =
+                        (PVOID)(
+                            &addr[j + 5] + rel);
+
+                    return ExpLookupHandleTableEntry;
+                }
+            }
+
+            break;
+        }
+    }
+
+    return NULL;
+}
+
+
+//
+// ExpLookupHandleTableEntry 函数指针类型
+// 返回 PHANDLE_TABLE_ENTRY，与 ExMapHandleToPointer 返回类型相同
+//
+typedef PHANDLE_TABLE_ENTRY(*PEXP_LOOKUP_HANDLE_TABLE_ENTRY)(
+    PHANDLE_TABLE HandleTable,
+    HANDLE Handle
+    );
+
+// 全局函数指针，只在首次调用时初始化
+static PEXP_LOOKUP_HANDLE_TABLE_ENTRY g_ExpLookupHandleTableEntry = NULL;
+
+VOID EnumProcessByPspCidTable(PPROCESS_INFORMATIONS ProcessInfos, ULONG NumberOfProcess)
+{
+    // ========== 第一步：定位 PspCidTable ==========
+    PVOID pspCidTableAddr = LocatePspCidTable();
+    if (!pspCidTableAddr)
+    {
+        return;
+    }
+
+    // ========== 第二步：获取 HANDLE_TABLE 指针 ==========
+    PHANDLE_TABLE PspCidTable = NULL;
+    __try
+    {
+        if (MmIsAddressValid((PVOID)(*(ULONG_PTR*)pspCidTableAddr)))
+        {
+            PspCidTable = *(PHANDLE_TABLE*)pspCidTableAddr;
+        }
+    }
+    __except (EXCEPTION_EXECUTE_HANDLER)
+    {
+        return;
+    }
+    if (!PspCidTable)
+    {
+        return;
+    }
+
+    // ========== 第三步：定位 ExpLookupHandleTableEntry（仅首次） ==========
+    if (!g_ExpLookupHandleTableEntry)
+    {
+        g_ExpLookupHandleTableEntry = (PEXP_LOOKUP_HANDLE_TABLE_ENTRY)LocateExpLookupHandleTableEntry();
+        if (!g_ExpLookupHandleTableEntry)
+        {
+            return;
+        }
+    }
+
+    // ========== 第四步：遍历 PID 枚举进程 ==========
+    // PspCidTable 中：PID 即句柄索引
+    // 偶数 CID = Process，奇数 CID = Thread
+    for (ULONG_PTR pid = 4;pid < 0x40000;pid += 4)
+    {
+        __try
+        {
+            PHANDLE_TABLE_ENTRY entry = g_ExpLookupHandleTableEntry(PspCidTable,(HANDLE)pid);
+            if (!entry) continue;
+            // Win10 22H2:
+            // entry->Object = 0xab0602290040fe99
+            // 高48位:压缩后的对象地址    低16位:RefCnt / Attributes
+            // 解码:
+            // 0xab0602290040fe99  右移16位再或上0xFFFF000000000000ui64  得到的即为EProcess
+            //      ↓
+            // ffffab0602290040
+            ULONG_PTR value = *(ULONG_PTR*)&entry->Object;
+            if (!value) continue;
+            // 提取对象地址
+            ULONG_PTR objAddr = (value >> 16) | 0xFFFF000000000000ui64;
+            if (!objAddr) continue;
+            PEPROCESS EProcess = (PEPROCESS)objAddr;
+            if (!MmIsAddressValid((PVOID)EProcess)) continue;
+            if (!PsIsRealProcess((PVOID)EProcess)) continue;
+            // 引用对象，防止进程在访问期间被释放
+            ObReferenceObject(EProcess);
+            // 加入列表
+            SetProcessInfoToList(ProcessInfos,NumberOfProcess,EProcess,ENUM_METHOD_CIDTABLE);
+            ObDereferenceObject(EProcess);
+        }
+        __except (EXCEPTION_EXECUTE_HANDLER)
+        {
+        }
+    }
 }

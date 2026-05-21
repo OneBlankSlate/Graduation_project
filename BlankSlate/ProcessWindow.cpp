@@ -12,6 +12,8 @@
 #include<QStandardPaths>
 #include<QMessageBox>
 #include<QDateTime>
+#include<QBrush>
+#include<QColor>
 ProcessWindow::ProcessWindow(QWidget *parent) : QWidget(parent)
 {
 	ui.setupUi(this);
@@ -116,6 +118,24 @@ void ProcessWindow::ListProcessInfo()
         rowItems.append(new QStandardItem(QString::fromWCharArray(v1->ProcessPath)));
         // EProcess
         rowItems.append(new QStandardItem("0x" + (QString::number((ULONG_PTR)v1->EProcess, 16)).toUpper()));
+
+        // 颜色标记：两种方式都枚举到显示绿色，只有一种方式枚举到显示红色
+        if ((v1->EnumMethod & ENUM_METHOD_ALL) == ENUM_METHOD_ALL)
+        {
+            QBrush greenBrush(QColor(198, 239, 206));  // 浅绿色背景
+            for (int col = 0; col < rowItems.size(); col++)
+            {
+                rowItems[col]->setBackground(greenBrush);
+            }
+        }
+        else
+        {
+            QBrush redBrush(QColor(255, 199, 206));  // 浅红色背景
+            for (int col = 0; col < rowItems.size(); col++)
+            {
+                rowItems[col]->setBackground(redBrush);
+            }
+        }
 
         // 将整行数据添加到模型中
         m_model.appendRow(rowItems);

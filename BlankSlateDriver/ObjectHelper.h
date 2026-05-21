@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include<fltKernel.h>
 //对象体得对象头
-#define OBJECT_TO_OBJECT_HEADER(o) CONTAINING_RECORD((o),OBJECT_HEADER,Body)
 typedef struct _OBJECT_TYPE_INITIALIZER
 {
 	USHORT Length;

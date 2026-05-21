@@ -2,6 +2,9 @@
 #include"ProcessHelper.h"
 #include"ObjectHelper.h"
 
+PEX_MAP_HANDLE_TO_POINTER g_ExMapHandleToPointer = NULL;
+
+
 NTSTATUS PsEnumProcessHandles(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)
 {
     NTSTATUS Status1 = STATUS_UNSUCCESSFUL, Status2 = STATUS_UNSUCCESSFUL;

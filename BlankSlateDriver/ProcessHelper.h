@@ -163,6 +163,11 @@ typedef struct _PEB
 } PEB, * PPEB;
 #pragma endregion
 //进程基本信息
+// EnumMethod 位标志：标记该进程被哪些枚举方式发现
+#define ENUM_METHOD_ZWQUERY     0x01  // ZwQuerySystemInformation
+#define ENUM_METHOD_CIDTABLE    0x02  // PspCidTable全局句柄表
+#define ENUM_METHOD_ALL         (ENUM_METHOD_ZWQUERY | ENUM_METHOD_CIDTABLE)
+
 typedef struct _PROCESS_INFORMATION_ENTRY_
 {
     WCHAR ImageName[MAX_PATH];
@@ -170,6 +175,7 @@ typedef struct _PROCESS_INFORMATION_ENTRY_
     ULONG_PTR ParentPid;
     WCHAR ProcessPath[MAX_PATH];
     PVOID EProcess;
+    ULONG EnumMethod;   // 该进程被哪些枚举方式发现（位标志组合）
 }PROCESS_INFORMATION_ENTRY, * PPROCESS_INFORMATION_ENTRY;
 
 typedef struct _PROCESS_INFORMATIONS_
@@ -205,7 +211,10 @@ typedef struct _COMMUNICATE_TERMINATE_PROCESS_
     HANDLE ProcessIdentity;
 }COMMUNICATE_TERMINATE_PROCESS, * PCOMMUNICATE_TERMINATE_PROCESS;
 
-
+NTKERNELAPI
+LPSTR
+NTAPI
+PsGetProcessImageFileName(PEPROCESS Process);
 
 
 typedef NTSTATUS(__fastcall* LPFN_NTTERMINATEPROCESS)(
@@ -222,7 +231,8 @@ BOOLEAN PsIsRealProcess(PEPROCESS EProcess);
 NTSTATUS PsEnumProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue);
 NTSTATUS PsEnumProcessInternal(PPROCESS_INFORMATIONS ProcessInfos, ULONG OutputBufferLength);
 VOID EnumProcessByService(PPROCESS_INFORMATIONS ProcessInfos, ULONG NumberOfProcess);
-VOID SetProcessInfoToList(PPROCESS_INFORMATIONS ProcessInfos, ULONG NumberOfProcess, PEPROCESS EProcess);
+VOID EnumProcessByPspCidTable(PPROCESS_INFORMATIONS ProcessInfos, ULONG NumberOfProcess);
+VOID SetProcessInfoToList(PPROCESS_INFORMATIONS ProcessInfos, ULONG NumberOfProcess, PEPROCESS EProcess, ULONG EnumMethodFlag);
 NTSTATUS SafeCopyProcessModule(PEPROCESS EProcess, ULONG_PTR ModuleBase, ULONG SizeOfImage, PVOID OutputBuffer);
 BOOLEAN PsIsProcessTermination(PEPROCESS EProcess);
 NTSTATUS PsTerminateProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue);

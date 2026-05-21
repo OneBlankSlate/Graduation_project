@@ -32,7 +32,7 @@ BOOLEAN GetProcessFullPathByEProcess(PVOID EProcess, WCHAR* ProcessFullPath, ULO
 	if (PsIsRealProcess(EProcess) == TRUE)
 	{
 		//当前线程的模式
-		PreviousMode = PsGetCurrentThreadPreviousMode();
+		PreviousMode = KernelMode;  // 强制内核模式，绕过受保护进程的安全描述符检查
 		//句柄都是4的倍数   且ring0的句柄值均以8开头   0x80000004    0x00000004
 		//x86  0x800007d8
 		//x64  0xffffffff80000868
