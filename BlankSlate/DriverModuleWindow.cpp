@@ -75,6 +75,12 @@ void DriverModuleWindow::ListDriverModules()
         // DriverPath
         rowItems.append(new QStandardItem(QString::fromWCharArray(v1->DriverPath)));
 
+        // 设置每一项的绿色背景
+        for (QStandardItem* item : rowItems)
+        {
+            item->setBackground(QColor(204, 239, 206)); // 浅绿色背景
+        }
+
         // 将整行数据添加到模型中
         m_model.appendRow(rowItems);
     }
