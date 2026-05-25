@@ -3,6 +3,15 @@
 
 #include <fltKernel.h>
 #include "IoControlHelper.h"
+
+// 非文档化函数声明
+NTKERNELAPI
+LPSTR
+NTAPI
+PsGetProcessImageFileName(
+    PEPROCESS Process
+);
+
 typedef enum _MODULE_EVENT_TYPE {
     ImageLoad = 1,
     ImageUnload = 2
@@ -12,6 +21,7 @@ typedef enum _MODULE_EVENT_TYPE {
 typedef struct _MODULE_EVENT {
     MODULE_EVENT_TYPE Type;
     ULONG ProcessId;
+    WCHAR ProcessName[200];       // Process name from driver
     ULONG64 LoadTime;
     ULONG64 ImageBase;
     ULONG ImageSize;

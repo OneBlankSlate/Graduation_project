@@ -33,7 +33,6 @@ private:
     void setupTableView();
     void addEventToTable(const THREAD_EVENT& event);
     QString fileTimeToString(ULONG64 fileTime);
-    QString getProcessNameFromPid(ULONG pid);
     void updateUIState(bool isMonitoring);
 
 private slots:

@@ -149,32 +149,63 @@ NTSTATUS GetModuleInfo(
 {
     NTSTATUS status = STATUS_SUCCESS;
     ULONG copyLength;
-    ULONG i;
-    ULONG lastSlash;
-    ULONG nameLen;
-    ULONG copyLen;
+    PEPROCESS Process = NULL;
+    WCHAR processPath[520] = { 0 };
+    UNICODE_STRING uniPath = { 0 };
 
+    // Get process name via GetProcessFullPathByEProcess + GetNameByPath
+    if (NT_SUCCESS(PsLookupProcessByProcessId(ProcessId, &Process)))
+    {
+        GetProcessFullPathByEProcess(Process, processPath, sizeof(processPath) / sizeof(WCHAR));
+        if (processPath[0] != L'\0')
+        {
+            RtlInitUnicodeString(&uniPath, processPath);
+            PUNICODE_STRING processName = GetNameByPath(&uniPath);
+            if (processName && processName->Buffer && processName->Length > 0)
+            {
+                ULONG nameCopyLen = min(processName->Length, sizeof(Event->ProcessName) - sizeof(WCHAR));
+                RtlCopyMemory(Event->ProcessName, processName->Buffer, nameCopyLen);
+                Event->ProcessName[nameCopyLen / sizeof(WCHAR)] = L'\0';
+                ExFreePool(processName);
+            }
+        }
+        // Fallback: use PsGetProcessImageFileName when path unavailable
+        if (Event->ProcessName[0] == L'\0')
+        {
+            PSTR shortName = PsGetProcessImageFileName(Process);
+            if (shortName && shortName[0] != '\0')
+            {
+                ANSI_STRING ansiName;
+                UNICODE_STRING uniName;
+                RtlInitAnsiString(&ansiName, shortName);
+                NTSTATUS convStatus = RtlAnsiStringToUnicodeString(&uniName, &ansiName, TRUE);
+                if (NT_SUCCESS(convStatus))
+                {
+                    ULONG nameCopyLen = min(uniName.Length, sizeof(Event->ProcessName) - sizeof(WCHAR));
+                    RtlCopyMemory(Event->ProcessName, uniName.Buffer, nameCopyLen);
+                    Event->ProcessName[nameCopyLen / sizeof(WCHAR)] = L'\0';
+                    RtlFreeUnicodeString(&uniName);
+                }
+            }
+        }
+        ObDereferenceObject(Process);
+    }
+
+    // Get image path and image name
     if (FullImageName && FullImageName->Buffer && FullImageName->Length > 0) {
         copyLength = min(FullImageName->Length, sizeof(Event->ImagePath) - sizeof(WCHAR));
         RtlCopyMemory(Event->ImagePath, FullImageName->Buffer, copyLength);
         Event->ImagePath[copyLength / sizeof(WCHAR)] = L'\0';
 
-        lastSlash = 0;
-        for (i = 0; i < copyLength / sizeof(WCHAR); i++) {
-            if (Event->ImagePath[i] == L'\\') {
-                lastSlash = i;
-            }
-        }
-        if (lastSlash > 0) {
-            nameLen = (copyLength / sizeof(WCHAR)) - lastSlash - 1;
-            copyLen = min(nameLen, (sizeof(Event->ImageName) / sizeof(WCHAR)) - 1);
-            RtlCopyMemory(Event->ImageName, &Event->ImagePath[lastSlash + 1], copyLen * sizeof(WCHAR));
-            Event->ImageName[copyLen] = L'\0';
-        }
-        else {
-            copyLen = min(copyLength, sizeof(Event->ImageName) - sizeof(WCHAR));
-            RtlCopyMemory(Event->ImageName, Event->ImagePath, copyLen);
-            Event->ImageName[copyLen / sizeof(WCHAR)] = L'\0';
+        // Extract image name via GetNameByPath
+        RtlInitUnicodeString(&uniPath, Event->ImagePath);
+        PUNICODE_STRING imageName = GetNameByPath(&uniPath);
+        if (imageName && imageName->Buffer && imageName->Length > 0)
+        {
+            ULONG nameCopyLen = min(imageName->Length, sizeof(Event->ImageName) - sizeof(WCHAR));
+            RtlCopyMemory(Event->ImageName, imageName->Buffer, nameCopyLen);
+            Event->ImageName[nameCopyLen / sizeof(WCHAR)] = L'\0';
+            ExFreePool(imageName);
         }
     }
 

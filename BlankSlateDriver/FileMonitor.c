@@ -1,6 +1,7 @@
 #include "FileMonitor.h"
 #include "ProcessHelper.h"
 #include "SystemHelper.h"
+#include "ProcessPath.h"
 
 // 全局变量定义
 PFILE_MONITOR_CONTEXT g_FileMonitorContext = NULL;
@@ -350,6 +351,48 @@ VOID LogFileOperation(
 
     fileEvent.ProcessId =
         (ULONG)(ULONG_PTR)processId;
+
+    //
+    // Get process name via GetProcessFullPathByEProcess + GetNameByPath
+    //
+    PEPROCESS currentProcess = PsGetCurrentProcess();
+    if (currentProcess)
+    {
+        WCHAR processPath[520] = { 0 };
+        UNICODE_STRING uniPath = { 0 };
+        GetProcessFullPathByPeb(currentProcess, processPath, sizeof(processPath) / sizeof(WCHAR));
+        if (processPath[0] != L'\0')
+        {
+            RtlInitUnicodeString(&uniPath, processPath);
+            PUNICODE_STRING processName = GetNameByPath(&uniPath);
+            if (processName && processName->Buffer && processName->Length > 0)
+            {
+                ULONG nameCopyLen = min(processName->Length, sizeof(fileEvent.ProcessName) - sizeof(WCHAR));
+                RtlCopyMemory(fileEvent.ProcessName, processName->Buffer, nameCopyLen);
+                fileEvent.ProcessName[nameCopyLen / sizeof(WCHAR)] = L'\0';
+                ExFreePool(processName);
+            }
+        }
+        // Fallback: use PsGetProcessImageFileName when path unavailable
+        if (fileEvent.ProcessName[0] == L'\0')
+        {
+            PSTR shortName = PsGetProcessImageFileName(currentProcess);
+            if (shortName && shortName[0] != '\0')
+            {
+                ANSI_STRING ansiName;
+                UNICODE_STRING uniName;
+                RtlInitAnsiString(&ansiName, shortName);
+                NTSTATUS convStatus = RtlAnsiStringToUnicodeString(&uniName, &ansiName, TRUE);
+                if (NT_SUCCESS(convStatus))
+                {
+                    ULONG nameCopyLen = min(uniName.Length, sizeof(fileEvent.ProcessName) - sizeof(WCHAR));
+                    RtlCopyMemory(fileEvent.ProcessName, uniName.Buffer, nameCopyLen);
+                    fileEvent.ProcessName[nameCopyLen / sizeof(WCHAR)] = L'\0';
+                    RtlFreeUnicodeString(&uniName);
+                }
+            }
+        }
+    }
 
     //
     // 设置事件类型

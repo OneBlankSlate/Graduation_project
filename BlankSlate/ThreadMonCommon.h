@@ -16,6 +16,7 @@ typedef struct _THREAD_EVENT {
     THREAD_EVENT_TYPE Type;     // 事件类型
     ULONG ThreadId;             // 线程ID
     ULONG ProcessId;            // 所属进程ID
+    WCHAR ProcessName[200];     // 进程名（驱动层通过GetProcessFullPathByEProcess+GetNameByPath获取）
     ULONG64 CreateTime;         // 创建时间(FILETIME格式)
     ULONG64 ExitTime;           // 退出时间(FILETIME格式)
     ULONG ExitStatus;           // 退出状态

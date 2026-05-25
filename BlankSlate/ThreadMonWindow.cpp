@@ -11,7 +11,6 @@
 #include <QStandardPaths>
 #include"ThreadMonCommon.h"
 #include"ThreadMonitor.h"
-#include <psapi.h>
 ThreadMonWindow::ThreadMonWindow(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ThreadMonWindowClass)
@@ -251,8 +250,12 @@ void ThreadMonWindow::addEventToTable(const THREAD_EVENT& event)
     pidItem->setData(QVariant::fromValue<unsigned int>(event.ProcessId), Qt::UserRole);
     rowItems << pidItem;
 
-    // 进程名（通过进程ID在应用层获取）
-    QString processName = getProcessNameFromPid(event.ProcessId);
+    // 进程名（直接使用驱动层通过GetProcessFullPathByEProcess+GetNameByPath获取的进程名）
+    QString processName = QString::fromWCharArray(event.ProcessName);
+    if (processName.isEmpty())
+    {
+        processName = "N/A";
+    }
     rowItems << new QStandardItem(processName);
 
     // 映像路径
@@ -315,26 +318,6 @@ QString ThreadMonWindow::fileTimeToString(ULONG64 fileTime)
     QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(qint64(unixTime));
 
     return dateTime.toString("yyyy-MM-dd HH:mm:ss.zzz");
-}
-
-QString ThreadMonWindow::getProcessNameFromPid(ULONG pid)
-{
-    HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
-    if (!hProcess) {
-        return QString("N/A");
-    }
-
-    WCHAR buffer[MAX_PATH] = { 0 };
-    DWORD size = MAX_PATH;
-    QString name;
-
-    if (QueryFullProcessImageNameW(hProcess, 0, buffer, &size)) {
-        QString fullPath = QString::fromWCharArray(buffer);
-        name = fullPath.mid(fullPath.lastIndexOf('\\') + 1);
-    }
-
-    CloseHandle(hProcess);
-    return name.isEmpty() ? QString("N/A") : name;
 }
 
 void ThreadMonWindow::updateUIState(bool isMonitoring)

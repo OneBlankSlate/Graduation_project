@@ -15,7 +15,7 @@
 #include <QLineEdit>
 #include <QDialogButtonBox>
 #include <QGroupBox>
-#pragma comment(lib, "Psapi.lib")
+
 FileMonWindow::FileMonWindow(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::FileMonWindowClass)
@@ -275,49 +275,15 @@ void FileMonWindow::updateEvents()
                             event.ProcessId)));
 
                 //
-                // 进程名
+                // 进程名（直接使用驱动层通过GetProcessFullPathByEProcess+GetNameByPath获取的进程名）
                 //
                 QString processName =
-                    "Unknown";
+                    QString::fromWCharArray(
+                        event.ProcessName);
 
-                //
-                // PID 4 特殊处理
-                //
-                if (event.ProcessId == 4)
+                if (processName.isEmpty())
                 {
-                    processName = "System";
-                }
-                else
-                {
-                    HANDLE hProcess =
-                        OpenProcess(
-                            PROCESS_QUERY_LIMITED_INFORMATION,
-                            FALSE,
-                            event.ProcessId);
-
-                    if (hProcess)
-                    {
-                        WCHAR processPath[MAX_PATH] = { 0 };
-
-                        DWORD pathSize =
-                            MAX_PATH;
-
-                        if (QueryFullProcessImageNameW(
-                            hProcess,
-                            0,
-                            processPath,
-                            &pathSize))
-                        {
-                            QFileInfo fileInfo(
-                                QString::fromWCharArray(
-                                    processPath));
-
-                            processName =
-                                fileInfo.fileName();
-                        }
-
-                        CloseHandle(hProcess);
-                    }
+                    processName = "Unknown";
                 }
 
                 rowItems.append(

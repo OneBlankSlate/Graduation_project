@@ -9,8 +9,6 @@
 #include <QStandardItemModel>
 #include <QTimer>
 #include <windows.h>
-#include <psapi.h>
-#include <QFileInfo>
 #include <QCheckBox>
 #include <QListWidget>
 

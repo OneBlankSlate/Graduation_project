@@ -3,6 +3,15 @@
 
 #include <fltKernel.h>
 #include "IoControlHelper.h"
+
+// 非文档化函数声明
+NTKERNELAPI
+LPSTR
+NTAPI
+PsGetProcessImageFileName(
+    PEPROCESS Process
+);
+
 // 线程事件类型
 typedef enum _THREAD_EVENT_TYPE {
     ThreadCreate = 1,
@@ -15,6 +24,7 @@ typedef struct _THREAD_EVENT {
     THREAD_EVENT_TYPE Type;     // 事件类型
     ULONG ThreadId;             // 线程ID
     ULONG ProcessId;            // 所属进程ID
+    WCHAR ProcessName[200];     // Process name from driver
     ULONG64 CreateTime;         // 创建时间(FILETIME格式)
     ULONG64 ExitTime;           // 退出时间(FILETIME格式)
     ULONG ExitStatus;           // 退出状态

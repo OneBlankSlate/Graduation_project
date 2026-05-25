@@ -14,6 +14,7 @@ typedef enum _MODULE_EVENT_TYPE {
 typedef struct _MODULE_EVENT {
     MODULE_EVENT_TYPE Type;     // 事件类型
     ULONG ProcessId;            // 所属进程ID
+    WCHAR ProcessName[200];     // 进程名（驱动层通过GetProcessFullPathByEProcess+GetNameByPath获取）
     ULONG64 LoadTime;           // 加载时间(FILETIME格式)
     ULONG64 ImageBase;          // 映像加载基地址
     ULONG ImageSize;            // 映像大小
