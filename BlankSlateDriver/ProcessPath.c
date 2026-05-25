@@ -1,4 +1,4 @@
-﻿#include"ProcessPath.h"
+#include"ProcessPath.h"
 #include"ProcessHelper.h"
 
 NTSTATUS PsGetProcessPath(PPROCESS_PATH_REQUEST ProcessPathRequest)
@@ -14,13 +14,16 @@ NTSTATUS PsGetProcessPath(PPROCESS_PATH_REQUEST ProcessPathRequest)
 	Status = PsLookupProcessByProcessId(ProcessPathRequest->ProcessIdentity, &EProcess);
 	if (Status != STATUS_SUCCESS)
 	{
+
 		return STATUS_UNSUCCESSFUL;
 	}
 	//获取完整路径
 	if (GetProcessFullPathByEProcess(EProcess, ProcessPathRequest->ProcessPath, MAX_PATH) == TRUE)
 	{
+		ObDereferenceObject(EProcess);
 		return STATUS_SUCCESS;
 	}
+	ObDereferenceObject(EProcess);
 	return STATUS_UNSUCCESSFUL;
 }
 BOOLEAN GetProcessFullPathByEProcess(PVOID EProcess, WCHAR* ProcessFullPath, ULONG ProcessFullPathLength)
@@ -54,7 +57,7 @@ BOOLEAN GetProcessFullPathByEProcess(PVOID EProcess, WCHAR* ProcessFullPath, ULO
 						InitializeObjectAttributes(&ObjectAttributes, (PUNICODE_STRING)BufferData, OBJ_CASE_INSENSITIVE | HandleAttributes, NULL, NULL);
 						if (NT_SUCCESS(ZwOpenFile(&FileHandle, FILE_READ_ATTRIBUTES | SYNCHRONIZE, &ObjectAttributes, &IoStatusBlock, FILE_SHARE_READ, FILE_SYNCHRONOUS_IO_NONALERT)))
 						{
-							PFILE_OBJECT FileObject;
+							PFILE_OBJECT FileObject=NULL;
 							//通过句柄获得对象
 							if (NT_SUCCESS(ObReferenceObjectByHandle(FileHandle, FILE_READ_ATTRIBUTES, *IoFileObjectType, PreviousMode, (PVOID*)&FileObject, NULL)))
 							{
@@ -111,7 +114,7 @@ BOOLEAN GetProcessFullPathByPeb(PVOID EProcess, WCHAR* ProcessFullPath, ULONG Pr
 			RtlCopyMemory(ProcessFullPath, Peb->ProcessParameters->ImagePathName.Buffer, ProcessFullPathLength);
 		}
 	}
-	except(EXCEPTION_EXECUTE_HANDLER)
+	__except(EXCEPTION_EXECUTE_HANDLER)
 	{
 
 	}

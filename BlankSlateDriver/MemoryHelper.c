@@ -1,4 +1,4 @@
-﻿#include "MemoryHelper.h"
+#include "MemoryHelper.h"
 #include"ProcessHelper.h"
 #include"IoControlHelper.h"
 BOOLEAN MapFileInKernelSpace(WCHAR* FullPath, PVOID* VirtualAddress, PSIZE_T ViewSize)
@@ -175,7 +175,7 @@ NTSTATUS SafeCopyProcessModule(PEPROCESS EProcess, ULONG_PTR ModuleBase, ULONG S
 	}
 	if (v5)
 	{
-		FreePoolWithTag(v5, 0);
+		FreePoolWithTag(v5);
 		v5 = NULL;
 	}
 	return Status;   //这里没有截到，不确定
@@ -275,6 +275,7 @@ NTSTATUS SafeCopyMemoryR02R3(ULONG_PTR Source, ULONG_PTR Destination, ULONG Size
 	}
 	__except (EXCEPTION_EXECUTE_HANDLER)
 	{
+		MmUnlockPages(Mdl2);
 	}
 	if (VirtualAddress2)
 	{

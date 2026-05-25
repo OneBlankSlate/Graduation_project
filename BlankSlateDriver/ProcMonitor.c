@@ -1,4 +1,4 @@
-﻿#include"ProcMonitor.h"
+#include"ProcMonitor.h"
 #include"ProcessPath.h"
 PMONITOR_CONTEXT g_context = NULL;
 NTSTATUS MonitorProcess()
@@ -22,6 +22,8 @@ NTSTATUS MonitorProcess()
             g_context->NotifyHandle = &ProcessNotifyCallback;
         }
         else {
+            ExFreePoolWithTag(g_context, CONTEXT_TAG);
+            g_context = NULL;
         }
     }
     else {
@@ -40,6 +42,8 @@ NTSTATUS StopMonitorProcess()
             g_context->NotifyHandle = NULL;
         }
         else {
+            ExFreePoolWithTag(g_context, CONTEXT_TAG);
+            g_context = NULL;
         }
     }
     else {
@@ -65,7 +69,7 @@ NTSTATUS GetProcEvents(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputB
     // 读取事件
     for (i = 0; i < eventsToRead; i++) {
         ULONG index = (g_context->EventBuffer.ReadIndex + i) % MAX_EVENTS;
-        RtlCopyMemory(&packet->Events[i], &g_context->EventBuffer.Events[i], sizeof(PROCESS_EVENT));
+        RtlCopyMemory(&packet->Events[i], &g_context->EventBuffer.Events[index], sizeof(PROCESS_EVENT));
     }
     *ReturnValue = eventsToRead * sizeof(PROCESS_EVENT);
     // 更新读索引
@@ -123,7 +127,7 @@ VOID ProcessNotifyCallback(
             RtlCopyMemory(event.CommandLine, CreateInfo->CommandLine->Buffer, copyLength);
             event.CommandLine[copyLength / sizeof(WCHAR)] = L'\0';
         }
-
+        ObDereferenceObject(parentProcess);
     }
     else {
         // 进程退出事件

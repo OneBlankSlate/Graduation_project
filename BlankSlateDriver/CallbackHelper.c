@@ -1,4 +1,4 @@
-﻿#include"CallbackHelper.h"
+#include"CallbackHelper.h"
 #include"ProcessHelper.h"
 #include"ObjectHelper.h"
 PVOID __ProcessCallbackHandle = NULL;
@@ -25,7 +25,7 @@ NTSTATUS ProcessObjectCallback()
 	__OperationRegistrations.Operations |= OB_OPERATION_HANDLE_CREATE;
 	__OperationRegistrations.Operations |= OB_OPERATION_HANDLE_DUPLICATE;
 	__OperationRegistrations.PreOperation = PreOperationCallback;
-	__OperationRegistrations.PostOperation = NULL;
+	__OperationRegistrations.PostOperation = PostOperationCallback;
 
 
 
@@ -49,6 +49,26 @@ NTSTATUS ProcessObjectCallback()
 	DbgPrint("Success:%d", Status);
 	//KeReleaseGuardedMutex(&__CallbacksMutex);
 	return Status;
+}
+VOID PostOperationCallback(
+	_In_ PVOID RegistrationContext,
+	_In_ POB_POST_OPERATION_INFORMATION PostInfo)
+{
+	PTD_CALL_CONTEXT CallContext;
+
+	UNREFERENCED_PARAMETER(RegistrationContext);
+
+	CallContext =
+		(PTD_CALL_CONTEXT)PostInfo->CallContext;
+
+	if (CallContext != NULL)
+	{
+		ExFreePoolWithTag(
+			CallContext,
+			TD_CALL_CONTEXT_TAG);
+
+		PostInfo->CallContext = NULL;
+	}
 }
 OB_PREOP_CALLBACK_STATUS PreOperationCallback(_In_ PVOID RegistrationContext, _Inout_ POB_PRE_OPERATION_INFORMATION PreInfo)
 {
@@ -178,6 +198,7 @@ void TdSetCallContext(_Inout_ POB_PRE_OPERATION_INFORMATION PreInfo, _In_ PTD_CA
 	CallContext->ObjectType = PreInfo->ObjectType;
 
 	PreInfo->CallContext = CallContext;
+
 }
 void UninitializeCallbackSource()
 {

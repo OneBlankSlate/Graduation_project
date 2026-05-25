@@ -1,4 +1,4 @@
-﻿#include"ProcessHandle.h"
+#include"ProcessHandle.h"
 #include"ProcessHelper.h"
 #include"ObjectHelper.h"
 
@@ -354,9 +354,18 @@ NTSTATUS PsCloseHandle(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputB
             __leave;
         }
         if (KeGetCurrentIrql() != PASSIVE_LEVEL)
+        {
+            ObDereferenceObject(TargetProcess);
             return STATUS_UNSUCCESSFUL;
+
+        }
+
         if (TargetHandle == NULL || TargetHandle == (HANDLE)-1)
+        {
+            ObDereferenceObject(TargetProcess);
             return STATUS_INVALID_HANDLE;
+
+        }
         KeStackAttachProcess(TargetProcess, &ApcState);
         Status = ObReferenceObjectByHandle(
             TargetHandle,

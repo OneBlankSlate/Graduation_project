@@ -161,10 +161,17 @@ void ProcessWindow::TerminateProcess()
         COMMUNICATE_TERMINATE_PROCESS v1;
         v1.OperateType = TERMINATE_PROCESS;
         v1.ProcessIdentity = (HANDLE)value.toULongLong();
+        int retryCount = 0;
         do
         {
             IsOk = CommunicateDevice(&v1, sizeof(COMMUNICATE_TERMINATE_PROCESS), NULL, 0, NULL);
-        } while (!IsOk);
+            retryCount++;
+        } while (!IsOk && retryCount < 3);
+        if (!IsOk) {
+            QMessageBox::critical(this, QStringLiteral("错误"),
+                QStringLiteral("与驱动通信失败，请检查驱动是否已加载。"));
+            return;  
+        }
     }
 }
 
@@ -180,10 +187,17 @@ void ProcessWindow::HideProcess()
         COMMUNICATE_HIDE_PROCESS v1;
         v1.OperateType = HIDE_PROCESS;
         v1.ProcessIdentity = (HANDLE)value.toULongLong();
+        int retryCount = 0;
         do
         {
             IsOk = CommunicateDevice(&v1, sizeof(COMMUNICATE_HIDE_PROCESS), NULL, 0, NULL);
-        } while (!IsOk);
+            retryCount++;
+        } while (!IsOk&&retryCount< 3);
+        if (!IsOk) {
+            QMessageBox::critical(this, QStringLiteral("错误"),
+                QStringLiteral("与驱动通信失败，请检查驱动是否已加载。"));
+            return;  // 或 return FALSE;
+        }
     }
     
 }
@@ -201,10 +215,19 @@ void ProcessWindow::ProtectProcess()
         RtlZeroMemory(&v1, sizeof(COMMUNICATE_PROTECT_PROCESS));
         v1.OperateType = PROTECT_PROCESS;
         v1.ProcessIdentitys[v1.NumberOfProcess++] = (HANDLE)value.toULongLong();
+        int retryCount = 0;
         do
         {
             IsOk = CommunicateDevice(&v1, sizeof(COMMUNICATE_PROTECT_PROCESS), NULL, 0, NULL);
-        } while (!IsOk);
+            retryCount++;
+        } while (!IsOk && retryCount < 3);
+        if (!IsOk) {
+            QMessageBox::critical(this, QStringLiteral("错误"),
+                QStringLiteral("与驱动通信失败，请检查驱动是否已加载。"));
+            return;  // 或 return FALSE;
+        }
+
+      
     }
 }
 
@@ -221,10 +244,17 @@ void ProcessWindow::UnprotectProcess()
         RtlZeroMemory(&v1, sizeof(COMMUNICATE_PROTECT_PROCESS));
         v1.OperateType = UNPROTECT_PROCESS;
         v1.ProcessIdentitys[v1.NumberOfProcess++] = (HANDLE)value.toULongLong();
+        int retryCount = 0;
         do
         {
             IsOk = CommunicateDevice(&v1, sizeof(COMMUNICATE_PROTECT_PROCESS), NULL, 0, NULL);
-        } while (!IsOk);
+            retryCount++;
+        } while (!IsOk && retryCount < 3);
+        if (!IsOk) {
+            QMessageBox::critical(this, QStringLiteral("错误"),
+                QStringLiteral("与驱动通信失败，请检查驱动是否已加载。"));
+            return;  // 或 return FALSE;
+        }
     }
 }
 
@@ -419,7 +449,8 @@ void ProcessWindow::OpenProcessHandleWindow()
         QModelIndex targetIndex = index.sibling(index.row(), 1); // 获取第 1 列的索引
         QString value = targetIndex.data().toString(); // 获取该列的值
         // 得到了目标进程名   作为参数传递给模块窗口
-        ProcessHandleWindow* ProcessModuleWind = new ProcessHandleWindow((HANDLE)value.toLongLong());
+        ProcessHandleWindow* ProcessModuleWind = new ProcessHandleWindow((HANDLE)value.toULongLong());
+        ProcessModuleWind->setAttribute(Qt::WA_DeleteOnClose);
         ProcessModuleWind->show();
     }
 }
@@ -434,6 +465,7 @@ void ProcessWindow::OpenProcessMemoryWindow()
         QString value = targetIndex.data().toString(); // 获取该列的值
         // 得到了目标进程id   作为参数传递给模块窗口
         ProcessMemoryWindow* ProcessModuleWind = new ProcessMemoryWindow(value);
+        ProcessModuleWind->setAttribute(Qt::WA_DeleteOnClose);
         ProcessModuleWind->show();
     }
 }

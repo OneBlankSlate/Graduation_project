@@ -15,7 +15,6 @@ private:
     Ui::ProcMonWindowClass* ui;
     QStandardItemModel* m_model;
     QTimer* m_updateTimer;
-    QTimer* m_statusTimer;
     QPushButton* btnExport;
 
     void setupTableView();

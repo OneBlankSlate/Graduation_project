@@ -14,7 +14,6 @@ ProcMonWindow::ProcMonWindow(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ProcMonWindowClass)
     , m_updateTimer(new QTimer(this))
-    , m_statusTimer(new QTimer(this))
 {
     ui->setupUi(this);
 
@@ -84,7 +83,7 @@ void ProcMonWindow::onStartClicked()
 
     if (result) {
         m_updateTimer->start();
-        m_statusTimer->start();
+        //m_statusTimer->start();
         updateUIState(true);
     }
     else {
@@ -101,7 +100,7 @@ void ProcMonWindow::onStopClicked()
 
     if (result) {
         m_updateTimer->stop();
-        m_statusTimer->stop();
+        //m_statusTimer->stop();
         updateUIState(false);
     }
     else {
@@ -126,6 +125,9 @@ void ProcMonWindow::updateEvents()
     const ULONG maxEvents = 100;
     DWORD bufferSize = sizeof(EVENT_PACKET) + (maxEvents - 1) * sizeof(PROCESS_EVENT);
     PEVENT_PACKET packet = (PEVENT_PACKET)malloc(bufferSize);
+    if (packet == nullptr) {
+        return;
+    }
     packet->BufferSize = bufferSize;
     packet->EventCount = maxEvents;
     DWORD bytesReturned = 0;
@@ -134,7 +136,10 @@ void ProcMonWindow::updateEvents()
     BOOL result = CommunicateDevice(&input, sizeof(input), packet, bufferSize, &bytesReturned);
     if (result && bytesReturned >= sizeof(ULONG)) {
         ULONG eventCount = packet->EventCount;
-
+        // 防止驱动返回异常数量导致越界
+        if (eventCount > maxEvents) {
+            eventCount = maxEvents;
+        }
         for (ULONG i = 0; i < eventCount; i++) {
             addEventToTable(packet->Events[i]);
         }
@@ -144,6 +149,7 @@ void ProcMonWindow::updateEvents()
             ui->ProcMon_TableView->scrollToBottom();
         }
     }
+    free(packet);
 }
 
 void ProcMonWindow::addEventToTable(const PROCESS_EVENT& event)

@@ -62,21 +62,55 @@ ULONG FindKey(PUCHAR PatternValue, ULONG PatternValueLength, PUCHAR VirtualAddre
 
 
 
-NTSTATUS UnicodeStringCopy2UnicodeString(OUT PUNICODE_STRING DestinationString, IN PUNICODE_STRING SourceString)
+NTSTATUS UnicodeStringCopy2UnicodeString(
+	PUNICODE_STRING DestinationString,
+	PUNICODE_STRING SourceString
+)
 {
-	ASSERT(DestinationString != NULL && SourceString != NULL);
-	if (DestinationString == NULL || SourceString == NULL || SourceString->Buffer == NULL)
+	if (!DestinationString ||
+		!SourceString ||
+		!SourceString->Buffer)
+	{
 		return STATUS_INVALID_PARAMETER;
+	}
+
+	if (SourceString->Length >
+		SourceString->MaximumLength)
+	{
+		return STATUS_INVALID_PARAMETER;
+	}
+
+	RtlZeroMemory(
+		DestinationString,
+		sizeof(UNICODE_STRING));
+
 	if (SourceString->Length == 0)
 	{
-		DestinationString->Length = DestinationString->MaximumLength = 0;
-		DestinationString->Buffer = NULL;
 		return STATUS_SUCCESS;
 	}
-	DestinationString->Buffer = AllocatePoolWithTag(PagedPool, SourceString->MaximumLength);
-	DestinationString->Length = SourceString->Length;
-	DestinationString->MaximumLength = SourceString->MaximumLength;
-	memcpy(DestinationString->Buffer, SourceString->Buffer, SourceString->Length+2);
+
+	DestinationString->Buffer =
+		ExAllocatePool2(
+			POOL_FLAG_PAGED,
+			SourceString->MaximumLength,
+			'grTS');
+
+	if (!DestinationString->Buffer)
+	{
+		return STATUS_INSUFFICIENT_RESOURCES;
+	}
+
+	RtlCopyMemory(
+		DestinationString->Buffer,
+		SourceString->Buffer,
+		SourceString->Length);
+
+	DestinationString->Length =
+		SourceString->Length;
+
+	DestinationString->MaximumLength =
+		SourceString->MaximumLength;
+
 	return STATUS_SUCCESS;
 }
 	

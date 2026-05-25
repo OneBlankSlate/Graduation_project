@@ -40,8 +40,8 @@ BOOL ReadMemoryWindow::ReadVirtualMemory()
 	v5.ul.Read.RegionSize = size;
 
 	DWORD ReturnLength = 0;
-	char BufferData[MAX_LENGTH] = { 0 };
-	IsOk = CommunicateDevice(&v5, sizeof(COMMUNICATE_PROCESS_MEMORY), BufferData, MAX_LENGTH, &ReturnLength);
+	char BufferData[100] = { 0 };
+	IsOk = CommunicateDevice(&v5, sizeof(COMMUNICATE_PROCESS_MEMORY), BufferData, 100, &ReturnLength);
 	if (IsOk)
 	{
 		QByteArray data((char*)BufferData, size);

@@ -232,9 +232,7 @@ void FileMonWindow::updateEvents()
     {
         if (bytesReturned > 0)
         {
-            DWORD eventCount =
-                bytesReturned /
-                sizeof(FILE_EVENT);
+            DWORD eventCount = packet->EventCount;
 
             for (DWORD i = 0;
                 i < eventCount &&
@@ -374,6 +372,12 @@ void FileMonWindow::updateEvents()
 
                 m_model->appendRow(
                     rowItems);
+            }
+
+            // 行数限制：超过10000行时删除旧行，保留最新8000行   滑动窗口
+            if (m_model->rowCount() > 10000) {
+                int removeCount = m_model->rowCount() - 8000;
+                m_model->removeRows(0, removeCount);
             }
 
             //

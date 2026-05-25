@@ -1,4 +1,4 @@
-﻿#include"ProcessThread.h"
+#include"ProcessThread.h"
 #include"ProcessHelper.h"
 #include"SystemHelper.h"
 

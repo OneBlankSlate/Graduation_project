@@ -57,9 +57,7 @@ ThreadMonWindow::~ThreadMonWindow()
         onStopClicked();
     }
 
-    if (m_model) {
-        m_model->deleteLater();
-    }
+    // m_model 以 this 为父对象创建，Qt 对象树会自动删除，无需手动释放
 
     delete ui;
 }

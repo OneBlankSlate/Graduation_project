@@ -97,7 +97,7 @@ void ProcessMemoryWindow::Menu_Slot(QPoint p)
 
 void ProcessMemoryWindow::RefreshMemory()
 {
-	m_model.clear();
+	m_model.removeRows(0, m_model.rowCount());
 	ListProcessMemoryInfo();
 }
 void ProcessMemoryWindow::SetNoAccess()
@@ -369,12 +369,14 @@ void ProcessMemoryWindow::ListProcessMemoryInfo()
 void ProcessMemoryWindow::OpenReadMemWind()
 {
 	ReadMemoryWindow* ReadWind = new ReadMemoryWindow(m_ProcessId);
+	ReadWind->setAttribute(Qt::WA_DeleteOnClose);
 	ReadWind->show();
 }
 
 void ProcessMemoryWindow::OpenWriteMemWind()
 {
 	WriteMemoryWindow* WriteWind = new WriteMemoryWindow(m_ProcessId);
+	WriteWind->setAttribute(Qt::WA_DeleteOnClose);
 	WriteWind->show();
 }
 

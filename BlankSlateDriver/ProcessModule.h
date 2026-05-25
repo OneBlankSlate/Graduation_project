@@ -45,4 +45,3 @@ typedef NTSTATUS (NTAPI* LPFN_NTCLOSE)(IN HANDLE Handle);
 NTSTATUS RemoveProcessModuleInPeb(PEPROCESS EProcess, ULONG_PTR ModuleBase);
 
 
-extern LPFN_NTCLOSE __NtClose;

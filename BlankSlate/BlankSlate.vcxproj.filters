@@ -18,9 +18,6 @@
     <Filter Include="帮助\进程帮助">
       <UniqueIdentifier>{bc9a4274-8a94-45c1-9eef-2c67dfd603e3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="帮助\进程帮助\进程路径">
-      <UniqueIdentifier>{7a93a230-5179-4d01-b412-0819cb2537fe}</UniqueIdentifier>
-    </Filter>
     <Filter Include="帮助\通信帮助">
       <UniqueIdentifier>{7ded158a-8103-4940-aba1-cf4856c90129}</UniqueIdentifier>
     </Filter>
@@ -59,9 +56,6 @@
     </Filter>
     <Filter Include="窗口\进程内存窗口\写内存窗口">
       <UniqueIdentifier>{7bc4712e-4542-4a37-82ea-58f10a7e5230}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="帮助\字符串帮助">
-      <UniqueIdentifier>{130ec59c-f600-4fc6-b601-17701e83bc3c}</UniqueIdentifier>
     </Filter>
     <Filter Include="帮助\系统帮助">
       <UniqueIdentifier>{4416a2f6-173e-4f2f-907e-e01bc7b8f5ef}</UniqueIdentifier>
@@ -178,9 +172,6 @@
     <ClCompile Include="IoControlHelper.cpp">
       <Filter>帮助\通信帮助</Filter>
     </ClCompile>
-    <ClCompile Include="ProcessPath.cpp">
-      <Filter>帮助\进程帮助\进程路径</Filter>
-    </ClCompile>
     <ClCompile Include="ProcessModule.cpp">
       <Filter>帮助\进程帮助\进程模块</Filter>
     </ClCompile>
@@ -204,9 +195,6 @@
     </ClCompile>
     <ClCompile Include="WriteMemoryWindow.cpp">
       <Filter>窗口\进程内存窗口\写内存窗口</Filter>
-    </ClCompile>
-    <ClCompile Include="StringHelper.cpp">
-      <Filter>帮助\字符串帮助</Filter>
     </ClCompile>
     <ClCompile Include="SystemModule.cpp">
       <Filter>帮助\系统帮助\系统模块</Filter>
@@ -295,9 +283,6 @@
     <ClInclude Include="IoControlHelper.h">
       <Filter>帮助\通信帮助</Filter>
     </ClInclude>
-    <ClInclude Include="ProcessPath.h">
-      <Filter>帮助\进程帮助\进程路径</Filter>
-    </ClInclude>
     <ClInclude Include="InjectHelper.h">
       <Filter>帮助\注入帮助</Filter>
     </ClInclude>
@@ -309,9 +294,6 @@
     </ClInclude>
     <ClInclude Include="ProcessMemory.h">
       <Filter>帮助\进程帮助\进程内存</Filter>
-    </ClInclude>
-    <ClInclude Include="StringHelper.h">
-      <Filter>帮助\字符串帮助</Filter>
     </ClInclude>
     <ClInclude Include="SystemModule.h">
       <Filter>帮助\系统帮助\系统模块</Filter>

@@ -58,4 +58,7 @@ void InitializeCallbackSource(PDRIVER_OBJECT DriverObject);
 void UninitializeCallbackSource();
 NTSTATUS ProcessObjectCallback();
 OB_PREOP_CALLBACK_STATUS PreOperationCallback(_In_ PVOID RegistrationContext, _Inout_ POB_PRE_OPERATION_INFORMATION PreInfo);
+VOID PostOperationCallback(
+    _In_ PVOID RegistrationContext,
+    _In_ POB_POST_OPERATION_INFORMATION PostInfo);
 void TdSetCallContext(_Inout_ POB_PRE_OPERATION_INFORMATION PreInfo, _In_ PTD_CALLBACK_REGISTRATION CallbackRegistration);

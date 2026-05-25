@@ -8,6 +8,7 @@
 #include "FileMonitor.h"
 #include"ModuleMonitor.h"
 #include"MultiOpenPrevent.h"
+#include"ThreadMonitor.h"
 //注册表回调使用的Cookie
 LARGE_INTEGER g_liRegCookie;
 //   bu BlankSlateDriver!DriverEntry
@@ -72,12 +73,16 @@ NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING Regi
 	if (NT_SUCCESS(Status)) {
 		Status = FltStartFiltering(gFilterHandle);
 		if (!NT_SUCCESS(Status)) {
+			ExFreePoolWithTag(g_FileMonitorContext, 'FMon');
 			FltUnregisterFilter(gFilterHandle);
 			gFilterHandle = NULL;
+			return Status;
 		}
 		else {}
 	}
 	else {
+		ExFreePoolWithTag(g_FileMonitorContext, 'FMon');
+		FltUnregisterFilter(gFilterHandle);
 		return Status;
 	}
 
@@ -103,16 +108,22 @@ VOID DriverUnload(IN PDRIVER_OBJECT DriverObject)
 	UninitializeCallbackSource();
 	UninitializeMultiOpenPrevent();
 
+	//停止进程监控
 	if (g_context) {
-		// 停止监控
 		if (g_context->IsMonitoring && g_context->NotifyHandle) {
 			PsSetCreateProcessNotifyRoutineEx(ProcessNotifyCallback, TRUE);
 		}
-		// 释放上下文
 		ExFreePoolWithTag(g_context, CONTEXT_TAG);
 		g_context = NULL;
 	}
-
+	// 停止线程监控
+	if (g_ThreadContext) {
+		if (g_ThreadContext->IsMonitoring && g_ThreadContext->NotifyHandle) {
+			PsRemoveCreateThreadNotifyRoutine(ThreadNotifyCallback);
+		}
+		ExFreePoolWithTag(g_ThreadContext, THREAD_CONTEXT_TAG);
+		g_ThreadContext = NULL;
+	}
 	// 停止映像加载监控
 	if (g_ModuleContext) {
 		if (g_ModuleContext->IsMonitoring && g_ModuleContext->NotifyHandle) {

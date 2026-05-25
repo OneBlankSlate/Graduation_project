@@ -1,11 +1,9 @@
-﻿#include"ProcessModule.h"
+#include"ProcessModule.h"
 #include"ProcessHelper.h"
 #include"MemoryHelper.h"
 #include"StringHelper.h"
 #include"SystemHelper.h"
 #include"ProcessThread.h"
-LPFN_NTUNMAPVIEWOFSECTION __NtUnmapViewOfSection = NULL;
-LPFN_NTCLOSE __NtClose = NULL;
 PVOID GetUserModuleHandle(IN PEPROCESS EProcess, IN PUNICODE_STRING ModuleName, ULONG* SizeOfImage)
 {
 	if (EProcess == NULL)
@@ -35,7 +33,7 @@ PVOID GetUserModuleHandle(IN PEPROCESS EProcess, IN PUNICODE_STRING ModuleName, 
 			{
 				if (SizeOfImage != NULL)
 				{
-					SizeOfImage = LdrDataTableEntry->ModuleSize;
+					*SizeOfImage = LdrDataTableEntry->ModuleSize;
 				}
 				return LdrDataTableEntry->ModuleBaseAddress;
 			}
@@ -202,7 +200,7 @@ void WalkModuleList2(PLIST_ENTRY ListEntry, ULONG EnumType, ULONG_PTR ModuleBase
 {
 	PLIST_ENTRY v1 = NULL;
 	v1 = ListEntry->Flink;
-	while ((ULONG_PTR)v1 > 0 && (ULONG_PTR)v1 <= USER_ADDRESS_END & v1 != ListEntry)
+	while ((ULONG_PTR)v1 > 0 && (ULONG_PTR)v1 <= USER_ADDRESS_END && v1 != ListEntry)
 	{
 		PLDR_DATA_TABLE_ENTRY LdrDataTableEntry = NULL;
 		switch (EnumType)
@@ -257,71 +255,112 @@ BOOLEAN InModuleList(ULONG_PTR ModuleBase, ULONG SizeOfImage, PMODULES_INFORMATI
 		
 	return IsOk;
 }
-NTSTATUS PsUnloadProcessModule(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)
+NTSTATUS PsUnloadProcessModule(
+	PVOID InputBuffer,
+	ULONG InputBufferLength,
+	PVOID OutputBuffer,
+	ULONG OutputBufferLength,
+	ULONG* ReturnValue)
 {
-	NTSTATUS Status1 = STATUS_UNSUCCESSFUL, Status2 = STATUS_UNSUCCESSFUL;
-	PCOMMUNICATE_PROCESS_MODULE v1 = (PCOMMUNICATE_PROCESS_MODULE)InputBuffer;
-	ULONG_PTR ProcessIdentity = v1->ProcessIdentity;
+	NTSTATUS Status1 = STATUS_UNSUCCESSFUL;
+	NTSTATUS Status2 = STATUS_UNSUCCESSFUL;
+
+	PCOMMUNICATE_PROCESS_MODULE v1 =
+		(PCOMMUNICATE_PROCESS_MODULE)InputBuffer;
+
+	ULONG_PTR ProcessIdentity = 0;
+
 	PEPROCESS EProcess = NULL;
-	ULONG_PTR ModuleBase = v1->u1.Unload.ModuleBase;
-	//参数检查
-	if (!InputBuffer || InputBufferLength != sizeof(COMMUNICATE_PROCESS_MODULE))
+
+	ULONG_PTR ModuleBase = 0;
+
+	HANDLE ProcessHandle = NULL;
+
+	//
+	// 参数检查
+	//
+	if (!InputBuffer ||
+		InputBufferLength !=
+		sizeof(COMMUNICATE_PROCESS_MODULE))
 	{
 		return STATUS_INVALID_PARAMETER;
 	}
+
+	ProcessIdentity = v1->ProcessIdentity;
+
+	ModuleBase = v1->u1.Unload.ModuleBase;
+
+	//
+	// 模块基址检查
+	//
+	if (ModuleBase == 0)
+	{
+		return STATUS_INVALID_PARAMETER;
+	}
+
+	//
+	// 获取进程对象
+	//
 	if (ProcessIdentity)
 	{
-		Status2 = PsLookupProcessByProcessId((HANDLE)ProcessIdentity, &EProcess);
+		Status2 =
+			PsLookupProcessByProcessId(
+				(HANDLE)ProcessIdentity,
+				&EProcess);
 	}
-	if (!EProcess)
+
+	if (!NT_SUCCESS(Status2) ||
+		!EProcess)
 	{
-		return Status1;
+		return STATUS_NOT_FOUND;
 	}
+
+	//
+	// 检查进程有效性
+	//
 	if (PsIsRealProcess(EProcess))
 	{
-		HANDLE ProcessHandle = NULL;
-		Status1 = ObOpenObjectByPointer(EProcess, OBJ_KERNEL_HANDLE | OBJ_CASE_INSENSITIVE, NULL, GENERIC_ALL, *PsProcessType, KernelMode, &ProcessHandle);
+		//
+		// 打开进程句柄
+		//
+		Status1 =
+			ObOpenObjectByPointer(
+				EProcess,
+				OBJ_KERNEL_HANDLE |
+				OBJ_CASE_INSENSITIVE,
+				NULL,
+				PROCESS_VM_OPERATION,
+				*PsProcessType,
+				KernelMode,
+				&ProcessHandle);
+
 		if (NT_SUCCESS(Status1))
 		{
-			if (__NtUnmapViewOfSection == NULL || __NtClose == NULL)
-			{
-				PSYSTEM_SERVICE_DESCRIPTOR_TABLE SystemServiceDescriptorTable = NULL;
-				ULONG32 ServiceIndex = 0;
-				SystemServiceDescriptorTable = GetKeServiceDescriptorTable2();
-				if (!GetNtXXXServiceIndex("NtUnmapViewOfSection", &ServiceIndex))
-				{
-					return;
-				}
-				if (!NT_SUCCESS(GetNtXXXServiceAddress(ServiceIndex,&__NtUnmapViewOfSection)))
-				{
-					return;
-				}
-				if (!GetNtXXXServiceIndex("NtClose", &ServiceIndex))
-				{
-					return;
-				}
-				if (!NT_SUCCESS(GetNtXXXServiceAddress(ServiceIndex, &__NtClose)))
-				{
-					return;
-				}
-			}
-			PETHREAD EThread = PsGetCurrentThread();
-			CHAR PreviousMode = ChangePreviousMode(EThread);
-			Status1 = __NtUnmapViewOfSection(ProcessHandle, (PVOID)ModuleBase);
+			//
+			// 卸载模块
+			//
+			Status1 =
+				ZwUnmapViewOfSection(
+					ProcessHandle,
+					(PVOID)ModuleBase);
+
+			//
+			// 从PEB链表移除
+			//
 			if (NT_SUCCESS(Status1))
 			{
-				RemoveProcessModuleInPeb(EProcess, ModuleBase);
+				RemoveProcessModuleInPeb(
+					EProcess,
+					ModuleBase);
 			}
-			__NtClose(ProcessHandle);
-			RecoverPreviousMode(EThread, PreviousMode);
+
+			ZwClose(ProcessHandle);
 		}
 	}
-	if (NT_SUCCESS(Status2))
-	{
-		ObfDereferenceObject(EProcess);
-	}
-	return Status1;
 
+	ObDereferenceObject(EProcess);
+
+	return Status1;
 }
 NTSTATUS RemoveProcessModuleInPeb(PEPROCESS EProcess, ULONG_PTR ModuleBase)
 {
@@ -369,7 +408,7 @@ NTSTATUS RemoveProcessModuleInPeb(PEPROCESS EProcess, ULONG_PTR ModuleBase)
 		if (IsAttach)
 		{
 			KeUnstackDetachProcess(&ApcState);
-			IsAttach = TRUE;
+			IsAttach = FALSE;
 		}
 
 	}

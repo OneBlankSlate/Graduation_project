@@ -1,4 +1,4 @@
-﻿#include"SystemHelper.h"
+#include"SystemHelper.h"
 #include"MemoryHelper.h"
 #include"StringHelper.h"
 #include"ProcessHelper.h"
@@ -215,7 +215,7 @@ BOOLEAN GetNtXXXServiceIndex(CHAR* FunctionName, ULONG32* ServiceIndex)
 	*ServiceIndex = -1;
 	IsOk = MapFileInKernelSpace(FileFullPath,
 		&VirtualAddress, &ViewSize);
-		if (IsOk = FALSE)
+		if (IsOk == FALSE)
 			return FALSE;
 		else
 		{
@@ -311,7 +311,7 @@ VOID FreeNtoskrnlInfo()
 
 PEPROCESS LookupWin32Process()
 {
-	PEPROCESS EProcess;
+	PEPROCESS EProcess=NULL;
 	ULONG ProcessIdentity;
 	for (ProcessIdentity = 100; ProcessIdentity < 5000; ProcessIdentity += 4)
 	{
@@ -321,7 +321,9 @@ PEPROCESS LookupWin32Process()
 			{
 				return EProcess;
 			}
-				
+			else {
+				ObDereferenceObject(EProcess);
+			}
 			
 		}
 	}

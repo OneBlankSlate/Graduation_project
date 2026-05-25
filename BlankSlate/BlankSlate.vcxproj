@@ -119,13 +119,11 @@
     <ClCompile Include="ProcessMemoryWindow.cpp" />
     <ClCompile Include="ProcessModule.cpp" />
     <ClCompile Include="ProcessModuleWindow.cpp" />
-    <ClCompile Include="ProcessPath.cpp" />
     <ClCompile Include="ProcessWindow.cpp" />
     <ClCompile Include="InjectDialog.cpp" />
     <ClCompile Include="ProcMonitor.cpp" />
     <ClCompile Include="ProcMonWindow.cpp" />
     <ClCompile Include="ReadMemoryWindow.cpp" />
-    <ClCompile Include="StringHelper.cpp" />
     <ClCompile Include="SystemModule.cpp" />
     <ClCompile Include="ThreadMonitor.cpp" />
     <ClCompile Include="ThreadMonWindow.cpp" />
@@ -172,7 +170,6 @@
     <ClInclude Include="ProcMonCommon.h" />
     <ClInclude Include="ProcMonitor.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="StringHelper.h" />
     <ClInclude Include="SystemModule.h" />
     <QtMoc Include="WriteMemoryWindow.h" />
     <QtMoc Include="ReadMemoryWindow.h" />
@@ -183,7 +180,6 @@
     <ClInclude Include="ProcessMemory.h" />
     <ClInclude Include="ProcessModule.h" />
     <QtMoc Include="ProcessModuleWindow.h" />
-    <ClInclude Include="ProcessPath.h" />
     <ClInclude Include="InjectHelper.h" />
     <ClInclude Include="PathConverter.h" />
   </ItemGroup>

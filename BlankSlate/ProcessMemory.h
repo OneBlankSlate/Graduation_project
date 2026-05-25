@@ -4,7 +4,6 @@
 #include<iostream>
 #include<vector>
 #include"IoControlHelper.h"
-#define MAX_LENGTH 20
 typedef struct _COMMUNICATE_PROCESS_MEMORY_
 {
 	OPERATE_TYPE OperateType;

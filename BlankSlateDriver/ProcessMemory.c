@@ -1,11 +1,10 @@
-﻿#include"ProcessMemory.h"
+#include"ProcessMemory.h"
 #include"ProcessHelper.h"
 #include"SystemHelper.h"
 #include"MemoryHelper.h"
 #include"ProcessThread.h"
 #include"ProcessModule.h"
-LPFN_NTQUERYVIRTUALMEMORY __NtQueryVirtualMemory = NULL;
-LPFN_NTPROTECTVIRTUALMEMORY __NtProtectVirtualMemory = NULL;
+
 NTSTATUS PsEnumProcessMem(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)
 {
 	NTSTATUS Status1 = STATUS_UNSUCCESSFUL, Status2 = STATUS_UNSUCCESSFUL;
@@ -45,77 +44,111 @@ NTSTATUS PsEnumProcessMem(PVOID InputBuffer, ULONG InputBufferLength, PVOID Outp
 	return Status1;
 }
 
-NTSTATUS EnumProcessMemorys(PEPROCESS EProcess, PMEMORYS_INFORMATION MemoryInfo, ULONG NumberOfMemory)
+NTSTATUS EnumProcessMemorys(
+	PEPROCESS EProcess,
+	PMEMORYS_INFORMATION MemoryInfo,
+	ULONG NumberOfMemory
+)
 {
-	NTSTATUS Status = STATUS_UNSUCCESSFUL;
+	NTSTATUS Status;
 	HANDLE ProcessHandle = NULL;
-	PETHREAD EThread = NULL;
-	CHAR PreviousMode = 0;
-	Status = ObOpenObjectByPointer(EProcess, OBJ_KERNEL_HANDLE | OBJ_CASE_INSENSITIVE, NULL, GENERIC_ALL, *PsProcessType, KernelMode, &ProcessHandle);
-	if (NT_SUCCESS(Status))
+	PVOID VirtualAddress = 0;
+
+	if (!EProcess || !MemoryInfo)
 	{
-		PVOID VirtualAddress = 0;
-		if (__NtQueryVirtualMemory == NULL)
+		return STATUS_INVALID_PARAMETER;
+	}
+
+	MemoryInfo->NumberOfMemory = 0;
+
+	//
+	// 打开进程句柄
+	//
+	Status = ObOpenObjectByPointer(
+		EProcess,
+		OBJ_KERNEL_HANDLE,
+		NULL,
+		PROCESS_QUERY_INFORMATION,
+		*PsProcessType,
+		KernelMode,
+		&ProcessHandle);
+
+	if (!NT_SUCCESS(Status))
+	{
+		return Status;
+	}
+
+	//
+	// 枚举内存
+	//
+	while ((ULONG_PTR)VirtualAddress <
+		(ULONG_PTR)MM_HIGHEST_USER_ADDRESS)
+	{
+		MEMORY_BASIC_INFORMATION MemoryBasicInfo;
+		SIZE_T ReturnLength = 0;
+
+		RtlZeroMemory(
+			&MemoryBasicInfo,
+			sizeof(MEMORY_BASIC_INFORMATION));
+
+		Status = ZwQueryVirtualMemory(
+			ProcessHandle,
+			VirtualAddress,
+			MemoryBasicInformation,
+			&MemoryBasicInfo,
+			sizeof(MEMORY_BASIC_INFORMATION),
+			&ReturnLength);
+
+		if (NT_SUCCESS(Status))
 		{
-			PSYSTEM_SERVICE_DESCRIPTOR_TABLE SystemServiceDescriptorTable = NULL;
-			ULONG32 ServiceIndex = 0;
-			SystemServiceDescriptorTable = GetKeServiceDescriptorTable2();
-			if (!GetNtXXXServiceIndex("NtQueryVirtualMemory", &ServiceIndex))
+			ULONG Index =
+				MemoryInfo->NumberOfMemory;
+
+			if (Index < NumberOfMemory)
 			{
-				return STATUS_UNSUCCESSFUL;
+				MemoryInfo->MemoryInfo[Index].BaseAddress =
+					VirtualAddress;
+
+				MemoryInfo->MemoryInfo[Index].RegionSize =
+					MemoryBasicInfo.RegionSize;
+
+				MemoryInfo->MemoryInfo[Index].Protect =
+					MemoryBasicInfo.Protect;
+
+				MemoryInfo->MemoryInfo[Index].State =
+					MemoryBasicInfo.State;
+
+				MemoryInfo->MemoryInfo[Index].Type =
+					MemoryBasicInfo.Type;
 			}
-			if (!NT_SUCCESS(GetNtXXXServiceAddress(ServiceIndex, (PVOID*)&__NtQueryVirtualMemory)))
+
+			MemoryInfo->NumberOfMemory++;
+
+			//
+			// 防止死循环
+			//
+			if (MemoryBasicInfo.RegionSize == 0)
 			{
-				return STATUS_UNSUCCESSFUL;
-			}
-		}
-		if (__NtClose == NULL)
-		{
-			PSYSTEM_SERVICE_DESCRIPTOR_TABLE SystemServiceDescriptorTable = NULL;
-			ULONG32 ServiceIndex = 0;
-			SystemServiceDescriptorTable = GetKeServiceDescriptorTable2();
-			if (!GetNtXXXServiceIndex("NtClose", &ServiceIndex))
-			{
-				return STATUS_UNSUCCESSFUL;
-			}
-			if (!NT_SUCCESS(GetNtXXXServiceAddress(ServiceIndex, (PVOID*)&__NtClose)))
-			{
-				return STATUS_UNSUCCESSFUL;
-			}
-		}
-		EThread = PsGetCurrentThread();
-		PreviousMode = ChangePreviousMode(EThread);
-		ULONG_PTR v100 = (ULONG_PTR)MM_HIGHEST_USER_ADDRESS;
-		while (VirtualAddress < MM_HIGHEST_USER_ADDRESS)
-		{
-			MEMORY_BASIC_INFORMATION MemoryBasicInfo;
-			SIZE_T ReturnLength = 0;
-			NTSTATUS Status2 = __NtQueryVirtualMemory(ProcessHandle, (PVOID)VirtualAddress, MemoryBasicInformation, &MemoryBasicInfo, sizeof(MEMORY_BASIC_INFORMATION), &ReturnLength);
-			if (NT_SUCCESS(Status2))
-			{
-				ULONG v1 = MemoryInfo->NumberOfMemory;
-				if (NumberOfMemory > v1)
-				{
-					MemoryInfo->MemoryInfo[v1].BaseAddress = VirtualAddress;
-					MemoryInfo->MemoryInfo[v1].RegionSize = MemoryBasicInfo.RegionSize;
-					MemoryInfo->MemoryInfo[v1].Protect = MemoryBasicInfo.Protect;
-					MemoryInfo->MemoryInfo[v1].State = MemoryBasicInfo.State;
-					MemoryInfo->MemoryInfo[v1].Type = MemoryBasicInfo.Type;
-				}
-				MemoryInfo->NumberOfMemory++;
-				//VirtualAddress += MemoryBasicInfo.RegionSize;
-				VirtualAddress = (PVOID)((ULONG_PTR)VirtualAddress + MemoryBasicInfo.RegionSize);
+				VirtualAddress =
+					(PVOID)((ULONG_PTR)VirtualAddress + PAGE_SIZE);
 			}
 			else
 			{
-				VirtualAddress = (PVOID)((ULONG_PTR)VirtualAddress + PAGE_SIZE);
+				VirtualAddress =
+					(PVOID)((ULONG_PTR)VirtualAddress +
+						MemoryBasicInfo.RegionSize);
 			}
-
 		}
-		__NtClose(ProcessHandle);
-		RecoverPreviousMode(EThread, PreviousMode);
+		else
+		{
+			VirtualAddress =
+				(PVOID)((ULONG_PTR)VirtualAddress + PAGE_SIZE);
+		}
 	}
-	return Status;
+
+	ZwClose(ProcessHandle);
+
+	return STATUS_SUCCESS;
 }
 
 NTSTATUS PsReadProcessMem(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)
@@ -187,184 +220,247 @@ NTSTATUS PsReadProcessMem(PVOID InputBuffer, ULONG InputBufferLength, PVOID Outp
 
 
 }
-
-NTSTATUS PsWriteProcessMem(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)
+NTSTATUS PsWriteProcessMem(
+	PVOID InputBuffer,
+	ULONG InputBufferLength,
+	PVOID OutputBuffer,
+	ULONG OutputBufferLength,
+	ULONG* ReturnValue)
 {
 	NTSTATUS Status1 = STATUS_UNSUCCESSFUL;
 	NTSTATUS Status2 = STATUS_UNSUCCESSFUL;
+
 	PEPROCESS EProcess = NULL;
 	PVOID BufferData = NULL;
+
 	BOOLEAN IsAttach = FALSE;
+
 	KAPC_STATE ApcState;
+
 	HANDLE ProcessHandle = NULL;
-	PETHREAD EThread = NULL;
-	CHAR PreviousMode = 0;
+
 	ULONG OldProtect = 0;
-	PCOMMUNICATE_PROCESS_MEMORY v1 = (PCOMMUNICATE_PROCESS_MEMORY)InputBuffer;
-	//参数检测
-	if (!InputBuffer || InputBufferLength != sizeof(COMMUNICATE_PROCESS_MEMORY)+v1->ul.Write.RegionSize)
+
+	PCOMMUNICATE_PROCESS_MEMORY v1 =
+		(PCOMMUNICATE_PROCESS_MEMORY)InputBuffer;
+
+	//
+	// 参数检测
+	//
+	if (!InputBuffer ||
+		InputBufferLength !=
+		sizeof(COMMUNICATE_PROCESS_MEMORY) +
+		v1->ul.Write.RegionSize)
 	{
 		return STATUS_INVALID_PARAMETER;
 	}
+
 	if (v1->ul.Write.ProcessIdentity)
 	{
-		Status2 = PsLookupProcessByProcessId((HANDLE)v1->ul.Write.ProcessIdentity, &EProcess);
-		if (NT_SUCCESS(Status2) && EProcess && PsIsRealProcess(EProcess))
+		Status2 = PsLookupProcessByProcessId(
+			(HANDLE)v1->ul.Write.ProcessIdentity,
+			&EProcess);
+
+		if (NT_SUCCESS(Status2) &&
+			EProcess &&
+			PsIsRealProcess(EProcess))
 		{
-			BufferData = AllocatePoolWithTag(PagedPool, v1->ul.Write.RegionSize);
-			if (BufferData == NULL)
+			BufferData = AllocatePoolWithTag(
+				PagedPool,
+				v1->ul.Write.RegionSize);
+
+			if (!BufferData)
 			{
-				return STATUS_UNSUCCESSFUL;
+				ObDereferenceObject(EProcess);
+				return STATUS_INSUFFICIENT_RESOURCES;
 			}
-			memcpy(BufferData, v1->ul.Write.BufferData, v1->ul.Write.RegionSize);
+
+			RtlCopyMemory(
+				BufferData,
+				v1->ul.Write.BufferData,
+				v1->ul.Write.RegionSize);
+
 			__try
 			{
-				PVOID BaseAddress = v1->ul.Write.BaseAddress;
-				SIZE_T RegionSize = v1->ul.Write.RegionSize;
+				PVOID BaseAddress =
+					v1->ul.Write.BaseAddress;
+
+				SIZE_T RegionSize =
+					v1->ul.Write.RegionSize;
+
 				PVOID v5 = BaseAddress;
 				SIZE_T v7 = RegionSize;
-				KeStackAttachProcess(EProcess, &ApcState);
+
+				//
+				// 第一种：直接写
+				//
+				KeStackAttachProcess(
+					EProcess,
+					&ApcState);
+
 				IsAttach = TRUE;
+
 				__try
 				{
-					memcpy((PVOID)BaseAddress, (PVOID)BufferData, RegionSize);
-					if (IsAttach)
-					{
-						KeUnstackDetachProcess(&ApcState);
-						IsAttach = FALSE;
-					}
-					if (BufferData != NULL)
-					{
-						FreePoolWithTag(BufferData);
-					}
+					RtlCopyMemory(
+						BaseAddress,
+						BufferData,
+						RegionSize);
+
 					Status1 = STATUS_SUCCESS;
 				}
 				__except (EXCEPTION_EXECUTE_HANDLER)
 				{
-					if (IsAttach)
-					{
-						KeUnstackDetachProcess(&ApcState);
-						IsAttach = FALSE;
-					}
-					EThread = PsGetCurrentThread();
-					PreviousMode = ChangePreviousMode(EThread);
-					Status1 = ObOpenObjectByPointer(EProcess, OBJ_KERNEL_HANDLE, NULL, GENERIC_ALL, *PsProcessType, KernelMode, &ProcessHandle);
-					if (!NT_SUCCESS(Status1))
-					{
-						RecoverPreviousMode(EThread, PreviousMode);
-						if (BufferData != NULL)
-						{
-							FreePoolWithTag(BufferData);
-						}
-						Status1 = STATUS_UNSUCCESSFUL;
-					}
-					else
-					{
-						if (__NtProtectVirtualMemory == NULL)
-						{
-							PSYSTEM_SERVICE_DESCRIPTOR_TABLE SystemServiceDescriptorTable = NULL;
-							ULONG32 ServiceIndex = 0;
-							SystemServiceDescriptorTable = GetKeServiceDescriptorTable2();
-							if (!GetNtXXXServiceIndex("NtProtectVirtualMemory", &ServiceIndex))
-							{
-								Status1 = STATUS_UNSUCCESSFUL;
-							}
-							if (!NT_SUCCESS(GetNtXXXServiceAddress(ServiceIndex, (PVOID*)&__NtProtectVirtualMemory)))
-							{
-								Status1 = STATUS_UNSUCCESSFUL;
-							}
-						}
-						if (__NtProtectVirtualMemory != NULL)
-						{
-							Status1 = __NtProtectVirtualMemory(ProcessHandle, &v5, &v7, PAGE_READWRITE, &OldProtect); //这里使用v5与v7的原因是该函数的执行会改变我们的BaseAddress为页基址，导致下方拷贝失败，所以使用替身来改变属性
-							if (!NT_SUCCESS(Status1))
-							{
-								RecoverPreviousMode(EThread, PreviousMode);
-								ZwClose(ProcessHandle);
-								if (BufferData != NULL)
-								{
-									FreePoolWithTag(BufferData);
-								}
-								Status1 = STATUS_UNSUCCESSFUL;
-							}
-							else
-							{
-								__try
-								{
-									KeStackAttachProcess(EProcess, &ApcState);
-									IsAttach = TRUE;
-									memcpy((PVOID)BaseAddress, (PVOID)BufferData, RegionSize);
-									if (IsAttach)
-									{
-										KeUnstackDetachProcess(&ApcState);
-										IsAttach = FALSE;
-									}
-									EThread = PsGetCurrentThread();
-									PreviousMode = ChangePreviousMode(EThread);
-									Status1 = __NtProtectVirtualMemory(ProcessHandle, &BaseAddress, &v7, OldProtect, NULL);
-									RecoverPreviousMode(EThread, PreviousMode);
-									ZwClose(ProcessHandle);
-									if (BufferData != NULL)
-									{
-										ExFreePool(BufferData);
-									}
+					Status1 = GetExceptionCode();
+				}
 
-								}
-								__except (1)
+				if (IsAttach)
+				{
+					KeUnstackDetachProcess(
+						&ApcState);
+
+					IsAttach = FALSE;
+				}
+
+				//
+				// 如果失败，尝试修改保护
+				//
+				if (!NT_SUCCESS(Status1))
+				{
+					Status1 =
+						ObOpenObjectByPointer(
+							EProcess,
+							OBJ_KERNEL_HANDLE,
+							NULL,
+							PROCESS_VM_OPERATION |
+							PROCESS_VM_WRITE,
+							*PsProcessType,
+							KernelMode,
+							&ProcessHandle);
+
+					if (NT_SUCCESS(Status1))
+					{
+						Status1 =
+							ZwProtectVirtualMemory(
+								ProcessHandle,
+								&v5,
+								&v7,
+								PAGE_READWRITE,
+								&OldProtect);
+
+						if (NT_SUCCESS(Status1))
+						{
+							__try
+							{
+								KeStackAttachProcess(
+									EProcess,
+									&ApcState);
+
+								IsAttach = TRUE;
+
+								RtlCopyMemory(
+									BaseAddress,
+									BufferData,
+									RegionSize);
+
+								Status1 =
+									STATUS_SUCCESS;
+
+								if (IsAttach)
 								{
-									if (IsAttach)
-									{
-										KeUnstackDetachProcess(&ApcState);
-										IsAttach = FALSE;
-									}
-									if (BufferData != NULL)
-									{
-										FreePoolWithTag(BufferData);
-									}
-									Status1 = STATUS_UNSUCCESSFUL;
+									KeUnstackDetachProcess(
+										&ApcState);
+
+									IsAttach = FALSE;
 								}
+
+								//
+								// 恢复保护
+								//
+								ZwProtectVirtualMemory(
+									ProcessHandle,
+									&BaseAddress,
+									&v7,
+									OldProtect,
+									&OldProtect);
 							}
-							RecoverPreviousMode(EThread, PreviousMode);
+							__except (EXCEPTION_EXECUTE_HANDLER)
+							{
+								if (IsAttach)
+								{
+									KeUnstackDetachProcess(
+										&ApcState);
+
+									IsAttach = FALSE;
+								}
+
+								Status1 =
+									GetExceptionCode();
+							}
 						}
-						
 					}
 				}
 			}
-			__except (1)
+			__except (EXCEPTION_EXECUTE_HANDLER)
 			{
 				if (IsAttach)
 				{
-					KeUnstackDetachProcess(&ApcState);
+					KeUnstackDetachProcess(
+						&ApcState);
+
 					IsAttach = FALSE;
 				}
-				if (BufferData != NULL)
-				{
-					FreePoolWithTag(BufferData);
-				}
-				Status1 = STATUS_UNSUCCESSFUL;
+
+				Status1 = GetExceptionCode();
 			}
+
+			if (BufferData)
+			{
+				FreePoolWithTag(BufferData);
+			}
+
+			if (ProcessHandle)
+			{
+				ZwClose(ProcessHandle);
+			}
+
+			ObDereferenceObject(EProcess);
 		}
 	}
-	if (NT_SUCCESS(Status2))
-	{
-		ObDereferenceObject(EProcess);
-	}
+
 	return Status1;
-
 }
-
-NTSTATUS PsModifyProcessMem(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength, ULONG* ReturnValue)
+NTSTATUS PsModifyProcessMem(
+	PVOID InputBuffer,
+	ULONG InputBufferLength,
+	PVOID OutputBuffer,
+	ULONG OutputBufferLength,
+	ULONG* ReturnValue)
 {
-	NTSTATUS Status1 = STATUS_UNSUCCESSFUL, Status2 = STATUS_UNSUCCESSFUL;
-	PCOMMUNICATE_PROCESS_MEMORY v1 = (PCOMMUNICATE_PROCESS_MEMORY)InputBuffer;
+	NTSTATUS Status1 = STATUS_UNSUCCESSFUL;
+	NTSTATUS Status2 = STATUS_UNSUCCESSFUL;
+
+	PCOMMUNICATE_PROCESS_MEMORY v1 =
+		(PCOMMUNICATE_PROCESS_MEMORY)InputBuffer;
+
 	PEPROCESS EProcess = NULL;
-	ULONG_PTR ProcessIdentity = 0;
-	HANDLE ProcessHandle;
+
+	HANDLE ProcessHandle = NULL;
+
 	ULONG NewProtect = 0;
+
 	PVOID BaseAddress = NULL;
+
 	SIZE_T RegionSize = 0;
-	//参数检测
-	if (!InputBuffer || InputBufferLength != sizeof(COMMUNICATE_PROCESS_MEMORY))
+
+	ULONG_PTR ProcessIdentity = 0;
+
+	//
+	// 参数检测
+	//
+	if (!InputBuffer ||
+		InputBufferLength !=
+		sizeof(COMMUNICATE_PROCESS_MEMORY))
 	{
 		return STATUS_INVALID_PARAMETER;
 	}
@@ -373,48 +469,71 @@ NTSTATUS PsModifyProcessMem(PVOID InputBuffer, ULONG InputBufferLength, PVOID Ou
 	RegionSize = v1->Modify.RegionSize;
 	NewProtect = v1->Modify.NewProtect;
 	ProcessIdentity = v1->Modify.ProcessIdentity;
-	if (BaseAddress > USER_ADDRESS_END || RegionSize >= SYSTEM_ADDRESS_START || (ULONG_PTR)BaseAddress + RegionSize >= SYSTEM_ADDRESS_START)
+
+	if ((ULONG_PTR)BaseAddress >
+		USER_ADDRESS_END ||
+
+		RegionSize >=
+		SYSTEM_ADDRESS_START ||
+
+		(ULONG_PTR)BaseAddress +
+		RegionSize >=
+		SYSTEM_ADDRESS_START)
 	{
 		return STATUS_INVALID_PARAMETER;
 	}
+
 	if (ProcessIdentity)
 	{
-		Status2 = PsLookupProcessByProcessId((HANDLE)ProcessIdentity, &EProcess);
+		Status2 =
+			PsLookupProcessByProcessId(
+				(HANDLE)ProcessIdentity,
+				&EProcess);
 	}
-	if (PsIsRealProcess(EProcess))
+
+	if (NT_SUCCESS(Status2) &&
+		PsIsRealProcess(EProcess))
 	{
-		Status1 = ObOpenObjectByPointer(EProcess, OBJ_KERNEL_HANDLE | OBJ_CASE_INSENSITIVE, NULL, GENERIC_ALL, *PsProcessType, KernelMode, &ProcessHandle);
+		Status1 =
+			ObOpenObjectByPointer(
+				EProcess,
+				OBJ_KERNEL_HANDLE |
+				OBJ_CASE_INSENSITIVE,
+				NULL,
+				PROCESS_VM_OPERATION,
+				*PsProcessType,
+				KernelMode,
+				&ProcessHandle);
+
 		if (NT_SUCCESS(Status1))
 		{
-			ULONG ulOldProtect = 0;
-			if (__NtProtectVirtualMemory == NULL)
+			ULONG OldProtect = 0;
+
+			Status1 =
+				ZwProtectVirtualMemory(
+					ProcessHandle,
+					&BaseAddress,
+					&RegionSize,
+					NewProtect,
+					&OldProtect);
+
+			if (NT_SUCCESS(Status1))
 			{
-				PSYSTEM_SERVICE_DESCRIPTOR_TABLE SystemServiceDescriptorTable = NULL;
-				ULONG32 ServiceIndex = 0;
-				SystemServiceDescriptorTable = GetKeServiceDescriptorTable2();
-				if (!GetNtXXXServiceIndex("NtProtectVirtualMemory", &ServiceIndex))
+				if (OutputBuffer &&
+					OutputBufferLength >=
+					sizeof(ULONG))
 				{
-					Status1 = STATUS_UNSUCCESSFUL;
-				}
-				if (!NT_SUCCESS(GetNtXXXServiceAddress(ServiceIndex, (PVOID*)&__NtProtectVirtualMemory)))
-				{
-					Status1 = STATUS_UNSUCCESSFUL;
+					*(PULONG)OutputBuffer =
+						OldProtect;
 				}
 			}
-			if (__NtProtectVirtualMemory != NULL)
-			{
-				PETHREAD EThread = PsGetCurrentThread();
-				CHAR PreviousMode = ChangePreviousMode(EThread);
-				Status1 = __NtProtectVirtualMemory(ProcessHandle, &BaseAddress, &RegionSize, NewProtect, (PULONG)OutputBuffer);
-				RecoverPreviousMode(EThread, PreviousMode);
-			}
-			__NtClose(ProcessHandle);
+
+			ZwClose(ProcessHandle);
 		}
+
+		ObDereferenceObject(EProcess);
 	}
-	if (NT_SUCCESS(Status2))
-	{
-		ObfDereferenceObject(EProcess);
-	}
+
 	return Status1;
 }
 

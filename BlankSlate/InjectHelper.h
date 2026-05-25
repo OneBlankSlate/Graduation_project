@@ -371,6 +371,7 @@ namespace _INJECT_HELPER_
 				CloseHandle(thread_handle);
 			}
 		}
+
 		return TRUE;
 	}
 

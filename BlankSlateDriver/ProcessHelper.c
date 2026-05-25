@@ -1,4 +1,4 @@
-﻿#include"ProcessHelper.h"
+#include"ProcessHelper.h"
 #include"MemoryHelper.h"
 #include"IoControlHelper.h"
 #include"ObjectHelper.h"
@@ -234,7 +234,7 @@ NTSTATUS PsTerminateProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID Ou
 {
     NTSTATUS Status = STATUS_UNSUCCESSFUL;
     PEPROCESS EProcess;
-    HANDLE ProcessHandle;
+    HANDLE ProcessHandle=0;
     PCOMMUNICATE_HIDE_PROCESS v5 = (PCOMMUNICATE_HIDE_PROCESS)InputBuffer;  
     //参数检查
     if (!InputBuffer || InputBufferLength != sizeof(COMMUNICATE_HIDE_PROCESS))
@@ -279,6 +279,10 @@ NTSTATUS PsTerminateProcess(PVOID InputBuffer, ULONG InputBufferLength, PVOID Ou
             }
         }
         
+    }
+    if (ProcessHandle != NULL)
+    {
+        ZwClose(ProcessHandle);
     }
     return Status;
 }

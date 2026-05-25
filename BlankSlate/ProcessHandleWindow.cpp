@@ -88,11 +88,19 @@ void ProcessHandleWindow::CloseHandle()
 		v1.OperateType = CLOSE_HANDLE;
 		v1.ProcessId = m_ProcessId;
 		v1.TargetHandle = targetHandle;
+		int retryCount = 0;
 		do
 		{
 			IsOk = CommunicateDevice(&v1, sizeof(COMMUNICATE_CLOSE_HANDLE), NULL, 0, NULL);
-		} while (!IsOk);
-		if (IsOk) {
+			retryCount++;
+		} while (!IsOk&& retryCount<3);
+
+		if (!IsOk) {
+			QMessageBox::critical(this, QStringLiteral("错误"),
+				QStringLiteral("与驱动通信失败，请检查驱动是否已加载。"));
+			return;  // 或 return FALSE;
+		}
+		else{
 			m_model.removeRow(index.row());
 		}
 	}

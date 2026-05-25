@@ -1,4 +1,4 @@
-﻿#include "WriteMemoryWindow.h"
+#include "WriteMemoryWindow.h"
 #include"ProcessMemory.h"
 WriteMemoryWindow::WriteMemoryWindow(HANDLE ProcessIdentity, QWidget *parent)
 	: QWidget(parent)
@@ -42,5 +42,6 @@ BOOL WriteMemoryWindow::WriteVirtualMemory()
 	v5->ul.Write.BufferData = (char*)(v5 + 1);
 	memcpy(v5->ul.Write.BufferData, BufferData, BufferLength);
 	IsOk = CommunicateDevice(v5, ViewSize, NULL, 0, NULL);
+	free(v5);
 	return IsOk;
 }
