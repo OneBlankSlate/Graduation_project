@@ -57,28 +57,31 @@ NTSTATUS GetProcEvents(PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputB
     ULONG eventsToRead = 0;
     ULONG i;
     PEVENT_PACKET packet = (PEVENT_PACKET)OutputBuffer;
-    if (!g_context->EventBuffer.EventCount || packet->EventCount == 0) {
-        return 0;
+
+    if (!g_context || !g_context->EventBuffer.EventCount || packet->EventCount == 0) {
+        packet->EventCount = 0;
+        *ReturnValue = sizeof(ULONG);
+        return STATUS_SUCCESS;
     }
 
     KeAcquireSpinLock(&g_context->EventBuffer.BufferLock, &oldIrql);
 
     // 计算要读取的事件数量
-    eventsToRead = min(packet->EventCount, g_context->EventBuffer.TotalEvents);
+    eventsToRead = min(packet->EventCount, g_context->EventBuffer.EventCount);
     packet->EventCount = eventsToRead;
     // 读取事件
     for (i = 0; i < eventsToRead; i++) {
         ULONG index = (g_context->EventBuffer.ReadIndex + i) % MAX_EVENTS;
         RtlCopyMemory(&packet->Events[i], &g_context->EventBuffer.Events[index], sizeof(PROCESS_EVENT));
     }
-    *ReturnValue = eventsToRead * sizeof(PROCESS_EVENT);
     // 更新读索引
     g_context->EventBuffer.ReadIndex = (g_context->EventBuffer.ReadIndex + eventsToRead) % MAX_EVENTS;
     g_context->EventBuffer.EventCount -= eventsToRead;
 
     KeReleaseSpinLock(&g_context->EventBuffer.BufferLock, oldIrql);
 
-    return eventsToRead;
+    *ReturnValue = sizeof(ULONG) + eventsToRead * sizeof(PROCESS_EVENT);
+    return STATUS_SUCCESS;
 }
 // 进程通知回调函数
 VOID ProcessNotifyCallback(
@@ -101,18 +104,21 @@ VOID ProcessNotifyCallback(
         event.ParentProcessId = HandleToULong(CreateInfo->ParentProcessId);
         //获取父进程名
         PEPROCESS parentProcess=NULL;
-        PsLookupProcessByProcessId(event.ParentProcessId, &parentProcess);
-        WCHAR parentProcessPath[520] = { 0 };
-        UNICODE_STRING UniParentProcessPath = { 0 };
-        GetProcessFullPathByEProcess(parentProcess, parentProcessPath, 520);
-        RtlInitUnicodeString(&UniParentProcessPath, parentProcessPath);
-        PUNICODE_STRING parentProcessName = GetNameByPath(&UniParentProcessPath);
-        if (parentProcessName!=NULL&&parentProcessName->Buffer != NULL && parentProcessName->Length > 0)
-        {
-            RtlCopyMemory(event.ParentProcessName, parentProcessName->Buffer, parentProcessName->Length);
-            
+        if (NT_SUCCESS(PsLookupProcessByProcessId(event.ParentProcessId, &parentProcess))) {
+            WCHAR parentProcessPath[520] = { 0 };
+            UNICODE_STRING UniParentProcessPath = { 0 };
+            GetProcessFullPathByEProcess(parentProcess, parentProcessPath, 520);
+            RtlInitUnicodeString(&UniParentProcessPath, parentProcessPath);
+            PUNICODE_STRING parentProcessName = GetNameByPath(&UniParentProcessPath);
+            if (parentProcessName!=NULL&&parentProcessName->Buffer != NULL && parentProcessName->Length > 0)
+            {
+                ULONG copyLen = min(parentProcessName->Length, sizeof(event.ParentProcessName) - sizeof(WCHAR));
+                RtlCopyMemory(event.ParentProcessName, parentProcessName->Buffer, copyLen);
+                event.ParentProcessName[copyLen / sizeof(WCHAR)] = L'\0';
+            }
+            if (parentProcessName) ExFreePool(parentProcessName);
+            ObDereferenceObject(parentProcess);
         }
-        if (parentProcessName) ExFreePool(parentProcessName);
         // 获取当前时间
         LARGE_INTEGER systemTime;
         KeQuerySystemTime(&systemTime);
@@ -127,7 +133,6 @@ VOID ProcessNotifyCallback(
             RtlCopyMemory(event.CommandLine, CreateInfo->CommandLine->Buffer, copyLength);
             event.CommandLine[copyLength / sizeof(WCHAR)] = L'\0';
         }
-        ObDereferenceObject(parentProcess);
     }
     else {
         // 进程退出事件
@@ -163,9 +168,11 @@ NTSTATUS GetProcessInfo(
     UNREFERENCED_PARAMETER(ProcessId);
     UNICODE_STRING uniPath = { 0 };
     GetProcessFullPathByEProcess(Process, ImagePath, 520);
-    if (ImagePath) {
+    if (ImagePath[0] != L'\0') {
         RtlInitUnicodeString(&uniPath, ImagePath);
-        RtlCopyMemory(Event->ImagePath, uniPath.Buffer, uniPath.Length);
+        ULONG copyLen = min(uniPath.Length, sizeof(Event->ImagePath) - sizeof(WCHAR));
+        RtlCopyMemory(Event->ImagePath, uniPath.Buffer, copyLen);
+        Event->ImagePath[copyLen / sizeof(WCHAR)] = L'\0';
     }
     else {
         return STATUS_UNSUCCESSFUL;
@@ -173,8 +180,9 @@ NTSTATUS GetProcessInfo(
     // 获取进程映像名称
     UniImageName = GetNameByPath(&uniPath);
     if (UniImageName) {
-        RtlCopyMemory(Event->ImageName, UniImageName->Buffer, UniImageName->Length);
-        Event->ImageName[UniImageName->Length / sizeof(WCHAR)] = L'\0';
+        ULONG nameCopyLen = min(UniImageName->Length, sizeof(Event->ImageName) - sizeof(WCHAR));
+        RtlCopyMemory(Event->ImageName, UniImageName->Buffer, nameCopyLen);
+        Event->ImageName[nameCopyLen / sizeof(WCHAR)] = L'\0';
         ExFreePool(UniImageName);
     }
     else {

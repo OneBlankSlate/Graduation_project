@@ -1,4 +1,4 @@
-﻿// FileMonWindow.h
+// FileMonWindow.h
 #pragma once
 
 #include <QWidget>
